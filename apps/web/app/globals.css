@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+body {
+  @apply bg-stone-100 text-stone-900 antialiased dark:bg-stone-950 dark:text-stone-100;
+}
+
+/* Keyboard focus, always visible. */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--color-amber-600);
+    outline-offset: 2px;
+  }
+}
+
+/* Device frame (see app/frame/layout.tsx), only on a large enough screen with a
+   mouse: a phone or a touch tablet, even in landscape, uses the whole screen.
+   The frame takes the full available height, with the device's proportions
+   (without going below a readable width), within the window's width and a
+   maximum height. */
+@media (hover: hover) and (pointer: fine) and (min-width: 768px) and (min-height: 560px) {
+  #stage {
+    display: flex;
+    min-height: 100dvh;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-stone-300);
+  }
+
+  #device {
+    /* Phone, 9:19.5 proportions. */
+    --ratio: 0.4615;
+    --max-height: 56rem;
+    --margin: clamp(0.5rem, 3dvh, 2rem);
+    --frame-height: min(100dvh - 2 * var(--margin), var(--max-height));
+    height: var(--frame-height);
+    width: min(max(var(--frame-height) * var(--ratio), 22.5rem), 100vw - 2 * var(--margin));
+    border: 10px solid var(--color-stone-400);
+    border-radius: 2.75rem;
+    box-shadow: var(--shadow-2xl);
+  }
+
+  /* Tablet, 3:4 proportions, on a large screen: even when short, it is wider
+     than the phone. */
+  @media (min-width: 1024px) {
+    #device {
+      --ratio: 0.75;
+      --max-height: 68rem;
+      border-width: 16px;
+      border-radius: 2rem;
+    }
+  }
+
+  @media (prefers-color-scheme: dark) {
+    #stage {
+      background: var(--color-black);
+    }
+
+    #device {
+      border-color: var(--color-stone-700);
+    }
+  }
+}

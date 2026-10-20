@@ -1,0 +1,17 @@
+node_modules/
+.turbo/
+.next/
+next-env.d.ts
+*.tsbuildinfo
+dist/
+.env*
+!.env.example
+.vercel/
+.DS_Store
+
+# Expo
+.expo/
+web-build/
+expo-env.d.ts
+apps/mobile/ios/
+apps/mobile/android/

@@ -1,0 +1,14 @@
+{
+  "name": "@template/shared",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "catalog:"
+  }
+}
