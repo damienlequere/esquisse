@@ -51,8 +51,7 @@ The scripts are not named `deploy`: `pnpm deploy` is a built-in pnpm command.
 `/frame/phare` is a clickable scene, ported from protagonist's
 `prototypes/scene-cliquable`: the place's image fills the frame, each action is
 a clickable part of the image, and the characters, clickable too, open a
-dialogue. On a large screen, a panel picks the frame (phone, tablet, full
-screen) and shows the zones: the safe zone in cyan, the clickable ones in pink.
+dialogue. The frame adapts to the screen, like any page under `app/frame/`.
 
 - **The image is 9:16**, in `cover`: a phone crops its sides (9% each), a tablet
   its top and bottom (12.5% each). What stays visible everywhere, minus the text

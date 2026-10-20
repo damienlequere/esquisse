@@ -24,7 +24,6 @@ const place = (box: Box) => ({
 
 type Line = { text: string; player?: boolean };
 type Conversation = { character: Character; lines: Line[]; asked: string[] };
-type Frame = "phone" | "tablet" | "full";
 
 export const Scene = ({
   scene,
@@ -100,171 +99,118 @@ export const Scene = ({
     revealTimer.current = setTimeout(() => el.removeAttribute("data-revealed"), 1600);
   };
 
-  // ── Prototype tools: the frame, and the zones ────────────────────────────────
-
-  // Shown only with a mouse on a large screen; a touch device uses the whole screen.
-  const [tools, setTools] = useState(false);
-  const [frame, setFrame] = useState<Frame>("phone");
-  const [debug, setDebug] = useState(false);
-  useEffect(() => {
-    if (!matchMedia("(hover: hover) and (pointer: fine) and (min-width: 768px)").matches) return;
-    setTools(true);
-    setFrame(matchMedia("(min-width: 1024px)").matches ? "tablet" : "phone");
-  }, []);
-  useEffect(() => {
-    const stage = document.getElementById("stage");
-    if (!tools || stage === null) return;
-    stage.dataset.frame = frame;
-    return () => {
-      delete stage.dataset.frame;
-    };
-  }, [tools, frame]);
-
   return (
-    <>
-      {tools && (
-        <form className={styles.tools} aria-label="Réglages du prototype">
-          <fieldset>
-            <legend>Cadre</legend>
-            {(
-              [
-                ["phone", "Téléphone 9:19,5"],
-                ["tablet", "Tablette 3:4"],
-                ["full", "Plein écran"],
-              ] as const
-            ).map(([value, label]) => (
-              <label key={value}>
-                <input
-                  type="radio"
-                  name="frame"
-                  value={value}
-                  checked={frame === value}
-                  onChange={() => setFrame(value)}
-                />{" "}
-                {label}
-              </label>
-            ))}
-          </fieldset>
-          <label>
-            <input type="checkbox" checked={debug} onChange={(e) => setDebug(e.target.checked)} />{" "}
-            Zones
-          </label>
-        </form>
-      )}
+    <div className={styles.root}>
+      <div className={styles.scene} style={{ "--image-ratio": rw / rh } as CSSProperties}>
+        <img className={styles.background} src={`${media}/fond.webp`} alt="" />
+        <div ref={layer} className={styles.layer}>
+          {scene.objects.map((object) => {
+            const box = objects[object.id];
+            if (box === undefined) return null;
+            return (
+              <button
+                key={object.id}
+                type="button"
+                className={styles.hotspot}
+                aria-label={object.label}
+                style={place(box)}
+                onClick={() => narrate(object.label, object.text)}
+              >
+                <span className={styles.tip}>{object.label}</span>
+              </button>
+            );
+          })}
 
-      <div className={styles.root}>
-        <div className={styles.scene} style={{ "--image-ratio": rw / rh } as CSSProperties}>
-          <img className={styles.background} src={`${media}/fond.webp`} alt="" />
-          <div ref={layer} className={`${styles.layer} ${debug ? styles.debug : ""}`}>
-            {scene.objects.map((object) => {
-              const box = objects[object.id];
-              if (box === undefined) return null;
-              return (
-                <button
-                  key={object.id}
-                  type="button"
-                  className={styles.hotspot}
-                  aria-label={object.label}
-                  style={place(box)}
-                  onClick={() => narrate(object.label, object.text)}
-                >
-                  <span className={styles.tip}>{object.label}</span>
-                </button>
-              );
-            })}
-
-            {/* Characters: layers placed by their feet. */}
-            {scene.characters.map((character) => {
-              const { anchor, height } = character;
-              // Width as a fraction of the image's width: the image is not square.
-              const width = (height * (aspects[character.id] ?? 0.4) * rh) / rw;
-              const label = `Parler à ${character.name}`;
-              return (
-                <button
-                  key={character.id}
-                  type="button"
-                  className={styles.character}
-                  aria-label={label}
-                  style={place({
-                    x0: anchor.x - width / 2,
-                    y0: anchor.y - height,
-                    x1: anchor.x + width / 2,
-                    y1: anchor.y,
-                  })}
-                  onClick={(event) => open(character, event.currentTarget)}
-                >
-                  <img src={`${media}/${character.id}.webp`} alt="" />
-                  <span className={styles.tip}>{label}</span>
-                </button>
-              );
-            })}
-          </div>
-          {debug && <div className={styles.safe} style={place(scene.safe)} />}
+          {/* Characters: layers placed by their feet. */}
+          {scene.characters.map((character) => {
+            const { anchor, height } = character;
+            // Width as a fraction of the image's width: the image is not square.
+            const width = (height * (aspects[character.id] ?? 0.4) * rh) / rw;
+            const label = `Parler à ${character.name}`;
+            return (
+              <button
+                key={character.id}
+                type="button"
+                className={styles.character}
+                aria-label={label}
+                style={place({
+                  x0: anchor.x - width / 2,
+                  y0: anchor.y - height,
+                  x1: anchor.x + width / 2,
+                  y1: anchor.y,
+                })}
+                onClick={(event) => open(character, event.currentTarget)}
+              >
+                <img src={`${media}/${character.id}.webp`} alt="" />
+                <span className={styles.tip}>{label}</span>
+              </button>
+            );
+          })}
         </div>
+      </div>
 
-        <header className={styles.top}>
-          <h1>{scene.title}</h1>
-          <button
-            type="button"
-            className={styles.reveal}
-            aria-label="Révéler ce qui est cliquable"
-            onClick={reveal}
-          >
-            ✦
-          </button>
-        </header>
-
-        <section
-          key={narration.key}
-          className={`${styles.narration} ${styles.appear}`}
-          aria-live="polite"
+      <header className={styles.top}>
+        <h1>{scene.title}</h1>
+        <button
+          type="button"
+          className={styles.reveal}
+          aria-label="Révéler ce qui est cliquable"
+          onClick={reveal}
         >
-          <h2>{narration.title}</h2>
-          <p>{narration.text}</p>
-        </section>
+          ✦
+        </button>
+      </header>
 
-        {conversation && (
-          // biome-ignore lint/a11y/useKeyWithClickEvents lint/a11y/noStaticElementInteractions: Escape closes it too
+      <section
+        key={narration.key}
+        className={`${styles.narration} ${styles.appear}`}
+        aria-live="polite"
+      >
+        <h2>{narration.title}</h2>
+        <p>{narration.text}</p>
+      </section>
+
+      {conversation && (
+        // biome-ignore lint/a11y/useKeyWithClickEvents lint/a11y/noStaticElementInteractions: Escape closes it too
+        <div
+          className={styles.dialogue}
+          onClick={(event) => {
+            if (event.target === event.currentTarget) close();
+          }}
+        >
           <div
-            className={styles.dialogue}
-            onClick={(event) => {
-              if (event.target === event.currentTarget) close();
-            }}
+            className={styles.panel}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="dialogue-name"
           >
-            <div
-              className={styles.panel}
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="dialogue-name"
-            >
-              <h2 id="dialogue-name">{conversation.character.name}</h2>
-              <div ref={linesRef}>
-                {conversation.lines.map((line, i) => (
-                  <p key={i} className={line.player ? styles.player : undefined}>
-                    {line.text}
-                  </p>
+            <h2 id="dialogue-name">{conversation.character.name}</h2>
+            <div ref={linesRef}>
+              {conversation.lines.map((line, i) => (
+                <p key={i} className={line.player ? styles.player : undefined}>
+                  {line.text}
+                </p>
+              ))}
+            </div>
+            <div ref={choicesRef} className={styles.choices}>
+              {conversation.character.dialogue.topics
+                .filter((topic) => !conversation.asked.includes(topic.ask))
+                .map((topic) => (
+                  <button
+                    key={topic.ask}
+                    type="button"
+                    onClick={() => ask(topic.ask, topic.answer)}
+                  >
+                    {topic.ask}
+                  </button>
                 ))}
-              </div>
-              <div ref={choicesRef} className={styles.choices}>
-                {conversation.character.dialogue.topics
-                  .filter((topic) => !conversation.asked.includes(topic.ask))
-                  .map((topic) => (
-                    <button
-                      key={topic.ask}
-                      type="button"
-                      onClick={() => ask(topic.ask, topic.answer)}
-                    >
-                      {topic.ask}
-                    </button>
-                  ))}
-                <button type="button" onClick={close}>
-                  Au revoir.
-                </button>
-              </div>
+              <button type="button" onClick={close}>
+                Au revoir.
+              </button>
             </div>
           </div>
-        )}
-      </div>
-    </>
+        </div>
+      )}
+    </div>
   );
 };
