@@ -1,4 +1,4 @@
-import { APP_NAME, TAGLINE } from "@template/shared";
+import { APP_NAME, TAGLINE } from "@esquisse/shared";
 import Link from "next/link";
 
 export default function Home() {

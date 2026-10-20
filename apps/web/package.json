@@ -1,5 +1,5 @@
 {
-  "name": "@template/web",
+  "name": "@esquisse/web",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,7 +9,7 @@
     "typecheck": "next typegen && tsc"
   },
   "dependencies": {
-    "@template/shared": "workspace:*",
+    "@esquisse/shared": "workspace:*",
     "next": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:"

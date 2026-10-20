@@ -1,4 +1,4 @@
-import { APP_NAME, TAGLINE } from "@template/shared";
+import { APP_NAME, TAGLINE } from "@esquisse/shared";
 import { Link } from "expo-router";
 import { Pressable, ScrollView, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";

@@ -1,36 +1,25 @@
-# Template
+# Esquisse
 
-Monorepo template for a web site and mobile apps (iOS, Android).
+Clickable illustrated scenes: a web site and mobile apps (iOS, Android).
 
 ```
 apps/
   web/       Next.js 16 (App Router) + TypeScript + Tailwind CSS 4
   mobile/    Expo SDK 57 (React Native 0.86) + Expo Router + NativeWind 4
 packages/
-  shared/    Plain TypeScript shared by both apps (@template/shared)
+  shared/    Plain TypeScript shared by both apps (@esquisse/shared)
 ```
 
 Tooling: pnpm workspaces (versions in the `catalog:` of `pnpm-workspace.yaml`),
 Turborepo for tasks, Biome for lint and format.
 
-## Starting a new project
-
-This repository is a GitHub template. To start a project from it:
+## Setup
 
 ```bash
-gh repo create <owner>/<name> --template damienlequere/next-expo-monorepo --private --clone
-cd <name>
+pnpm install
+vercel link   # see below
+eas init      # for builds on Expo's servers
 ```
-
-Then rename the `template` placeholders:
-
-- `name` in `package.json`, and the `@template/*` packages in `apps/*/package.json`,
-  `packages/shared/package.json` and every `@template/shared` import;
-- `name`, `slug` and `scheme` in `apps/mobile/app.json`;
-- the title and description of this README.
-
-Then run `pnpm install` (to update the lockfile), `vercel link` (see below)
-and, for builds on Expo's servers, `eas init`.
 
 ## Commands
 
@@ -51,7 +40,7 @@ pnpm deploy:prod     # same, to production
 
 Once, from the repository root: `vercel link`, to create or pick the Vercel
 project, then in its settings set **Root Directory** to `apps/web` (Vercel
-installs the whole pnpm workspace, so `@template/shared` is found). The deploy
+installs the whole pnpm workspace, so `@esquisse/shared` is found). The deploy
 scripts then upload from the root. The region is set in `apps/web/vercel.json`
 (`fra1`, Paris).
 

@@ -1,4 +1,4 @@
-import { APP_NAME, greeting } from "@template/shared";
+import { APP_NAME, greeting } from "@esquisse/shared";
 import { Link } from "expo-router";
 import { useState } from "react";
 import { Pressable, ScrollView, Text, TextInput, View } from "react-native";

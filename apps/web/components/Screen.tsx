@@ -1,6 +1,6 @@
 "use client";
 
-import { APP_NAME, greeting } from "@template/shared";
+import { APP_NAME, greeting } from "@esquisse/shared";
 import Link from "next/link";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 

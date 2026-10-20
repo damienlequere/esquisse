@@ -1,5 +1,5 @@
 {
-  "name": "template",
+  "name": "esquisse",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@12.14.0",
@@ -7,8 +7,8 @@
     "node": ">=22"
   },
   "scripts": {
-    "dev": "turbo run dev --filter=@template/web",
-    "dev:mobile": "pnpm --filter @template/mobile start",
+    "dev": "turbo run dev --filter=@esquisse/web",
+    "dev:mobile": "pnpm --filter @esquisse/mobile start",
     "dev:all": "turbo run dev",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",

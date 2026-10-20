@@ -1,5 +1,5 @@
 {
-  "name": "@template/mobile",
+  "name": "@esquisse/mobile",
   "version": "1.0.0",
   "private": true,
   "main": "expo-router/entry",
@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@expo/metro-runtime": "~57.0.17",
-    "@template/shared": "workspace:*",
+    "@esquisse/shared": "workspace:*",
     "expo": "~57.0.30",
     "expo-constants": "~57.0.22",
     "expo-linking": "~57.0.13",

@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Template",
-    "slug": "template",
+    "name": "Esquisse",
+    "slug": "esquisse",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -24,6 +24,6 @@
       "output": "static"
     },
     "plugins": ["expo-router", "expo-status-bar"],
-    "scheme": "template"
+    "scheme": "esquisse"
   }
 }
