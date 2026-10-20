@@ -46,12 +46,14 @@ scripts then upload from the root. The region is set in `apps/web/vercel.json`
 
 The scripts are not named `deploy`: `pnpm deploy` is a built-in pnpm command.
 
-## Clickable scenes (web)
+## Clickable scenes
 
-`/frame/phare` is a clickable scene, ported from protagonist's
-`prototypes/scene-cliquable`: the place's image fills the frame, each action is
-a clickable part of the image, and the characters, clickable too, open a
-dialogue. The frame adapts to the screen, like any page under `app/frame/`.
+`/frame/phare` on the web site, and the `phare` screen in the mobile app, is a
+clickable scene, ported from protagonist's `prototypes/scene-cliquable`: the
+place's image fills the frame, each action is a clickable part of the image, and
+the characters, clickable too, open a dialogue. On the web, the frame adapts to the screen, like any page under
+`app/frame/`; in the mobile app, the scene takes the whole screen. With no hover
+on a phone, the ✦ button shows for a moment what is clickable.
 
 - **The image is 9:16**, in `cover`: a phone crops its sides (9% each), a tablet
   its top and bottom (12.5% each). What stays visible everywhere, minus the text
@@ -70,11 +72,13 @@ dialogue. The frame adapts to the screen, like any page under `app/frame/`.
 
 | File | Role |
 | --- | --- |
-| `apps/web/scenes/<id>/scene.json` | The scene: safe zone, prompts, positions, texts and dialogues |
-| `apps/web/scenes/<id>/objects.json`, `characters.json` | Detected boxes, layers' proportions (generated) |
+| `packages/shared/src/scenes/<id>/scene.json` | The scene: safe zone, prompts, positions, texts and dialogues |
+| `packages/shared/src/scenes/<id>/objects.json`, `characters.json` | Detected boxes, layers' proportions (generated) |
+| `packages/shared/src/scenes/index.ts` | The scenes, for both apps (`scenes.phare`), and their types |
 | `apps/web/scenes/<id>/sources/` | Original images and the composition guide |
-| `apps/web/public/scenes/<id>/` | Converted images, served |
-| `apps/web/components/Scene.tsx` | The scene's page |
+| `apps/web/public/scenes/<id>/`, `apps/mobile/assets/scenes/<id>/` | Converted images, for each app |
+| `apps/mobile/src/scenes.ts` | The images bundled in the mobile app, listed by hand (Metro needs each `require`) |
+| `apps/web/components/Scene.tsx`, `apps/mobile/src/components/Scene.tsx` | The scene, in each app |
 | `apps/web/scripts/generate-scene.ts` | Generates the background, detects the objects, generates and keys the characters |
 
 `pnpm --filter @esquisse/web generate <id>` only does the steps whose result is

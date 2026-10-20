@@ -12,10 +12,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@expo/metro-runtime": "~57.0.17",
     "@esquisse/shared": "workspace:*",
+    "@expo/metro-runtime": "~57.0.17",
     "expo": "~57.0.30",
     "expo-constants": "~57.0.22",
+    "expo-linear-gradient": "~57.0.2",
     "expo-linking": "~57.0.13",
     "expo-router": "~57.0.28",
     "expo-status-bar": "~57.0.1",

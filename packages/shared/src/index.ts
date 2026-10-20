@@ -6,3 +6,5 @@ export const APP_NAME = "Esquisse";
 export const TAGLINE = "Clickable illustrated scenes.";
 
 export const greeting = (name: string) => `Hello, ${name.trim() || "you"}!`;
+
+export * from "./scenes/index.ts";

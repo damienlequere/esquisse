@@ -1,18 +1,21 @@
-// Generates the background and the characters of scenes/<id>/scene.json, then
+// Generates the background and the characters of a scene's scene.json, then
 // detects where the objects really are in the background.
 //
 //   node scripts/generate-scene.ts <id> [fond] [reperage] [personnages]
 //
 // Without a step, only the steps whose result is missing are done. A named step
-// is redone; redoing the background also redoes what depends on it. The
-// originals go to scenes/<id>/sources, the converted images to
-// public/scenes/<id>, the positions to scenes/<id>. Needs GEMINI_API_KEY in
-// apps/web/.env.local.
+// is redone; redoing the background also redoes what depends on it.
+//
+// The scene and the positions are in packages/shared/src/scenes/<id>, the
+// originals in apps/web/scenes/<id>/sources, and the converted images in each
+// app: apps/web/public/scenes/<id> and apps/mobile/assets/scenes/<id> (a new
+// scene's images must also be listed in apps/mobile/src/scenes.ts). Needs
+// GEMINI_API_KEY in apps/web/.env.local.
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import type { Box, Character, CharacterAspects, Scene } from "@esquisse/shared";
 import sharp from "sharp";
-import type { Box, Character, CharacterAspects, Scene } from "../scenes/types.ts";
 import { detectBoxes, generateImage } from "./gemini.ts";
 
 const WEB = join(import.meta.dirname, "..");
@@ -23,9 +26,16 @@ const GUIDE = { width: 1152, height: 2048 };
 
 const [id, ...steps] = process.argv.slice(2);
 if (id === undefined) throw new Error("Usage: node scripts/generate-scene.ts <id> [step…]");
-const DIR = join(WEB, "scenes", id);
-const SOURCES = join(DIR, "sources");
+const DIR = join(WEB, "../../packages/shared/src/scenes", id);
+const SOURCES = join(WEB, "scenes", id, "sources");
 const MEDIA = join(WEB, "public", "scenes", id);
+const MOBILE_MEDIA = join(WEB, "../mobile/assets/scenes", id);
+
+// A converted image, for the web site, copied for the mobile app.
+const publish = (name: string) => {
+  copyFileSync(join(MEDIA, name), join(MOBILE_MEDIA, name));
+  console.log(`✓ ${name}, in public/scenes/${id} and the mobile app's assets`);
+};
 
 const scene: Scene = JSON.parse(readFileSync(join(DIR, "scene.json"), "utf8"));
 
@@ -97,7 +107,7 @@ const generateBackground = async () => {
   });
   writeFileSync(join(SOURCES, "fond.jpg"), jpg);
   await sharp(jpg).resize({ width: 1440 }).webp({ quality: 82 }).toFile(join(MEDIA, "fond.webp"));
-  console.log(`✓ public/scenes/${id}/fond.webp`);
+  publish("fond.webp");
 };
 
 const MARGIN = 0.02;
@@ -129,7 +139,7 @@ const locate = async () => {
     if (!inside(box, scene.safe)) problems.push(`${o.id}: outside the safe zone`);
   }
   writeFileSync(join(DIR, "objects.json"), `${JSON.stringify(boxes, null, 2)}\n`);
-  console.log(`✓ scenes/${id}/objects.json`);
+  console.log(`✓ packages/shared/src/scenes/${id}/objects.json`);
   if (problems.length > 0) {
     console.log(`⚠ ${problems.join("; ")}. Run again with “fond” to regenerate the background.`);
   }
@@ -179,7 +189,7 @@ const generateCharacters = async () => {
       .resize({ height: 1000, withoutEnlargement: true })
       .webp({ quality: 85, alphaQuality: 90 })
       .toFile(join(MEDIA, `${c.id}.webp`));
-    console.log(`✓ public/scenes/${id}/${c.id}.webp`);
+    publish(`${c.id}.webp`);
   }
   writeFileSync(join(DIR, "characters.json"), `${JSON.stringify(aspects, null, 2)}\n`);
 };
@@ -188,6 +198,7 @@ const generateCharacters = async () => {
 
 mkdirSync(SOURCES, { recursive: true });
 mkdirSync(MEDIA, { recursive: true });
+mkdirSync(MOBILE_MEDIA, { recursive: true });
 const asked = new Set(steps);
 for (const step of asked) {
   if (!["fond", "reperage", "personnages"].includes(step)) throw new Error(`Unknown step: ${step}`);

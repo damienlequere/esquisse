@@ -1,13 +1,13 @@
 "use client";
 
-import { type CSSProperties, useEffect, useRef, useState } from "react";
 import type {
   Box,
   Character,
   CharacterAspects,
   ObjectBoxes,
   Scene as SceneData,
-} from "../scenes/types.ts";
+} from "@esquisse/shared";
+import { type CSSProperties, useEffect, useRef, useState } from "react";
 import styles from "./Scene.module.css";
 
 // Clickable scene: the background covers the frame, each object is one action,

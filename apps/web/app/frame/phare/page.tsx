@@ -1,8 +1,8 @@
+import { scenes } from "@esquisse/shared";
 import type { Metadata } from "next";
 import { Scene } from "../../../components/Scene.tsx";
-import aspects from "../../../scenes/phare/characters.json";
-import objects from "../../../scenes/phare/objects.json";
-import scene from "../../../scenes/phare/scene.json";
+
+const { scene, objects, aspects } = scenes.phare;
 
 export const metadata: Metadata = { title: scene.title };
 
