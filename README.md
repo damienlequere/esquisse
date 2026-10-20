@@ -25,7 +25,7 @@ eas init      # for builds on Expo's servers
 
 ```bash
 pnpm install
-pnpm dev             # web site: http://localhost:3000 (the frame: /frame)
+pnpm dev             # web site: http://localhost:3000 (the scene: /frame/phare)
 pnpm dev:mobile      # Expo dev server: scan the QR code with Expo Go
 pnpm dev:all         # both, through Turborepo
 pnpm build           # production builds
@@ -45,6 +45,43 @@ scripts then upload from the root. The region is set in `apps/web/vercel.json`
 (`fra1`, Paris).
 
 The scripts are not named `deploy`: `pnpm deploy` is a built-in pnpm command.
+
+## Clickable scenes (web)
+
+`/frame/phare` is a clickable scene, ported from protagonist's
+`prototypes/scene-cliquable`: the place's image fills the frame, each action is
+a clickable part of the image, and the characters, clickable too, open a
+dialogue. On a large screen, a panel picks the frame (phone, tablet, full
+screen) and shows the zones: the safe zone in cyan, the clickable ones in pink.
+
+- **The image is 9:16**, in `cover`: a phone crops its sides (9% each), a tablet
+  its top and bottom (12.5% each). What stays visible everywhere, minus the text
+  band at the bottom and the top bar, is the **safe zone** (`safe` in
+  `scene.json`).
+- **The composition is imposed** at generation by a guide sent with the prompt
+  (`sources/guide.png`): one colored rectangle per object, "VIDE" zones where
+  the characters will stand.
+- **The objects are detected afterwards** by Gemini in vision (`objects.json`),
+  then checked against the safe zone.
+- **The characters are layers**: generated alone on a green background, with the
+  background image sent for style and light, then keyed out. They are placed by
+  their feet (`anchor`) at a given height, so they can come and go without
+  changing the background.
+- Everything placed on the image is in % of the image, so it follows the cropping.
+
+| File | Role |
+| --- | --- |
+| `apps/web/scenes/<id>/scene.json` | The scene: safe zone, prompts, positions, texts and dialogues |
+| `apps/web/scenes/<id>/objects.json`, `characters.json` | Detected boxes, layers' proportions (generated) |
+| `apps/web/scenes/<id>/sources/` | Original images and the composition guide |
+| `apps/web/public/scenes/<id>/` | Converted images, served |
+| `apps/web/components/Scene.tsx` | The scene's page |
+| `apps/web/scripts/generate-scene.ts` | Generates the background, detects the objects, generates and keys the characters |
+
+`pnpm --filter @esquisse/web generate <id>` only does the steps whose result is
+missing; `fond`, `reperage` or `personnages` after the id redoes that step
+(redoing the background redoes everything). It needs `GEMINI_API_KEY` in
+`apps/web/.env.local`.
 
 ## The device frame (web)
 

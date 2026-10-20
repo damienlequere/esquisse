@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "typecheck": "next typegen && tsc"
+    "typecheck": "next typegen && tsc",
+    "generate": "node scripts/generate-scene.ts"
   },
   "dependencies": {
     "@esquisse/shared": "workspace:*",
@@ -19,6 +20,7 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "sharp": "catalog:",
     "tailwindcss": "catalog:",
     "typescript": "catalog:"
   }

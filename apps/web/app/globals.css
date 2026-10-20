@@ -50,6 +50,29 @@ body {
     }
   }
 
+  /* A frame chosen by a page's prototype tools (see components/Scene.tsx),
+     whatever the screen's width. */
+  #stage[data-frame="phone"] #device {
+    --ratio: 0.4615;
+    --max-height: 56rem;
+    border-width: 10px;
+    border-radius: 2.75rem;
+  }
+
+  #stage[data-frame="tablet"] #device {
+    --ratio: 0.75;
+    --max-height: 68rem;
+    border-width: 16px;
+    border-radius: 2rem;
+  }
+
+  #stage[data-frame="full"] #device {
+    width: 100vw;
+    height: 100dvh;
+    border: 0;
+    border-radius: 0;
+  }
+
   @media (prefers-color-scheme: dark) {
     #stage {
       background: var(--color-black);
