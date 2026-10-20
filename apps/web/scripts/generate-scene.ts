@@ -7,12 +7,12 @@
 // is redone; redoing the background also redoes what depends on it.
 //
 // The scene and the positions are in packages/shared/src/scenes/<id>, the
-// originals in apps/web/scenes/<id>/sources, and the converted images in each
-// app: apps/web/public/scenes/<id> and apps/mobile/assets/scenes/<id> (a new
-// scene's images must also be listed in apps/mobile/src/scenes.ts). Needs
-// GEMINI_API_KEY in apps/web/.env.local.
+// converted images in packages/shared/assets/scenes/<id> (a new scene's images
+// must also be listed in apps/web/scenes.ts and apps/mobile/src/scenes.ts), and
+// the originals in apps/web/scenes/<id>/sources. Needs GEMINI_API_KEY in
+// apps/web/.env.local.
 
-import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { Box, Character, CharacterAspects, Scene } from "@esquisse/shared";
 import sharp from "sharp";
@@ -28,14 +28,7 @@ const [id, ...steps] = process.argv.slice(2);
 if (id === undefined) throw new Error("Usage: node scripts/generate-scene.ts <id> [step…]");
 const DIR = join(WEB, "../../packages/shared/src/scenes", id);
 const SOURCES = join(WEB, "scenes", id, "sources");
-const MEDIA = join(WEB, "public", "scenes", id);
-const MOBILE_MEDIA = join(WEB, "../mobile/assets/scenes", id);
-
-// A converted image, for the web site, copied for the mobile app.
-const publish = (name: string) => {
-  copyFileSync(join(MEDIA, name), join(MOBILE_MEDIA, name));
-  console.log(`✓ ${name}, in public/scenes/${id} and the mobile app's assets`);
-};
+const MEDIA = join(WEB, "../../packages/shared/assets/scenes", id);
 
 const scene: Scene = JSON.parse(readFileSync(join(DIR, "scene.json"), "utf8"));
 
@@ -107,7 +100,7 @@ const generateBackground = async () => {
   });
   writeFileSync(join(SOURCES, "fond.jpg"), jpg);
   await sharp(jpg).resize({ width: 1440 }).webp({ quality: 82 }).toFile(join(MEDIA, "fond.webp"));
-  publish("fond.webp");
+  console.log(`✓ packages/shared/assets/scenes/${id}/fond.webp`);
 };
 
 const MARGIN = 0.02;
@@ -189,7 +182,7 @@ const generateCharacters = async () => {
       .resize({ height: 1000, withoutEnlargement: true })
       .webp({ quality: 85, alphaQuality: 90 })
       .toFile(join(MEDIA, `${c.id}.webp`));
-    publish(`${c.id}.webp`);
+    console.log(`✓ packages/shared/assets/scenes/${id}/${c.id}.webp`);
   }
   writeFileSync(join(DIR, "characters.json"), `${JSON.stringify(aspects, null, 2)}\n`);
 };
@@ -198,7 +191,6 @@ const generateCharacters = async () => {
 
 mkdirSync(SOURCES, { recursive: true });
 mkdirSync(MEDIA, { recursive: true });
-mkdirSync(MOBILE_MEDIA, { recursive: true });
 const asked = new Set(steps);
 for (const step of asked) {
   if (!["fond", "reperage", "personnages"].includes(step)) throw new Error(`Unknown step: ${step}`);

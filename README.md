@@ -76,8 +76,8 @@ on a phone, the ✦ button shows for a moment what is clickable.
 | `packages/shared/src/scenes/<id>/objects.json`, `characters.json` | Detected boxes, layers' proportions (generated) |
 | `packages/shared/src/scenes/index.ts` | The scenes, for both apps (`scenes.phare`), and their types |
 | `apps/web/scenes/<id>/sources/` | Original images and the composition guide |
-| `apps/web/public/scenes/<id>/`, `apps/mobile/assets/scenes/<id>/` | Converted images, for each app |
-| `apps/mobile/src/scenes.ts` | The images bundled in the mobile app, listed by hand (Metro needs each `require`) |
+| `packages/shared/assets/scenes/<id>/` | Converted images, for both apps |
+| `apps/web/scenes.ts`, `apps/mobile/src/scenes.ts` | Each app's list of the images, by hand: Next and Metro each need every import spelled out |
 | `apps/web/components/Scene.tsx`, `apps/mobile/src/components/Scene.tsx` | The scene, in each app |
 | `apps/web/scripts/generate-scene.ts` | Generates the background, detects the objects, generates and keys the characters |
 

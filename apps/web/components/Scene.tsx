@@ -8,6 +8,7 @@ import type {
   Scene as SceneData,
 } from "@esquisse/shared";
 import { type CSSProperties, useEffect, useRef, useState } from "react";
+import type { SceneImages } from "../scenes.ts";
 import styles from "./Scene.module.css";
 
 // Clickable scene: the background covers the frame, each object is one action,
@@ -29,13 +30,12 @@ export const Scene = ({
   scene,
   objects,
   aspects,
-  media,
+  images,
 }: {
   scene: SceneData;
   objects: ObjectBoxes;
   aspects: CharacterAspects;
-  // URL of the folder holding fond.webp and the characters' layers.
-  media: string;
+  images: SceneImages;
 }) => {
   const [rw = 9, rh = 16] = scene.imageRatio.split(":").map(Number);
   const [narration, setNarration] = useState({ title: scene.title, text: scene.intro, key: 0 });
@@ -102,7 +102,7 @@ export const Scene = ({
   return (
     <div className={styles.root}>
       <div className={styles.scene} style={{ "--image-ratio": rw / rh } as CSSProperties}>
-        <img className={styles.background} src={`${media}/fond.webp`} alt="" />
+        <img className={styles.background} src={images.background.src} alt="" />
         <div ref={layer} className={styles.layer}>
           {scene.objects.map((object) => {
             const box = objects[object.id];
@@ -141,7 +141,7 @@ export const Scene = ({
                 })}
                 onClick={(event) => open(character, event.currentTarget)}
               >
-                <img src={`${media}/${character.id}.webp`} alt="" />
+                <img src={images.characters[character.id]?.src} alt="" />
                 <span className={styles.tip}>{label}</span>
               </button>
             );
