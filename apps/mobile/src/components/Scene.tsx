@@ -1,4 +1,10 @@
-import type { Box, Character, SceneData } from "@esquisse/shared";
+import {
+  type Box,
+  type Character,
+  placeStyle,
+  type SceneData,
+  sceneLayout,
+} from "@esquisse/shared";
 import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
 import { cssInterop } from "nativewind";
@@ -19,16 +25,10 @@ import type { SceneImages } from "../scenes.ts";
 
 // Same scene as the web one (apps/web/components/Scene.tsx): the background
 // covers the screen, each object is one action, each character opens a dialogue.
-// Everything is placed in % of the image, so it follows the cropping.
+// Everything is placed in % of the image (see sceneLayout in packages/shared),
+// so it follows the cropping.
 
-const pct = (v: number) => `${v * 100}%` as const;
-const place = (box: Box) => ({
-  position: "absolute" as const,
-  left: pct(box.x0),
-  top: pct(box.y0),
-  width: pct(box.x1 - box.x0),
-  height: pct(box.y1 - box.y0),
-});
+const place = (box: Box) => ({ position: "absolute" as const, ...placeStyle(box) });
 
 // NativeWind styles only the components it knows.
 cssInterop(LinearGradient, { className: "style" });
@@ -55,16 +55,16 @@ const Tip = ({ label }: { label: string }) => (
 );
 
 export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }) => {
-  const { scene, objects, aspects } = data;
-  const [rw = 9, rh = 16] = scene.imageRatio.split(":").map(Number);
+  const { scene } = data;
+  const layout = sceneLayout(data);
   const insets = useSafeAreaInsets();
 
   // The image covers the screen, centered: cropped on the sides of a phone, at
   // the top and bottom of a tablet.
   const [screen, setScreen] = useState<LayoutRectangle>();
   const image = screen && {
-    width: Math.max(screen.width, (screen.height * rw) / rh),
-    height: Math.max(screen.height, (screen.width * rh) / rw),
+    width: Math.max(screen.width, screen.height * layout.ratio),
+    height: Math.max(screen.height, screen.width / layout.ratio),
   };
 
   const [narration, setNarration] = useState({ title: scene.title, text: scene.intro, key: 0 });
@@ -137,40 +137,33 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
         >
           <Image source={images.background} style={{ width: "100%", height: "100%" }} />
 
-          {scene.objects.map((object) => {
-            const box = objects[object.id];
-            if (box === undefined) return null;
-            return (
-              <Pressable
-                key={object.id}
-                accessibilityRole="button"
-                accessibilityLabel={object.label}
-                onPress={() => narrate(object.label, object.text)}
-                style={place(box)}
-              >
-                {({ pressed }) => (
-                  <>
-                    {(pressed || revealed) && (
-                      <Animated.View
-                        entering={FadeIn.duration(200)}
-                        exiting={FadeOut.duration(300)}
-                        className="absolute inset-0 rounded-xl border-2 border-amber-300/80 bg-amber-300/15"
-                      />
-                    )}
-                    {(pressed || revealed) && <Tip label={object.label} />}
-                  </>
-                )}
-              </Pressable>
-            );
-          })}
+          {layout.objects.map(({ object, box }) => (
+            <Pressable
+              key={object.id}
+              accessibilityRole="button"
+              accessibilityLabel={object.label}
+              onPress={() => narrate(object.label, object.text)}
+              style={place(box)}
+            >
+              {({ pressed }) => (
+                <>
+                  {(pressed || revealed) && (
+                    <Animated.View
+                      entering={FadeIn.duration(200)}
+                      exiting={FadeOut.duration(300)}
+                      className="absolute inset-0 rounded-xl border-2 border-amber-300/80 bg-amber-300/15"
+                    />
+                  )}
+                  {(pressed || revealed) && <Tip label={object.label} />}
+                </>
+              )}
+            </Pressable>
+          ))}
 
           {/* Characters: layers placed by their feet. */}
-          {scene.characters.map((character) => {
+          {layout.characters.map(({ character, box }) => {
             const source = images.characters[character.id];
             if (source === undefined) return null;
-            const { anchor, height } = character;
-            // Width as a fraction of the image's width: the image is not square.
-            const width = (height * (aspects[character.id] ?? 0.4) * rh) / rw;
             const label = `Parler à ${character.name}`;
             return (
               <Pressable
@@ -178,12 +171,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
                 accessibilityRole="button"
                 accessibilityLabel={label}
                 onPress={() => open(character)}
-                style={place({
-                  x0: anchor.x - width / 2,
-                  y0: anchor.y - height,
-                  x1: anchor.x + width / 2,
-                  y1: anchor.y,
-                })}
+                style={place(box)}
               >
                 {({ pressed }) => (
                   <>

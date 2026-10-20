@@ -1,43 +1,20 @@
 "use client";
 
-import type {
-  Box,
-  Character,
-  CharacterAspects,
-  ObjectBoxes,
-  Scene as SceneData,
-} from "@esquisse/shared";
+import { type Character, placeStyle, type SceneData, sceneLayout } from "@esquisse/shared";
 import { type CSSProperties, useEffect, useRef, useState } from "react";
 import type { SceneImages } from "../scenes.ts";
 import styles from "./Scene.module.css";
 
 // Clickable scene: the background covers the frame, each object is one action,
-// each character opens a dialogue. Everything is placed in % of the image, so it
-// follows the cropping.
-
-const pct = (v: number) => `${v * 100}%`;
-const place = (box: Box) => ({
-  left: pct(box.x0),
-  top: pct(box.y0),
-  width: pct(box.x1 - box.x0),
-  height: pct(box.y1 - box.y0),
-});
+// each character opens a dialogue. Everything is placed in % of the image (see
+// sceneLayout in packages/shared), so it follows the cropping.
 
 type Line = { text: string; player?: boolean };
 type Conversation = { character: Character; lines: Line[]; asked: string[] };
 
-export const Scene = ({
-  scene,
-  objects,
-  aspects,
-  images,
-}: {
-  scene: SceneData;
-  objects: ObjectBoxes;
-  aspects: CharacterAspects;
-  images: SceneImages;
-}) => {
-  const [rw = 9, rh = 16] = scene.imageRatio.split(":").map(Number);
+export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }) => {
+  const { scene } = data;
+  const layout = sceneLayout(data);
   const [narration, setNarration] = useState({ title: scene.title, text: scene.intro, key: 0 });
   const [conversation, setConversation] = useState<Conversation>();
   const narrate = (title: string, text: string) =>
@@ -101,31 +78,24 @@ export const Scene = ({
 
   return (
     <div className={styles.root}>
-      <div className={styles.scene} style={{ "--image-ratio": rw / rh } as CSSProperties}>
+      <div className={styles.scene} style={{ "--image-ratio": layout.ratio } as CSSProperties}>
         <img className={styles.background} src={images.background.src} alt="" />
         <div ref={layer} className={styles.layer}>
-          {scene.objects.map((object) => {
-            const box = objects[object.id];
-            if (box === undefined) return null;
-            return (
-              <button
-                key={object.id}
-                type="button"
-                className={styles.hotspot}
-                aria-label={object.label}
-                style={place(box)}
-                onClick={() => narrate(object.label, object.text)}
-              >
-                <span className={styles.tip}>{object.label}</span>
-              </button>
-            );
-          })}
+          {layout.objects.map(({ object, box }) => (
+            <button
+              key={object.id}
+              type="button"
+              className={styles.hotspot}
+              aria-label={object.label}
+              style={placeStyle(box)}
+              onClick={() => narrate(object.label, object.text)}
+            >
+              <span className={styles.tip}>{object.label}</span>
+            </button>
+          ))}
 
           {/* Characters: layers placed by their feet. */}
-          {scene.characters.map((character) => {
-            const { anchor, height } = character;
-            // Width as a fraction of the image's width: the image is not square.
-            const width = (height * (aspects[character.id] ?? 0.4) * rh) / rw;
+          {layout.characters.map(({ character, box }) => {
             const label = `Parler à ${character.name}`;
             return (
               <button
@@ -133,12 +103,7 @@ export const Scene = ({
                 type="button"
                 className={styles.character}
                 aria-label={label}
-                style={place({
-                  x0: anchor.x - width / 2,
-                  y0: anchor.y - height,
-                  x1: anchor.x + width / 2,
-                  y1: anchor.y,
-                })}
+                style={placeStyle(box)}
                 onClick={(event) => open(character, event.currentTarget)}
               >
                 <img src={images.characters[character.id]?.src} alt="" />

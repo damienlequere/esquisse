@@ -3,10 +3,8 @@ import type { Metadata } from "next";
 import { Scene } from "../../../components/Scene.tsx";
 import { sceneImages } from "../../../scenes.ts";
 
-const { scene, objects, aspects } = scenes.phare;
-
-export const metadata: Metadata = { title: scene.title };
+export const metadata: Metadata = { title: scenes.phare.scene.title };
 
 export default function PharePage() {
-  return <Scene scene={scene} objects={objects} aspects={aspects} images={sceneImages.phare} />;
+  return <Scene data={scenes.phare} images={sceneImages.phare} />;
 }

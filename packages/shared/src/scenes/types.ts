@@ -41,3 +41,8 @@ export type Scene = {
 // width / height ratio of each character's layer.
 export type ObjectBoxes = Record<string, Box>;
 export type CharacterAspects = Record<string, number>;
+
+// A scene and what the generator found in its images (see
+// apps/web/scripts/generate-scene.ts). The images are in packages/shared/assets,
+// listed by each app (apps/web/scenes.ts, apps/mobile/src/scenes.ts).
+export type SceneData = { scene: Scene; objects: ObjectBoxes; aspects: CharacterAspects };
