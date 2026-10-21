@@ -37,7 +37,7 @@ body {
     inset: -4rem;
     z-index: -1;
     background: var(--backdrop, none) center / cover;
-    filter: blur(12px) brightness(0.85) saturate(0.4);
+    filter: blur(12px) brightness(0.55) saturate(0.4);
   }
 
   #device {
@@ -48,9 +48,13 @@ body {
     --frame-height: min(100dvh - 2 * var(--margin), var(--max-height));
     height: var(--frame-height);
     width: min(max(var(--frame-height) * var(--ratio), 22.5rem), 100vw - 2 * var(--margin));
-    border: 10px solid var(--color-stone-400);
+    /* A dark bezel, which melts into the darkened backdrop, outlined by a thin
+       light edge, and lifted by a soft, wide shadow. */
+    border: 10px solid var(--color-stone-950);
     border-radius: 2.75rem;
-    box-shadow: var(--shadow-2xl);
+    box-shadow:
+      0 0 0 1px rgb(255 255 255 / 0.14),
+      0 2rem 5rem -1rem rgb(0 0 0 / 0.7);
   }
 
   /* Tablet, 3:4 proportions, on a large screen: even when short, it is wider
@@ -67,10 +71,6 @@ body {
   @media (prefers-color-scheme: dark) {
     #stage {
       background: var(--color-black);
-    }
-
-    #device {
-      border-color: var(--color-stone-700);
     }
   }
 }
