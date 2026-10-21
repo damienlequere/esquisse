@@ -92,7 +92,7 @@ The scenes are shown in a device frame: on a large screen with a mouse, a
 phone (9:19.5), or a tablet (3:4) from 1024 px wide; on a phone or a touch
 tablet, the whole screen. Everything lives in two places:
 
-- `apps/web/app/scene/layout.tsx`: the `#stage` and `#device` elements;
+- `apps/web/app/scene/[id]/layout.tsx`: the `#stage` and `#device` elements;
 - `apps/web/app/globals.css`: their styles, under a media query.
 
 Any route under `app/scene/` gets the frame. Dialogs and menus must open in

@@ -13,3 +13,7 @@ export type SceneImages = {
 export const sceneImages = {
   phare: { background: fond, characters: { gardienne, mousse } },
 } satisfies Record<string, SceneImages>;
+
+export type SceneId = keyof typeof sceneImages;
+
+export const isSceneId = (id: string): id is SceneId => Object.hasOwn(sceneImages, id);

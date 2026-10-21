@@ -12,8 +12,8 @@ body {
   }
 }
 
-/* Device frame (see app/scene/layout.tsx), only on a large enough screen with a
-   mouse: a phone or a touch tablet, even in landscape, uses the whole screen.
+/* Device frame (see app/scene/[id]/layout.tsx), only on a large enough screen
+   with a mouse: a phone or a touch tablet, even in landscape, uses the whole screen.
    The frame takes the full available height, with the device's proportions
    (without going below a readable width), within the window's width and a
    maximum height. */
@@ -24,6 +24,20 @@ body {
     align-items: center;
     justify-content: center;
     background: var(--color-stone-300);
+    /* Its own stacking context, so the backdrop stays above the body. */
+    position: relative;
+    isolation: isolate;
+  }
+
+  /* The scene's background (--backdrop, set by the layout), blurred, around the
+     frame. It overflows the window so the blur does not fade at the edges. */
+  #stage::before {
+    content: "";
+    position: fixed;
+    inset: -4rem;
+    z-index: -1;
+    background: var(--backdrop, none) center / cover;
+    filter: blur(12px) brightness(0.85) saturate(0.4);
   }
 
   #device {
