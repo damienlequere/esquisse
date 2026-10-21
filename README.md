@@ -25,7 +25,7 @@ eas init      # for builds on Expo's servers
 
 ```bash
 pnpm install
-pnpm dev             # web site: http://localhost:3000 (the scene: /frame/phare)
+pnpm dev             # web site: http://localhost:3000 (the scene: /scene/phare)
 pnpm dev:mobile      # Expo dev server: scan the QR code with Expo Go
 pnpm dev:all         # both, through Turborepo
 pnpm build           # production builds
@@ -48,11 +48,11 @@ The scripts are not named `deploy`: `pnpm deploy` is a built-in pnpm command.
 
 ## Clickable scenes
 
-`/frame/phare` on the web site, and the `phare` screen in the mobile app, is a
+`/scene/phare` on the web site, and in the mobile app, is a
 clickable scene, ported from protagonist's `prototypes/scene-cliquable`: the
 place's image fills the frame, each action is a clickable part of the image, and
 the characters, clickable too, open a dialogue. On the web, the frame adapts to the screen, like any page under
-`app/frame/`; in the mobile app, the scene takes the whole screen. With no hover
+`app/scene/`; in the mobile app, the scene takes the whole screen. With no hover
 on a phone, the ✦ button shows for a moment what is clickable.
 
 - **The image is 9:16**, in `cover`: a phone crops its sides (9% each), a tablet
@@ -88,20 +88,15 @@ missing; `fond`, `reperage` or `personnages` after the id redoes that step
 
 ## The device frame (web)
 
-`/frame` is an example page shown in a device frame: on a large
-screen with a mouse, a phone (9:19.5), or a tablet (3:4) from 1024 px wide; on a
-phone or a touch tablet, the whole screen. Everything lives in two places:
+The scenes are shown in a device frame: on a large screen with a mouse, a
+phone (9:19.5), or a tablet (3:4) from 1024 px wide; on a phone or a touch
+tablet, the whole screen. Everything lives in two places:
 
-- `apps/web/app/frame/layout.tsx`: the `#stage` and `#device` elements;
+- `apps/web/app/scene/layout.tsx`: the `#stage` and `#device` elements;
 - `apps/web/app/globals.css`: their styles, under a media query.
 
-Any route under `app/frame/` gets the frame. Dialogs and menus must open in
-`#device` (positioned), not on `body`: see the `Dialog` in
-`apps/web/components/Screen.tsx`.
-
-The mobile app has the same two screens, with the same Tailwind classes through
-NativeWind: `apps/mobile/src/app/index.tsx` (home) and `frame.tsx` (the example
-screen, full screen).
+Any route under `app/scene/` gets the frame. Dialogs and menus must open in
+`#device` (positioned), not on `body`.
 
 ## Notes
 

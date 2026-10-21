@@ -12,7 +12,7 @@ body {
   }
 }
 
-/* Device frame (see app/frame/layout.tsx), only on a large enough screen with a
+/* Device frame (see app/scene/layout.tsx), only on a large enough screen with a
    mouse: a phone or a touch tablet, even in landscape, uses the whole screen.
    The frame takes the full available height, with the device's proportions
    (without going below a readable width), within the window's width and a
