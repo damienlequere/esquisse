@@ -1,24 +1,29 @@
 "use client";
 
-import { type Character, placeStyle, type SceneData, sceneLayout } from "@esquisse/shared";
-import { type CSSProperties, useEffect, useRef, useState } from "react";
+import {
+  type Character,
+  initialSceneState,
+  placeStyle,
+  playScene,
+  REVEAL_MS,
+  remainingTopics,
+  type SceneData,
+  sceneLayout,
+  sceneText,
+} from "@esquisse/shared";
+import { type CSSProperties, useEffect, useReducer, useRef } from "react";
 import type { SceneImages } from "../scenes.ts";
 import styles from "./Scene.module.css";
 
 // Clickable scene: the background covers the frame, each object is one action,
 // each character opens a dialogue. Everything is placed in % of the image (see
-// sceneLayout in packages/shared), so it follows the cropping.
-
-type Line = { text: string; player?: boolean };
-type Conversation = { character: Character; lines: Line[]; asked: string[] };
+// sceneLayout in packages/shared), so it follows the cropping. What it shows as
+// it is played is playScene's, shared with the mobile app.
 
 export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }) => {
   const { scene } = data;
   const layout = sceneLayout(data);
-  const [narration, setNarration] = useState({ title: scene.title, text: scene.intro, key: 0 });
-  const [conversation, setConversation] = useState<Conversation>();
-  const narrate = (title: string, text: string) =>
-    setNarration((n) => ({ title, text, key: n.key + 1 }));
+  const [{ narration, conversation }, dispatch] = useReducer(playScene, data, initialSceneState);
 
   // ── Dialogue: an open conversation, until it is left ─────────────────────────
 
@@ -28,23 +33,12 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
 
   const open = (character: Character, from: HTMLButtonElement) => {
     returnFocus.current = from;
-    setConversation({ character, lines: [{ text: character.dialogue.greeting }], asked: [] });
+    dispatch({ type: "talk", character });
   };
   const close = () => {
-    if (conversation === undefined) return;
-    setConversation(undefined);
-    narrate(conversation.character.name, conversation.character.dialogue.farewell);
+    dispatch({ type: "leave" });
     returnFocus.current?.focus();
   };
-  const ask = (ask: string, answer: string) =>
-    setConversation(
-      (c) =>
-        c && {
-          ...c,
-          lines: [...c.lines, { text: `— ${ask}`, player: true }, { text: answer }],
-          asked: [...c.asked, ask],
-        },
-    );
 
   useEffect(() => {
     if (conversation === undefined) return;
@@ -52,15 +46,18 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
     linesRef.current?.lastElementChild?.scrollIntoView({ block: "nearest" });
   }, [conversation]);
 
-  const closeRef = useRef(close);
-  closeRef.current = close;
+  // Escape leaves the conversation.
+  const inConversation = conversation !== undefined;
   useEffect(() => {
+    if (!inConversation) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") closeRef.current();
+      if (event.key !== "Escape") return;
+      dispatch({ type: "leave" });
+      returnFocus.current?.focus();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  }, [inConversation]);
 
   // ── Reveal what is clickable (no hover with a finger) ────────────────────────
 
@@ -73,12 +70,16 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
     void el.offsetWidth;
     el.setAttribute("data-revealed", "");
     clearTimeout(revealTimer.current);
-    revealTimer.current = setTimeout(() => el.removeAttribute("data-revealed"), 1600);
+    revealTimer.current = setTimeout(() => el.removeAttribute("data-revealed"), REVEAL_MS);
   };
+  useEffect(() => () => clearTimeout(revealTimer.current), []);
 
   return (
     <div className={styles.root}>
-      <div className={styles.scene} style={{ "--image-ratio": layout.ratio } as CSSProperties}>
+      <div
+        className={styles.scene}
+        style={{ "--image-ratio": layout.ratio, "--reveal": `${REVEAL_MS}ms` } as CSSProperties}
+      >
         <img className={styles.background} src={images.background.src} alt="" />
         <div ref={layer} className={styles.layer}>
           {layout.objects.map(({ object, box }) => (
@@ -88,7 +89,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
               className={styles.hotspot}
               aria-label={object.label}
               style={placeStyle(box)}
-              onClick={() => narrate(object.label, object.text)}
+              onClick={() => dispatch({ type: "look", title: object.label, text: object.text })}
             >
               <span className={styles.tip}>{object.label}</span>
             </button>
@@ -96,7 +97,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
 
           {/* Characters: layers placed by their feet. */}
           {layout.characters.map(({ character, box }) => {
-            const label = `Parler à ${character.name}`;
+            const label = sceneText.talkTo(character.name);
             return (
               <button
                 key={character.id}
@@ -119,7 +120,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
         <button
           type="button"
           className={styles.reveal}
-          aria-label="Révéler ce qui est cliquable"
+          aria-label={sceneText.reveal}
           onClick={reveal}
         >
           ✦
@@ -158,19 +159,17 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
               ))}
             </div>
             <div ref={choicesRef} className={styles.choices}>
-              {conversation.character.dialogue.topics
-                .filter((topic) => !conversation.asked.includes(topic.ask))
-                .map((topic) => (
-                  <button
-                    key={topic.ask}
-                    type="button"
-                    onClick={() => ask(topic.ask, topic.answer)}
-                  >
-                    {topic.ask}
-                  </button>
-                ))}
+              {remainingTopics(conversation).map((topic) => (
+                <button
+                  key={topic.ask}
+                  type="button"
+                  onClick={() => dispatch({ type: "ask", topic })}
+                >
+                  {topic.ask}
+                </button>
+              ))}
               <button type="button" onClick={close}>
-                Au revoir.
+                {sceneText.goodbye}
               </button>
             </div>
           </div>

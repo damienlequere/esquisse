@@ -1,4 +1,4 @@
-import type { Box, Character, SceneData, SceneObject } from "./types.ts";
+import type { Box, Character, Scene, SceneData, SceneObject } from "./types.ts";
 
 // Where each element of a scene goes, in fractions of the image: computed once
 // for both apps, which only draw the boxes.
@@ -13,9 +13,27 @@ export type SceneLayout = {
 // Width / height of a layer whose proportions are not known yet.
 const DEFAULT_ASPECT = 0.4;
 
-export const sceneLayout = ({ scene, objects, aspects }: SceneData): SceneLayout => {
+// Width / height of a scene's image, from its "9:16" ratio.
+export const sceneRatio = (scene: Scene) => {
   const [rw = 9, rh = 16] = scene.imageRatio.split(":").map(Number);
-  const ratio = rw / rh;
+  return rw / rh;
+};
+
+// A character is placed by its feet. Its width, as a fraction of the image's
+// width, follows from its height and its layer's proportions (aspect): the image
+// is not square.
+export const characterBox = ({ anchor, height }: Character, aspect: number, ratio: number) => {
+  const width = (height * aspect) / ratio;
+  return {
+    x0: anchor.x - width / 2,
+    y0: anchor.y - height,
+    x1: anchor.x + width / 2,
+    y1: anchor.y,
+  } satisfies Box;
+};
+
+export const sceneLayout = ({ scene, objects, aspects }: SceneData): SceneLayout => {
+  const ratio = sceneRatio(scene);
   return {
     ratio,
     // An object not found in the image is left out.
@@ -23,22 +41,10 @@ export const sceneLayout = ({ scene, objects, aspects }: SceneData): SceneLayout
       const box = objects[object.id];
       return box === undefined ? [] : [{ object, box }];
     }),
-    // A character is placed by its feet. Its width, as a fraction of the image's
-    // width, follows from its height and its layer's proportions: the image is
-    // not square.
-    characters: scene.characters.map((character) => {
-      const { anchor, height } = character;
-      const width = (height * (aspects[character.id] ?? DEFAULT_ASPECT)) / ratio;
-      return {
-        character,
-        box: {
-          x0: anchor.x - width / 2,
-          y0: anchor.y - height,
-          x1: anchor.x + width / 2,
-          y1: anchor.y,
-        },
-      };
-    }),
+    characters: scene.characters.map((character) => ({
+      character,
+      box: characterBox(character, aspects[character.id] ?? DEFAULT_ASPECT, ratio),
+    })),
   };
 };
 

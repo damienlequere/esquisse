@@ -15,6 +15,9 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { Box, Character, CharacterAspects, Scene } from "@esquisse/shared";
+// Not the package's root: it imports the scenes' JSON, which node does not
+// without an import attribute.
+import { characterBox, sceneRatio } from "@esquisse/shared/layout";
 import sharp from "sharp";
 import { detectBoxes, generateImage } from "./gemini.ts";
 
@@ -41,16 +44,9 @@ const pct = (v: number) => `${Math.round(v * 100)} %`;
 const where = (b: Box) =>
   `de ${pct(b.x0)} à ${pct(b.x1)} de la largeur, de ${pct(b.y0)} à ${pct(b.y1)} de la hauteur`;
 
-// Zone a character will take, from its anchor and an estimated width.
-const characterZone = (c: Character, aspect = 0.38): Box => {
-  const w = (c.height * aspect * 16) / 9;
-  return {
-    x0: c.anchor.x - w / 2,
-    y0: c.anchor.y - c.height,
-    x1: c.anchor.x + w / 2,
-    y1: c.anchor.y,
-  };
-};
+// Zone a character will take, before its layer exists: placed like in the
+// scene, with an estimated aspect.
+const characterZone = (c: Character) => characterBox(c, 0.38, sceneRatio(scene));
 
 // ── Composition guide ────────────────────────────────────────────────────────
 

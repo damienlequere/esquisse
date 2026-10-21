@@ -118,11 +118,11 @@
 }
 
 .layer[data-revealed] .hotspot {
-  animation: glow 1.6s ease-in-out;
+  animation: glow var(--reveal) ease-in-out;
 }
 
 .layer[data-revealed] .character img {
-  animation: glow-img 1.6s ease-in-out;
+  animation: glow-img var(--reveal) ease-in-out;
 }
 
 @keyframes glow {

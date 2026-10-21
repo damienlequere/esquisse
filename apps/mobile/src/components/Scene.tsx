@@ -1,14 +1,18 @@
 import {
   type Box,
-  type Character,
+  initialSceneState,
   placeStyle,
+  playScene,
+  REVEAL_MS,
+  remainingTopics,
   type SceneData,
   sceneLayout,
+  sceneText,
 } from "@esquisse/shared";
 import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
 import { cssInterop } from "nativewind";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 import {
   BackHandler,
   Image,
@@ -26,19 +30,14 @@ import type { SceneImages } from "../scenes.ts";
 // Same scene as the web one (apps/web/components/Scene.tsx): the background
 // covers the screen, each object is one action, each character opens a dialogue.
 // Everything is placed in % of the image (see sceneLayout in packages/shared),
-// so it follows the cropping.
+// so it follows the cropping. What it shows as it is played is playScene's,
+// shared with the web site.
 
 const place = (box: Box) => ({ position: "absolute" as const, ...placeStyle(box) });
 
 // NativeWind styles only the components it knows.
 cssInterop(LinearGradient, { className: "style" });
 cssInterop(Animated.View, { className: "style" });
-
-// How long the ✦ button shows what is clickable.
-const REVEAL_MS = 1600;
-
-type Line = { text: string; player?: boolean };
-type Conversation = { character: Character; lines: Line[]; asked: string[] };
 
 // The action's label, above what it names, centered and on one line even when
 // wider than it.
@@ -67,9 +66,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
     height: Math.max(screen.height, screen.width / layout.ratio),
   };
 
-  const [narration, setNarration] = useState({ title: scene.title, text: scene.intro, key: 0 });
-  const narrate = (title: string, text: string) =>
-    setNarration((n) => ({ title, text, key: n.key + 1 }));
+  const [{ narration, conversation }, dispatch] = useReducer(playScene, data, initialSceneState);
 
   // Reveal what is clickable: there is no hover with a finger.
   const [revealed, setRevealed] = useState(false);
@@ -83,34 +80,15 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
 
   // ── Dialogue: an open conversation, until it is left ─────────────────────────
 
-  const [conversation, setConversation] = useState<Conversation>();
   const lines = useRef<ScrollView>(null);
-
-  const open = (character: Character) =>
-    setConversation({ character, lines: [{ text: character.dialogue.greeting }], asked: [] });
-  const close = () => {
-    if (conversation === undefined) return;
-    setConversation(undefined);
-    narrate(conversation.character.name, conversation.character.dialogue.farewell);
-  };
-  const ask = (ask: string, answer: string) =>
-    setConversation(
-      (c) =>
-        c && {
-          ...c,
-          lines: [...c.lines, { text: `— ${ask}`, player: true }, { text: answer }],
-          asked: [...c.asked, ask],
-        },
-    );
+  const close = () => dispatch({ type: "leave" });
 
   // Android's back button leaves the conversation, not the scene.
-  const closeRef = useRef(close);
-  closeRef.current = close;
   const inConversation = conversation !== undefined;
   useEffect(() => {
     if (!inConversation || Platform.OS !== "android") return;
     const sub = BackHandler.addEventListener("hardwareBackPress", () => {
-      closeRef.current();
+      dispatch({ type: "leave" });
       return true;
     });
     return () => sub.remove();
@@ -142,7 +120,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
               key={object.id}
               accessibilityRole="button"
               accessibilityLabel={object.label}
-              onPress={() => narrate(object.label, object.text)}
+              onPress={() => dispatch({ type: "look", title: object.label, text: object.text })}
               style={place(box)}
             >
               {({ pressed }) => (
@@ -164,13 +142,13 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
           {layout.characters.map(({ character, box }) => {
             const source = images.characters[character.id];
             if (source === undefined) return null;
-            const label = `Parler à ${character.name}`;
+            const label = sceneText.talkTo(character.name);
             return (
               <Pressable
                 key={character.id}
                 accessibilityRole="button"
                 accessibilityLabel={label}
-                onPress={() => open(character)}
+                onPress={() => dispatch({ type: "talk", character })}
                 style={place(box)}
               >
                 {({ pressed }) => (
@@ -214,7 +192,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
         </Text>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Révéler ce qui est cliquable"
+          accessibilityLabel={sceneText.reveal}
           onPress={reveal}
           className="h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-stone-950/50 active:bg-stone-950/80"
         >
@@ -252,7 +230,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
         >
           <Pressable
             className="absolute inset-0"
-            accessibilityLabel="Au revoir."
+            accessibilityLabel={sceneText.goodbye}
             accessibilityRole="button"
             onPress={close}
           />
@@ -283,16 +261,14 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
                 </Text>
               ))}
               <View className="mt-3 gap-1.5">
-                {conversation.character.dialogue.topics
-                  .filter((topic) => !conversation.asked.includes(topic.ask))
-                  .map((topic) => (
-                    <Choice
-                      key={topic.ask}
-                      label={topic.ask}
-                      onPress={() => ask(topic.ask, topic.answer)}
-                    />
-                  ))}
-                <Choice label="Au revoir." onPress={close} />
+                {remainingTopics(conversation).map((topic) => (
+                  <Choice
+                    key={topic.ask}
+                    label={topic.ask}
+                    onPress={() => dispatch({ type: "ask", topic })}
+                  />
+                ))}
+                <Choice label={sceneText.goodbye} onPress={close} />
               </View>
             </ScrollView>
           </Animated.View>
