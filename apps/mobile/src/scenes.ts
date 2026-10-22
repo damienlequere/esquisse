@@ -1,14 +1,21 @@
+// Written by packages/generator/src/generate-scene.ts: do not edit by hand.
+
 import type { ImageSourcePropType } from "react-native";
 
 // The scenes' images, bundled with the app from packages/shared/assets, like the
-// web site's (apps/web/scenes.ts): Metro needs each require spelled out, so a new
-// scene's images are listed here by hand.
+// web site's (apps/web/scenes.ts): Metro needs each require spelled out.
 export type SceneImages = {
   background: ImageSourcePropType;
   characters: Record<string, ImageSourcePropType>;
 };
 
 export const sceneImages = {
+  cave: {
+    background: require("@esquisse/shared/assets/scenes/cave/fond.webp"),
+    characters: {
+      vigneron: require("@esquisse/shared/assets/scenes/cave/vigneron.webp"),
+    },
+  },
   phare: {
     background: require("@esquisse/shared/assets/scenes/phare/fond.webp"),
     characters: {
@@ -17,3 +24,7 @@ export const sceneImages = {
     },
   },
 } satisfies Record<string, SceneImages>;
+
+export type SceneId = keyof typeof sceneImages;
+
+export const isSceneId = (id: string): id is SceneId => Object.hasOwn(sceneImages, id);

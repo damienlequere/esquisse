@@ -15,6 +15,7 @@
     "y1": 0.71
   },
   "style": "Peinture numérique d'illustration de livre d'aventure, gouache et pinceau sec, contours doux, palette de bleus nuit et d'ocres chauds, lumière dorée d'une lampe à pétrole qui contraste avec la nuit bleue au hublot. Atmosphère calme, mystérieuse, un peu inquiète. Aucun texte, lettre, chiffre, signature ni logo ; pas de photoréalisme ni de rendu 3D ; pas de cadre ni de bordure.",
+  "light": "lampe à pétrole chaude sur le côté, reflets bleus de la nuit",
   "background": {
     "prompt": "La salle de veille à l'intérieur d'un vieux phare breton, la nuit, vue de face à hauteur d'homme. Murs de pierre courbes, chaulés et écaillés, plafond bas à poutres. Le sol de dalles occupe tout le tiers inférieur de l'image, vide et dégagé au centre. La pièce est vide de toute personne et de tout animal. Entre l’escalier et la petite table, rien ne touche le sol : ni meuble, ni pied, ni objet."
   },

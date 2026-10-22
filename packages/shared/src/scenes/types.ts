@@ -26,12 +26,16 @@ export type Character = {
 };
 
 export type Scene = {
+  // What the scene was written from, by the generator (see its ecriture step).
+  brief?: string;
   title: string;
   intro: string;
   imageRatio: string;
   // The part of the image visible in every frame, minus the top bar and the text band.
   safe: Box;
   style: string;
+  // The scene's light, for the characters' layers to match the background.
+  light: string;
   background: { prompt: string };
   objects: SceneObject[];
   characters: Character[];
@@ -43,6 +47,6 @@ export type ObjectBoxes = Record<string, Box>;
 export type CharacterAspects = Record<string, number>;
 
 // A scene and what the generator found in its images (see
-// apps/web/scripts/generate-scene.ts). The images are in packages/shared/assets,
+// packages/generator/src/generate-scene.ts). The images are in packages/shared/assets,
 // listed by each app (apps/web/scenes.ts, apps/mobile/src/scenes.ts).
 export type SceneData = { scene: Scene; objects: ObjectBoxes; aspects: CharacterAspects };

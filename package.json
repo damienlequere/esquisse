@@ -10,6 +10,7 @@
     "dev": "turbo run dev --filter=@esquisse/web",
     "dev:mobile": "pnpm --filter @esquisse/mobile start",
     "dev:all": "turbo run dev",
+    "generate": "pnpm --filter @esquisse/generator generate",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
     "lint": "biome check .",

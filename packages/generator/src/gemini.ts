@@ -76,7 +76,7 @@ const imageCall = async (apiKey: string, request: ImageRequest): Promise<Buffer>
       store: false,
     }),
   });
-  const body: InteractionResponse | undefined = await response.json().catch(() => undefined);
+  const body = (await response.json().catch(() => undefined)) as InteractionResponse | undefined;
   const message = body?.error?.message ?? body?.errors?.[0]?.message;
   if (!response.ok) throw new GeminiError(response, message ?? "error");
   if (message !== undefined) throw new Error(`Gemini: ${message}`);
@@ -146,7 +146,7 @@ const detectCall = async (
       }),
     },
   );
-  const body: ContentResponse | undefined = await response.json().catch(() => undefined);
+  const body = (await response.json().catch(() => undefined)) as ContentResponse | undefined;
   if (!response.ok) throw new GeminiError(response, body?.error?.message ?? "error");
   const text = body?.candidates?.[0]?.content?.parts?.find((p) => p.text)?.text;
   if (text === undefined) throw new Error("Gemini: no text in the response");

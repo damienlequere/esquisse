@@ -1,56 +1,67 @@
-// Generates the background and the characters of a scene's scene.json, then
-// detects where the objects really are in the background.
+// Writes a scene's scene.json from a brief, generates its background and its
+// characters, then detects where the objects really are in the background.
 //
-//   node scripts/generate-scene.ts <id> [fond] [reperage] [personnages]
+//   pnpm generate <id> ["brief"] [ecriture] [fond] [reperage] [personnages]
 //
 // Without a step, only the steps whose result is missing are done. A named step
-// is redone; redoing the background also redoes what depends on it.
+// is redone, and so is what depends on it: a brief rewrites the scene, and
+// rewriting the scene or redoing the background redoes everything after.
 //
 // The scene and the positions are in packages/shared/src/scenes/<id>, the
-// converted images in packages/shared/assets/scenes/<id> (a new scene's images
-// must also be listed in apps/web/scenes.ts and apps/mobile/src/scenes.ts), and
-// the originals in apps/web/scenes/<id>/sources. Needs GEMINI_API_KEY in
-// apps/web/.env.local.
+// converted images in packages/shared/assets/scenes/<id>, and the originals in
+// packages/generator/sources/<id>. Once done, the scene is listed for both apps
+// (see registry.ts). Needs ANTHROPIC_API_KEY (to write) and GEMINI_API_KEY (for
+// the images), in packages/generator/.env.local or .env (see env.ts).
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { Box, Character, CharacterAspects, Scene } from "@esquisse/shared";
-// Not the package's root: it imports the scenes' JSON, which node does not
-// without an import attribute.
-import { characterBox, sceneRatio } from "@esquisse/shared/layout";
 import sharp from "sharp";
+import { characterZone, inside, overlap, pct, sceneProblems } from "./check-scene.ts";
+import { apiKey } from "./env.ts";
 import { detectBoxes, generateImage } from "./gemini.ts";
+import { writeRegistries } from "./registry.ts";
+import { writeScene } from "./write-scene.ts";
 
-const WEB = join(import.meta.dirname, "..");
+const GENERATOR = join(import.meta.dirname, "..");
+const ROOT = join(GENERATOR, "../..");
 const IMAGE_MODEL = "gemini-nano-banana-2.1";
 const VISION_MODEL = "gemini-3.8-flash";
 // Size of the composition guide, in 9:16.
 const GUIDE = { width: 1152, height: 2048 };
 
-const [id, ...steps] = process.argv.slice(2);
-if (id === undefined) throw new Error("Usage: node scripts/generate-scene.ts <id> [step…]");
-const DIR = join(WEB, "../../packages/shared/src/scenes", id);
-const SOURCES = join(WEB, "scenes", id, "sources");
-const MEDIA = join(WEB, "../../packages/shared/assets/scenes", id);
+const STEPS = ["ecriture", "fond", "reperage", "personnages"];
 
-const scene: Scene = JSON.parse(readFileSync(join(DIR, "scene.json"), "utf8"));
+const [id, ...args] = process.argv.slice(2);
+if (id === undefined) {
+  throw new Error('Usage: pnpm generate <id> ["brief"] [step…]');
+}
+// The id is a folder, a URL and a name in the registries' imports.
+if (!/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/.test(id)) throw new Error(`Invalid id: ${id} (kebab-case)`);
+// The brief is the argument with spaces, so that a mistyped step is not taken
+// for one and does not rewrite the scene.
+const steps = new Set(args.filter((a) => STEPS.includes(a)));
+const briefs = args.filter((a) => !STEPS.includes(a));
+for (const a of briefs) if (!/\s/.test(a)) throw new Error(`Unknown step: ${a}`);
+if (briefs.length > 1) throw new Error("Only one brief, in quotes.");
+const brief = briefs[0];
+const DIR = join(ROOT, "packages/shared/src/scenes", id);
+const SOURCES = join(GENERATOR, "sources", id);
+const MEDIA = join(ROOT, "packages/shared/assets/scenes", id);
+const SCENE = join(DIR, "scene.json");
 
-const envFile = join(WEB, ".env.local");
-if (existsSync(envFile)) process.loadEnvFile(envFile);
-const apiKey = process.env.GEMINI_API_KEY;
-if (!apiKey) throw new Error("GEMINI_API_KEY is missing from apps/web/.env.local.");
+// Checked before anything is paid for: the images come after the writing.
+const geminiKey = apiKey("GEMINI_API_KEY");
 
-const pct = (v: number) => `${Math.round(v * 100)} %`;
+// Set once the scene is written (or read, if it already is).
+let scene: Scene;
+
 const where = (b: Box) =>
   `de ${pct(b.x0)} à ${pct(b.x1)} de la largeur, de ${pct(b.y0)} à ${pct(b.y1)} de la hauteur`;
 
-// Zone a character will take, before its layer exists: placed like in the
-// scene, with an estimated aspect.
-const characterZone = (c: Character) => characterBox(c, 0.38, sceneRatio(scene));
-
 // ── Composition guide ────────────────────────────────────────────────────────
 
-const COLORS = ["#d94f30", "#2f7fd9", "#d9a730"];
+const COLORS = ["#d94f30", "#2f7fd9", "#d9a730", "#8f4fd9"];
 
 const guideSvg = () => {
   const { width: W, height: H } = GUIDE;
@@ -65,11 +76,28 @@ const guideSvg = () => {
   <rect x="0" y="${floor * H}" width="${W}" height="${(1 - floor) * H}" fill="#c9bfae"/>
   <text x="${W / 2}" y="${H * 0.93}" font-size="48" font-family="sans-serif" text-anchor="middle" fill="#555">SOL</text>
   ${scene.objects.map((o, i) => rect(o.zone, `fill="${COLORS[i % COLORS.length]}" fill-opacity="0.85"`) + label(o.zone, o.id.toUpperCase())).join("\n  ")}
-  ${scene.characters.map((c) => rect(characterZone(c), `fill="url(#h)" stroke="#777" stroke-width="4"`) + label(characterZone(c), "VIDE")).join("\n  ")}
+  ${scene.characters.map((c) => rect(characterZone(scene, c), `fill="url(#h)" stroke="#777" stroke-width="4"`) + label(characterZone(scene, c), "VIDE")).join("\n  ")}
 </svg>`;
 };
 
 // ── Steps ────────────────────────────────────────────────────────────────────
+
+const write = async () => {
+  const from = brief ?? (existsSync(SCENE) ? readScene().brief : undefined);
+  if (from === undefined) {
+    throw new Error(`No brief to write ${id} from: pnpm generate ${id} "brief"`);
+  }
+  const { scene, problems } = await writeScene(from, apiKey("ANTHROPIC_API_KEY"));
+  writeFileSync(SCENE, `${JSON.stringify(scene, null, 2)}\n`);
+  console.log(`✓ packages/shared/src/scenes/${id}/scene.json`);
+  if (problems.length > 0) {
+    throw new Error(
+      `The composition still does not hold; fix scene.json by hand, then run again without a brief:\n  ${problems.join("\n  ")}`,
+    );
+  }
+};
+
+const readScene = (): Scene => JSON.parse(readFileSync(SCENE, "utf8"));
 
 const backgroundPrompt = () =>
   [
@@ -87,7 +115,7 @@ const generateBackground = async () => {
   const guide = await sharp(Buffer.from(guideSvg())).png().toBuffer();
   writeFileSync(join(SOURCES, "guide.png"), guide);
   console.log("Generating the background…");
-  const jpg = await generateImage(apiKey, {
+  const jpg = await generateImage(geminiKey, {
     model: IMAGE_MODEL,
     prompt: backgroundPrompt(),
     references: [{ mimeType: "image/png", data: guide }],
@@ -99,19 +127,10 @@ const generateBackground = async () => {
   console.log(`✓ packages/shared/assets/scenes/${id}/fond.webp`);
 };
 
-const MARGIN = 0.02;
-const inside = (b: Box, s: Box) =>
-  b.x0 >= s.x0 - MARGIN && b.y0 >= s.y0 - MARGIN && b.x1 <= s.x1 + MARGIN && b.y1 <= s.y1 + MARGIN;
-const overlap = (a: Box, b: Box) => {
-  const w = Math.max(0, Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0));
-  const h = Math.max(0, Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0));
-  return (w * h) / ((a.x1 - a.x0) * (a.y1 - a.y0));
-};
-
 const locate = async () => {
   console.log(`Detecting the objects with ${VISION_MODEL}…`);
   const boxes = await detectBoxes(
-    apiKey,
+    geminiKey,
     VISION_MODEL,
     readFileSync(join(SOURCES, "fond.jpg")),
     scene.objects,
@@ -139,7 +158,7 @@ const characterPrompt = (c: Character) =>
     scene.style,
     `Un seul personnage : ${c.paint}.`,
     "Il est représenté en pied, entier de la tête aux pieds, centré, sur un fond uni vert chroma pur (#00FF00), sans aucun décor, sans sol et sans ombre portée. Aucun vert dans ses vêtements ni dans ce qu'il tient.",
-    "L'image jointe est le décor où il se tiendra : même style de peinture, même touche et même lumière (lampe à pétrole chaude sur le côté, reflets bleus de la nuit), vu à la même hauteur que le décor.",
+    `L'image jointe est le décor où il se tiendra : même style de peinture, même touche et même lumière (${scene.light}), vu à la même hauteur que le décor.`,
   ].join("\n");
 
 // Green screen keying: transparent above a "greenness" threshold, faded below,
@@ -164,7 +183,7 @@ const generateCharacters = async () => {
   const aspects: CharacterAspects = {};
   for (const c of scene.characters) {
     console.log(`Generating ${c.id}…`);
-    const jpg = await generateImage(apiKey, {
+    const jpg = await generateImage(geminiKey, {
       model: IMAGE_MODEL,
       prompt: characterPrompt(c),
       references: [{ mimeType: "image/jpeg", data: background }],
@@ -185,16 +204,21 @@ const generateCharacters = async () => {
 
 // ── Run ──────────────────────────────────────────────────────────────────────
 
+mkdirSync(DIR, { recursive: true });
 mkdirSync(SOURCES, { recursive: true });
 mkdirSync(MEDIA, { recursive: true });
-const asked = new Set(steps);
-for (const step of asked) {
-  if (!["fond", "reperage", "personnages"].includes(step)) throw new Error(`Unknown step: ${step}`);
-}
 const redo = (step: string, output: string, after?: boolean) =>
-  asked.has(step) || after === true || !existsSync(output);
+  steps.has(step) || after === true || !existsSync(output);
 
-const background = redo("fond", join(MEDIA, "fond.webp"));
+const written = brief !== undefined || redo("ecriture", SCENE);
+if (written) await write();
+scene = readScene();
+// A scene written by hand is checked too, before any image is paid for.
+const problems = sceneProblems(scene);
+if (problems.length > 0) console.log(`⚠ scene.json:\n  ${problems.join("\n  ")}`);
+
+const background = redo("fond", join(MEDIA, "fond.webp"), written);
 if (background) await generateBackground();
 if (redo("reperage", join(DIR, "objects.json"), background)) await locate();
 if (redo("personnages", join(DIR, "characters.json"), background)) await generateCharacters();
+console.log(`✓ Scenes listed for both apps: ${writeRegistries().join(", ")}`);
