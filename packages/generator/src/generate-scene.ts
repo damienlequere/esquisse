@@ -69,7 +69,11 @@ const guideSvg = () => {
     `<rect x="${b.x0 * W}" y="${b.y0 * H}" width="${(b.x1 - b.x0) * W}" height="${(b.y1 - b.y0) * H}" ${attrs}/>`;
   const label = (b: Box, text: string) =>
     `<text x="${((b.x0 + b.x1) / 2) * W}" y="${((b.y0 + b.y1) / 2) * H}" font-size="44" font-family="sans-serif" font-weight="bold" text-anchor="middle" fill="#000">${text}</text>`;
-  const floor = Math.min(...scene.characters.map((c) => c.anchor.y - c.height * 0.1));
+  // Without characters, the floor is the image's lower third.
+  const floor =
+    scene.characters.length > 0
+      ? Math.min(...scene.characters.map((c) => c.anchor.y - c.height * 0.1))
+      : 2 / 3;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}">
   <defs><pattern id="h" width="40" height="40" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="40" stroke="#999" stroke-width="8"/></pattern></defs>
   <rect width="${W}" height="${H}" fill="#e8e4dc"/>
@@ -123,7 +127,7 @@ const generateBackground = async () => {
     imageSize: "2K",
   });
   writeFileSync(join(SOURCES, "fond.jpg"), jpg);
-  await sharp(jpg).resize({ width: 1440 }).webp({ quality: 82 }).toFile(join(MEDIA, "fond.webp"));
+  await sharp(jpg).resize({ width: 1440 }).webp({ quality: 90 }).toFile(join(MEDIA, "fond.webp"));
   console.log(`✓ packages/shared/assets/scenes/${id}/fond.webp`);
 };
 
@@ -195,7 +199,7 @@ const generateCharacters = async () => {
     aspects[c.id] = info.width / info.height;
     await sharp(data)
       .resize({ height: 1000, withoutEnlargement: true })
-      .webp({ quality: 85, alphaQuality: 90 })
+      .webp({ quality: 90, alphaQuality: 90 })
       .toFile(join(MEDIA, `${c.id}.webp`));
     console.log(`✓ packages/shared/assets/scenes/${id}/${c.id}.webp`);
   }

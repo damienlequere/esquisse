@@ -1,0 +1,59 @@
+{
+  "brief": "l'orée d'une forêt au crépuscule, aucun personnage ; un feu de camp au premier plan et un cheval à l'arrière-plan, entre les arbres, comme objets cliquables",
+  "title": "Le bivouac abandonné",
+  "intro": "Le jour s'éteint derrière toi, et la forêt se referme en une muraille sombre. À son orée, un feu brûle encore, seul, et quelque part entre les troncs, un cheval souffle dans le froid.",
+  "imageRatio": "9:16",
+  "safe": {
+    "x0": 0.09,
+    "y0": 0.14,
+    "x1": 0.91,
+    "y1": 0.71
+  },
+  "style": "Peinture à l'huile réaliste, dans l'esprit du concept art et du matte painting de cinéma : proportions, anatomie et perspective justes, matières rendues avec précision (écorce rugueuse et moussue, cuir craquelé, laine feutrée, braises vives, cendre grise, herbe sèche couchée par le vent), touche visible mais maîtrisée, profondeur de champ légère et brume entre les arbres. Palette de bleus froids, de violets éteints et de gris-verts du crépuscule, percée par l'orange et le rouge du feu ; clair-obscur marqué, la lueur chaude du foyer contre la nuit qui tombe. Atmosphère silencieuse, grave, inquiète, celle d'un lieu que quelqu'un vient de quitter. Aucun texte, lettre, chiffre, signature ni logo ; pas de style cartoon, bande dessinée, anime ni caricature, pas de contours encrés ni d'aplats ; pas de photographie ni de rendu 3D lisse ; pas de cadre ni de bordure.",
+  "light": "feu de camp orange au premier plan, en contre-plongée ; ciel de crépuscule bleu-violet en contre-jour derrière les arbres",
+  "background": {
+    "prompt": "L'orée d'une vieille forêt de chênes et de hêtres au crépuscule, vue de face à hauteur d'homme. Au premier plan, une petite clairière d'herbe sèche et de terre battue, semée de feuilles mortes et de quelques pierres, occupe tout le tiers inférieur de l'image. Derrière, les troncs épais, à l'écorce grise couverte de mousse et de lichen, se serrent et s'enfoncent dans une brume bleutée ; entre eux, un passage plus clair laisse deviner un sentier qui s'enfonce dans le bois. Le ciel, visible au-dessus des cimes et entre les branches nues, passe de l'orange pâle au violet profond, avec une première étoile. Détails secondaires : une branche cassée pendue à un arbre, des racines noueuses qui affleurent, un vieux tronc abattu couvert de champignons au loin, des fougères roussies sur les bords. Le lieu est vide de toute personne et de tout animal, à l'exception d'un seul cheval qui se tient entre les arbres à l'arrière-plan."
+  },
+  "objects": [
+    {
+      "id": "feu-de-camp",
+      "zone": {
+        "x0": 0.32,
+        "y0": 0.52,
+        "x1": 0.68,
+        "y1": 0.71
+      },
+      "paint": "un feu de camp au premier plan, posé au sol dans un cercle de pierres noircies, aux flammes encore hautes et aux braises rouges, avec une petite marmite de fer cabossée suspendue à un trépied de branches et une gamelle renversée dans la cendre",
+      "detect": "the campfire with the iron pot",
+      "label": "Se pencher sur le feu",
+      "text": "Tu tends les mains vers les flammes. Le bois a été ajouté il y a peu, une heure tout au plus, et la soupe frémit encore dans la marmite. À côté, dans la cendre, quelqu'un a tracé du bout d'un bâton un cercle barré d'une croix, puis a commencé à l'effacer."
+    },
+    {
+      "id": "cheval",
+      "zone": {
+        "x0": 0.55,
+        "y0": 0.28,
+        "x1": 0.85,
+        "y1": 0.48
+      },
+      "paint": "à l'arrière-plan, entre deux troncs dans la brume, un cheval bai sombre à la crinière emmêlée, sans selle, la tête dressée vers l'intérieur de la forêt, avec un bout de longe effilochée qui pend de son licol de cuir",
+      "detect": "the dark bay horse standing between the trees",
+      "label": "Approcher du cheval",
+      "text": "Tu avances doucement. Le cheval ne te regarde pas : ses oreilles restent tendues vers le sentier, dans le noir, et ses flancs tremblent. La longe qui pend à son licol n'a pas été dénouée. Elle a été tranchée net."
+    },
+    {
+      "id": "selle",
+      "zone": {
+        "x0": 0.09,
+        "y0": 0.46,
+        "x1": 0.29,
+        "y1": 0.66
+      },
+      "paint": "sur le côté gauche, au pied d'un gros chêne, une selle de cuir brun usée et craquelée, posée de travers contre le tronc avec une couverture de laine rouge sombre et une sacoche ouverte dont dépasse une carte roulée",
+      "detect": "the leather saddle against the tree trunk",
+      "label": "Fouiller la sacoche",
+      "text": "La sacoche contient du pain dur, un briquet d'amadou et une carte de la forêt. Un chemin y est tracé à l'encre jusqu'à une clairière au cœur du bois, marquée du même cercle barré que dans la cendre. Au dos, une seule phrase, d'une écriture pressée : « Ne pas attendre la nuit. »"
+    }
+  ],
+  "characters": []
+}

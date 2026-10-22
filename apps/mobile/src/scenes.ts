@@ -10,11 +10,9 @@ export type SceneImages = {
 };
 
 export const sceneImages = {
-  cave: {
-    background: require("@esquisse/shared/assets/scenes/cave/fond.webp"),
-    characters: {
-      vigneron: require("@esquisse/shared/assets/scenes/cave/vigneron.webp"),
-    },
+  foret: {
+    background: require("@esquisse/shared/assets/scenes/foret/fond.webp"),
+    characters: {},
   },
   phare: {
     background: require("@esquisse/shared/assets/scenes/phare/fond.webp"),

@@ -33,6 +33,7 @@ pnpm build           # production builds
 pnpm typecheck
 pnpm lint            # pnpm format to fix
 pnpm generate <id> "brief"  # a new scene (see Clickable scenes)
+pnpm remove-scene <id> # removes a scene, its texts and its images
 pnpm loc             # lines of code per app and package (source / tests)
 pnpm deploy:preview  # lint, typecheck, then deploy the web site to a Vercel preview URL
 pnpm deploy:prod     # same, to production
@@ -119,7 +120,7 @@ pnpm generate <id> "<brief>"
 - **`<id>`** is the scene's name in the code and its URL (`/scene/<id>`):
   lowercase letters, digits and dashes, like `marche` or `cave-a-vin`.
 - **`<brief>`**, in quotes, says what the scene is about. It can be just a theme,
-  or pin things down: how many objects (1 to 4) or characters (1 to 3), who they
+  or pin things down: how many objects (1 to 4) or characters (0 to 3), who they
   are, the tone, the place, the era, the style. Claude follows what it pins and
   invents the rest (by default, 3 objects and 2 characters).
 
@@ -169,6 +170,17 @@ When something goes wrong:
 Each run calls the APIs, which are paid: writing is one to three Claude
 requests, and the images are one Gemini request for the background, one for
 the objects and one per character.
+
+### Removing a scene
+
+```bash
+pnpm remove-scene <id>
+```
+
+It deletes the scene's three folders (`packages/shared/src/scenes/<id>/`,
+`packages/shared/assets/scenes/<id>/`, `packages/generator/sources/<id>/`),
+after asking (`--yes` skips the question), then lists the remaining scenes for
+both apps.
 
 ### Committing
 

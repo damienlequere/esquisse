@@ -1,7 +1,6 @@
 // Written by packages/generator/src/generate-scene.ts: do not edit by hand.
 
-import caveFond from "@esquisse/shared/assets/scenes/cave/fond.webp";
-import caveVigneron from "@esquisse/shared/assets/scenes/cave/vigneron.webp";
+import foretFond from "@esquisse/shared/assets/scenes/foret/fond.webp";
 import phareFond from "@esquisse/shared/assets/scenes/phare/fond.webp";
 import phareGardienne from "@esquisse/shared/assets/scenes/phare/gardienne.webp";
 import phareMousse from "@esquisse/shared/assets/scenes/phare/mousse.webp";
@@ -15,11 +14,9 @@ export type SceneImages = {
 };
 
 export const sceneImages = {
-  cave: {
-    background: caveFond,
-    characters: {
-      vigneron: caveVigneron,
-    },
+  foret: {
+    background: foretFond,
+    characters: {},
   },
   phare: {
     background: phareFond,
