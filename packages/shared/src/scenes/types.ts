@@ -26,7 +26,7 @@ export type Character = {
 };
 
 export type Scene = {
-  // What the scene was written from, by the generator (see its ecriture step).
+  // What the scene was written from, by the generator (packages/generator).
   brief?: string;
   title: string;
   intro: string;

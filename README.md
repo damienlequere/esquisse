@@ -32,7 +32,7 @@ pnpm dev:all         # both, through Turborepo
 pnpm build           # production builds
 pnpm typecheck
 pnpm lint            # pnpm format to fix
-pnpm generate <id> "brief"  # a new scene (see Clickable scenes)
+pnpm generate <id> "brief"  # a new scene, built step by step (see Generating a scene)
 pnpm remove-scene <id> # removes a scene, its texts and its images
 pnpm loc             # lines of code per app and package (source / tests)
 pnpm deploy:preview  # lint, typecheck, then deploy the web site to a Vercel preview URL
@@ -86,13 +86,14 @@ on a phone, the ✦ button shows for a moment what is clickable.
 | `packages/shared/assets/scenes/<id>/` | Converted images, for both apps |
 | `apps/web/scenes.ts`, `apps/mobile/src/scenes.ts` | Each app's list of the images (generated): Next and Metro each need every import spelled out |
 | `apps/web/components/Scene.tsx`, `apps/mobile/src/components/Scene.tsx` | The scene, in each app |
-| `packages/generator/src/generate-scene.ts` | Writes the scene, generates the background, detects the objects, generates and keys the characters, lists the scene for both apps |
-| `packages/generator/src/write-scene.ts`, `check-scene.ts`, `registry.ts` | The scene's writing with Claude, its checks, the generated lists |
+| `packages/generator/src/generate-scene.ts` | The session: the background, then each element, validated one at a time, saved and listed for both apps |
+| `packages/generator/src/write-scene.ts`, `paint.ts`, `check-scene.ts`, `registry.ts` | The writing with Claude, the images with Gemini and the renders, the checks, the generated lists |
 
 ## Generating a scene
 
-A scene is made by one command, from a short description (the brief): Claude
-writes it, Gemini paints it, and it shows up in both apps.
+A scene is built step by step, in the terminal, from a short description (the
+brief): Claude writes it, Gemini paints it, you validate each step on the
+render, and it shows up in both apps.
 
 ### Once: the API keys
 
@@ -119,57 +120,108 @@ pnpm generate <id> "<brief>"
 
 - **`<id>`** is the scene's name in the code and its URL (`/scene/<id>`):
   lowercase letters, digits and dashes, like `marche` or `cave-a-vin`.
-- **`<brief>`**, in quotes, says what the scene is about. It can be just a theme,
-  or pin things down: how many objects (1 to 4) or characters (0 to 3), who they
-  are, the tone, the place, the era, the style. Claude follows what it pins and
-  invents the rest (by default, 3 objects and 2 characters).
+- **`<brief>`**, in quotes, says what the scene is about: the place, the era,
+  the tone, what you want to see. Claude follows what it pins and invents the
+  rest.
 
 ```bash
-pnpm generate marche "un marché de nuit à Marrakech, une épice volée"
-pnpm generate cave "une cave à vin bourguignonne, 2 objets, 1 vigneron bourru, ton comique"
+pnpm generate foret "l'orée d'une forêt au crépuscule, un bivouac abandonné"
 ```
 
-It runs without stopping, in four steps, and takes a few minutes:
+The session goes in two stages. Each render is saved in the system's temporary
+folder and opens in the image viewer, with the safe zone dashed, the objects
+outlined in orange and the characters in blue.
 
-| Step | What it does | What it writes |
-| --- | --- | --- |
-| `ecriture` | Claude (Opus 5.5) writes the scene from the brief: title, intro, style, objects and their texts, characters and their dialogues, where everything goes. The composition is checked and sent back to fix, up to three times. | `packages/shared/src/scenes/<id>/scene.json` |
-| `fond` | Gemini (Nano Banana 2.1) paints the background, following a composition guide drawn from the positions. | `packages/generator/sources/<id>/guide.png`, `fond.jpg`; `packages/shared/assets/scenes/<id>/fond.webp` |
-| `reperage` | Gemini in vision finds where each object really is in the background. | `packages/shared/src/scenes/<id>/objects.json` |
-| `personnages` | Gemini paints each character on green, matching the background, then the green is keyed out. | `packages/generator/sources/<id>/<character>.jpg`; `packages/shared/assets/scenes/<id>/<character>.webp`, `characters.json` |
+1. **The background.** Claude (Opus 5.5) writes the title, the intro, the style,
+   the light and the decor, and Gemini (Nano Banana 2.1) paints it, empty. Then:
+   `v` validate, `r` paint it again, `m` describe a change (Claude rewrites the
+   decor, Gemini repaints it), `q` quit.
+2. **The elements, one at a time.** Claude suggests a few ideas; type one's
+   number, or describe what to add (`un cheval à l'arrière-plan`, `une vieille
+   gardienne près de la porte`). Claude writes the element from the current
+   render: an object (something clickable that shows a text) or a character
+   (someone to talk to). Its position is checked and sent back to fix, up to
+   three times.
+   - An **object** is painted into the background by retouching the validated
+     one, then every object is found again in the image (the retouch can move
+     them a little).
+   - A **character** is painted on green, matching the background, and the
+     green is keyed out; the layer is placed by its feet.
 
-Then the scene is listed for both apps (`packages/shared/src/scenes/index.ts`,
-`apps/web/scenes.ts`, `apps/mobile/src/scenes.ts`): run `pnpm dev`, it is on the
-home page and at `/scene/<id>`.
+   Then: `v` validate, `r` redo it (an object is retouched again from the
+   validated background, never from a rejected one), `m` describe a change, `a`
+   drop it. Press Enter at the question to finish.
 
-### Checking and redoing
+A session looks like this (Claude's texts shortened):
 
-- **Look at the scene**, and read `scene.json`: everything in it can be edited
-  by hand (a text, a dialogue, a prompt, a position).
-- **Run again without a brief** to do only what is missing, for instance after
-  a failure: `pnpm generate <id>`.
-- **Name a step to redo it**, with everything that follows from it:
-  `pnpm generate <id> fond` paints a new background, then finds the objects and
-  paints the characters again. `reperage` or `personnages` redo only that step.
-  `ecriture` rewrites the scene from its brief, kept in `scene.json`.
-- **A new brief rewrites the scene**, and redoes all its images, even if the
-  scene already exists.
-- **A scene edited by hand is checked** before any image is generated; the
-  problems are printed.
+```text
+$ pnpm generate foret "l'orée d'une forêt au crépuscule, un bivouac abandonné"
+Writing with claude-opus-5-5…
+
+Le bivouac abandonné
+Tu sors du couvert des arbres…
+
+Painting the background…
+  Render: /tmp/esquisse-foret-1.jpg
+Le fond :  [v] valider  [r] repeindre  [m] modifier  [q] quitter
+> v
+✓ Saved: /scene/foret in both apps
+
+Idées :
+  1. un feu de camp au premier plan
+  2. un cheval attaché entre les arbres
+Que veux-tu ajouter ? (une description, un numéro d'idée, ou Entrée pour finir)
+> 1
+Writing with claude-opus-5-5…
+
+Objet « feu-de-camp », de 55 % à 88 % de la largeur, de 58 % à 70 % de la hauteur
+Adding feu-de-camp to the background…
+Detecting the objects…
+  Render: /tmp/esquisse-foret-2.jpg
+« feu-de-camp » :  [v] valider  [r] refaire  [m] modifier  [a] abandonner
+> m
+Que changer ?
+> plus petit, et à gauche
+…
+> v
+✓ Saved: /scene/foret in both apps
+Que veux-tu ajouter ? (une description, un numéro d'idée, ou Entrée pour finir)
+>
+✓ Le bivouac abandonné: /scene/foret, run pnpm dev to play it
+```
+
+What is validated is saved at once (`scene.json`, `objects.json`,
+`characters.json`, the images) and the scene is listed for both apps
+(`packages/shared/src/scenes/index.ts`, `apps/web/scenes.ts`,
+`apps/mobile/src/scenes.ts`): the session can stop at any time, and `pnpm dev`
+shows the scene on the home page and at `/scene/<id>`.
+
+| What | Where |
+| --- | --- |
+| The scene, its texts and the positions | `packages/shared/src/scenes/<id>/scene.json`, `objects.json`, `characters.json` |
+| The originals | `packages/generator/sources/<id>/fond.jpg`, `<character>.jpg` |
+| The converted images | `packages/shared/assets/scenes/<id>/fond.webp`, `<character>.webp` |
+
+### Going on, starting over
+
+- **Add to a scene** later: `pnpm generate <id>`, without a brief, shows the
+  current render and asks what to add.
+- **Start over**: `pnpm generate <id> "<brief>"` on an existing scene asks, then
+  deletes it and starts again from the background.
+- **Edit by hand**: everything in `scene.json` can be changed (a text, a
+  dialogue, a prompt); a position changed by hand is not repainted.
 
 When something goes wrong:
 
-- *"The composition still does not hold"*: after three rounds, Claude's positions
-  still break the rules. `scene.json` is saved: fix the listed positions by hand,
-  then run `pnpm generate <id>`.
-- *"⚠ <object>: outside the safe zone"* or *"not found"* after `reperage`: the
-  background did not put the object where planned. Run
-  `pnpm generate <id> fond` for a new one.
-- *A character looks wrong*: `pnpm generate <id> personnages`.
+- *"The composition still does not hold"*: after three rounds, Claude's position
+  still breaks the rules. The element is shown anyway: `m` to ask for another
+  place, or `a` to drop it.
+- *"⚠ <object>: outside the safe zone"* or *"not found"*: the retouch did not
+  put the object where planned. `r` to retouch again.
 
-Each run calls the APIs, which are paid: writing is one to three Claude
-requests, and the images are one Gemini request for the background, one for
-the objects and one per character.
+Each step calls the APIs, which are paid: one Claude request per writing or
+change (more if the composition is sent back), one Gemini request per painting
+or retouch, and one per detection after an object.
 
 ### Removing a scene
 
