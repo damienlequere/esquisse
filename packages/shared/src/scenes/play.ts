@@ -20,14 +20,15 @@ export type SceneAction =
   | { type: "leave" };
 
 // Opening a scene, in ms: its title alone, then its intro fading in under it
-// (textFade), held long enough to be read, then everything fades out (fade) to
-// show the scene. Each app draws it.
-export const INTRO = { textDelay: 1000, textFade: 1500, fade: 1200 };
-const READING_MS_PER_CHAR = 50;
+// (textFade); once it has been held long enough to be read, a button to enter
+// fades in (buttonFade). The scene waits for it: pressed, everything fades out
+// (fade) to show the scene. Each app draws it.
+export const INTRO = { textDelay: 1000, textFade: 1500, buttonFade: 800, fade: 1200 };
+const READING_MS_PER_CHAR = 35;
 
-// From the opening to the start of the fade out.
+// From the opening to the button to enter.
 export const introHold = (scene: Scene) =>
-  INTRO.textDelay + INTRO.textFade + Math.max(2000, scene.intro.length * READING_MS_PER_CHAR);
+  INTRO.textDelay + INTRO.textFade + Math.max(1500, scene.intro.length * READING_MS_PER_CHAR);
 
 export const initialSceneState = ({ scene }: SceneData): SceneState => ({
   narration: { title: scene.title, text: scene.intro, key: 0 },
@@ -75,6 +76,8 @@ export const remainingTopics = ({ character, asked }: Conversation) =>
   character.dialogue.topics.filter((topic) => !asked.includes(topic.ask));
 
 export const sceneText = {
+  // The button which ends the scene's opening.
+  enter: "Entrer",
   talkTo: (name: string) => `Parler à ${name}`,
   goodbye: "Au revoir.",
   // The text panel, in landscape.

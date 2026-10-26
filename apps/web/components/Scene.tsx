@@ -63,9 +63,10 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
   });
   const drawerTab = choice.at === narration.key ? choice.tab : "narration";
 
-  // The title on black, then the intro under it, until they have faded out
-  // (see the CSS). It waits for the screen to be turned like the scene, and
-  // starts over if it is turned away before the end: it is never missed.
+  // The title on black, then the intro under it, then the button to enter,
+  // until it is pressed and they have faded out (see Intro). It waits for the
+  // screen to be turned like the scene, and starts over if it is turned away
+  // before the end: it is never missed.
   const [intro, setIntro] = useState(true);
   const notTurned = useNotTurned(layout.landscape);
 
@@ -186,24 +187,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
         ]}
       />
 
-      {intro && !notTurned && (
-        <div
-          className={styles.intro}
-          style={
-            {
-              "--intro-hold": `${introHold(scene)}ms`,
-              "--intro-text-delay": `${INTRO.textDelay}ms`,
-              "--intro-text-fade": `${INTRO.textFade}ms`,
-              "--intro-fade": `${INTRO.fade}ms`,
-            } as CSSProperties
-          }
-          // Its own fade out, not the intro text's fade in.
-          onAnimationEnd={(event) => event.target === event.currentTarget && setIntro(false)}
-        >
-          <h1>{scene.title}</h1>
-          <p>{scene.intro}</p>
-        </div>
-      )}
+      {intro && !notTurned && <Intro scene={scene} onEnd={() => setIntro(false)} />}
 
       {/* Over everything when the screen is not turned like the scene (see the CSS). */}
       <div className={styles.turn}>
@@ -252,6 +236,54 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
           </div>
         </div>
       )}
+    </div>
+  );
+};
+
+// The scene's opening: its title on black, then its intro fading in under it;
+// once it has been read, the button to enter fades in, and the scene waits for
+// it. Pressed, everything fades out to show the scene (see the CSS).
+const Intro = ({ scene, onEnd }: { scene: SceneData["scene"]; onEnd(): void }) => {
+  const [ready, setReady] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+  const enter = useRef<HTMLButtonElement>(null);
+
+  const hold = introHold(scene);
+  useEffect(() => {
+    const timer = setTimeout(() => setReady(true), hold);
+    return () => clearTimeout(timer);
+  }, [hold]);
+  useEffect(() => {
+    if (ready) enter.current?.focus();
+  }, [ready]);
+
+  return (
+    <div
+      className={styles.intro}
+      data-ready={ready || undefined}
+      data-leaving={leaving || undefined}
+      style={
+        {
+          "--intro-text-delay": `${INTRO.textDelay}ms`,
+          "--intro-text-fade": `${INTRO.textFade}ms`,
+          "--intro-button-fade": `${INTRO.buttonFade}ms`,
+          "--intro-fade": `${INTRO.fade}ms`,
+        } as CSSProperties
+      }
+      // Its own fade out, not the fade in of what is in it.
+      onAnimationEnd={(event) => leaving && event.target === event.currentTarget && onEnd()}
+    >
+      <h1>{scene.title}</h1>
+      <p>{scene.intro}</p>
+      <button
+        ref={enter}
+        type="button"
+        className={styles.enter}
+        disabled={leaving}
+        onClick={() => setLeaving(true)}
+      >
+        {sceneText.enter} <span aria-hidden="true">→</span>
+      </button>
     </div>
   );
 };

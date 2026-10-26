@@ -109,13 +109,15 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
   });
   const drawerTab = choice.at === narration.key ? choice.tab : "narration";
 
-  // Opening the scene: its title on black, then its intro fading in under it,
-  // which fade out, with the title, to show the scene (the web's
+  // Opening the scene: its title on black, then its intro fading in under it;
+  // once it has been read, the button to enter fades in, and the scene waits
+  // for it. Pressed, everything fades out to show the scene (the web's
   // Scene.module.css has the same). It cannot be skipped.
   const [intro, setIntro] = useState(true);
+  const [introReady, setIntroReady] = useState(false);
   const hold = introHold(scene);
   useEffect(() => {
-    const timer = setTimeout(() => setIntro(false), hold);
+    const timer = setTimeout(() => setIntroReady(true), hold);
     return () => clearTimeout(timer);
   }, [hold]);
 
@@ -277,11 +279,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
             entering={FadeInDown.duration(250)}
             accessibilityViewIsModal
             // In landscape, the conversation takes the text panel's place.
-            className={
-              layout.landscape
-                ? "border-l border-amber-300/35 bg-stone-900"
-                : "max-h-[60%] rounded-t-3xl border-t border-amber-300/35 bg-stone-900"
-            }
+            className={layout.landscape ? "bg-stone-900" : "max-h-[60%] rounded-t-3xl bg-stone-900"}
             style={layout.landscape ? { width: panel } : undefined}
           >
             <ScrollView
@@ -346,6 +344,25 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
               {scene.intro}
             </Animated.Text>
           </View>
+          {/* The button to enter, in the bottom right corner. */}
+          {introReady && (
+            <Animated.View
+              entering={FadeIn.duration(INTRO.buttonFade)}
+              className="absolute"
+              style={{ right: Math.max(24, insets.right), bottom: Math.max(24, insets.bottom) }}
+            >
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={sceneText.enter}
+                onPress={() => setIntro(false)}
+                className="rounded-full bg-white px-7 py-2.5 active:bg-stone-200"
+              >
+                <Text className="text-sm font-semibold uppercase tracking-widest text-black">
+                  {sceneText.enter} →
+                </Text>
+              </Pressable>
+            </Animated.View>
+          )}
         </Animated.View>
       )}
     </View>
