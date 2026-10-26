@@ -334,38 +334,19 @@
   background: rgb(252 211 77 / 0.15);
 }
 
-/* Opening a scene: its title in the middle, over the background blurred and
-   desaturated, which then fades out, with the title, to show the scene. The
-   filter is painted once, on a copy of the background, and only its opacity
-   changes: cheap on a large screen. A tap skips it. */
-.root {
-  --intro-hold: 1.6s;
-  --intro-fade: 1.2s;
-}
-
+/* Opening a scene: its title in the middle, on black, then its intro fading in
+   under it, which then fade out to show the scene. The durations are set by
+   the scene (INTRO in packages/shared). It cannot be skipped. */
 .intro {
   position: absolute;
   inset: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 2rem;
-  overflow: hidden;
+  background: #000;
   animation: intro var(--intro-fade) ease-in var(--intro-hold) forwards;
-}
-
-.intro img {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  aspect-ratio: var(--image-ratio);
-  width: max(100cqw, 100cqh * var(--image-ratio));
-  /* It overflows the frame, like the scene's image (Tailwind's reset caps it). */
-  max-width: none;
-  translate: -50% -50%;
-  /* A little larger, so the blur does not fade at the edges. */
-  scale: 1.1;
-  filter: blur(1.6cqmin) grayscale(1) brightness(0.45);
 }
 
 .intro h1 {
@@ -380,9 +361,27 @@
   text-shadow: 0 2px 12px rgb(0 0 0 / 0.8);
 }
 
+.intro p {
+  margin: 1.75rem 0 0;
+  max-width: 34ch;
+  font-size: clamp(1rem, 3.6cqmin, 1.4rem);
+  font-style: italic;
+  line-height: 1.55;
+  text-align: center;
+  color: #d6d3d1;
+  opacity: 0;
+  animation: introText var(--intro-text-fade) ease-out var(--intro-text-delay) forwards;
+}
+
 @keyframes intro {
   to {
     opacity: 0;
+  }
+}
+
+@keyframes introText {
+  to {
+    opacity: 1;
   }
 }
 
@@ -434,7 +433,16 @@
 
   .root {
     --fold: 0s;
-    --intro-fade: 1ms;
+  }
+
+  /* The intro is shown at once, and still held to be read. */
+  .intro {
+    animation-duration: 1ms;
+  }
+
+  .intro p {
+    animation-duration: 1ms;
+    animation-delay: 0s;
   }
 
   .appear,

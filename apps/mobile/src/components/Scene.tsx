@@ -1,6 +1,8 @@
 import {
   type Box,
+  INTRO,
   initialSceneState,
+  introHold,
   placeStyle,
   playScene,
   remainingTopics,
@@ -47,15 +49,13 @@ import type { SceneImages } from "../scenes.ts";
 // whole image.
 const BAND = 0.22;
 
-// How long the title stays over the blurred background, then fades out.
-const INTRO_HOLD_MS = 1600;
-const INTRO_FADE_MS = 1200;
 const panelWidth = (screenWidth: number) => Math.min(256, screenWidth * 0.3);
 
 const place = (box: Box) => ({ position: "absolute" as const, ...placeStyle(box) });
 
 // NativeWind styles only the components it knows.
 cssInterop(Animated.View, { className: "style" });
+cssInterop(Animated.Text, { className: "style" });
 
 // The action's label, above what it names, centered and on one line even when
 // wider than it.
@@ -110,14 +110,15 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
   const [foldedAt, setFoldedAt] = useState<number | undefined>(narration.key);
   const folded = foldedAt === narration.key;
 
-  // Opening the scene: its title over the background blurred and desaturated,
-  // which fades out, with the title, to show the scene (the web's
-  // Scene.module.css has the same). A tap skips it.
+  // Opening the scene: its title on black, then its intro fading in under it,
+  // which fade out, with the title, to show the scene (the web's
+  // Scene.module.css has the same). It cannot be skipped.
   const [intro, setIntro] = useState(true);
+  const hold = introHold(scene);
   useEffect(() => {
-    const timer = setTimeout(() => setIntro(false), INTRO_HOLD_MS);
+    const timer = setTimeout(() => setIntro(false), hold);
     return () => clearTimeout(timer);
-  }, []);
+  }, [hold]);
 
   // The panel's padding, inside the screen's safe area.
   const panelPadding = {
@@ -335,35 +336,12 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
         </Animated.View>
       )}
 
-      {intro && screen && image && (
+      {intro && (
         <Animated.View
-          exiting={FadeOut.duration(INTRO_FADE_MS)}
-          className="absolute inset-0 items-center justify-center overflow-hidden"
+          exiting={FadeOut.duration(INTRO.fade)}
+          className="absolute inset-0 items-center justify-center bg-black"
         >
-          {/* Desaturated by its view's filter, which iOS and Android both draw. */}
-          <View
-            style={{
-              position: "absolute",
-              width: image.width,
-              height: image.height,
-              left: (screen.width - image.width) / 2,
-              top: (screen.height - image.height) / 2,
-              transform: [{ scale: 1.08 }],
-              filter: [{ grayscale: 1 }],
-            }}
-          >
-            <Image
-              source={images.background}
-              blurRadius={16}
-              style={{ width: "100%", height: "100%" }}
-            />
-          </View>
-          <View className="absolute inset-0 bg-black/55" />
-          <Pressable
-            className="absolute inset-0 items-center justify-center px-8"
-            accessibilityRole="button"
-            onPress={() => setIntro(false)}
-          >
+          <View className="absolute inset-0 items-center justify-center px-8">
             <Text
               accessibilityRole="header"
               className="text-center font-serif text-4xl leading-tight text-stone-100"
@@ -375,7 +353,13 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
             >
               {scene.title}
             </Text>
-          </Pressable>
+            <Animated.Text
+              entering={FadeIn.duration(INTRO.textFade).delay(INTRO.textDelay)}
+              className="mt-7 max-w-md text-center font-serif text-lg italic leading-relaxed text-stone-300"
+            >
+              {scene.intro}
+            </Animated.Text>
+          </View>
         </Animated.View>
       )}
     </View>

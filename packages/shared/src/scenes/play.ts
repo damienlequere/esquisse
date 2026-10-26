@@ -1,4 +1,4 @@
-import type { Character, SceneData, Topic } from "./types.ts";
+import type { Character, Scene, SceneData, Topic } from "./types.ts";
 
 // What a scene shows as it is played, the same in both apps: the narration
 // band, and the open conversation if any. The apps only draw it, and turn their
@@ -18,6 +18,16 @@ export type SceneAction =
   | { type: "talk"; character: Character }
   | { type: "ask"; topic: Topic }
   | { type: "leave" };
+
+// Opening a scene, in ms: its title alone, then its intro fading in under it
+// (textFade), held long enough to be read, then everything fades out (fade) to
+// show the scene. Each app draws it.
+export const INTRO = { textDelay: 1000, textFade: 1500, fade: 1200 };
+const READING_MS_PER_CHAR = 50;
+
+// From the opening to the start of the fade out.
+export const introHold = (scene: Scene) =>
+  INTRO.textDelay + INTRO.textFade + Math.max(2000, scene.intro.length * READING_MS_PER_CHAR);
 
 export const initialSceneState = ({ scene }: SceneData): SceneState => ({
   narration: { title: scene.title, text: scene.intro, key: 0 },

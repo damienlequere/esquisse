@@ -56,8 +56,9 @@ clickable scene, ported from protagonist's `prototypes/scene-cliquable`: the
 place's image fills the frame, each action is a clickable part of the image, and
 the characters, clickable too, open a dialogue. On the web, the frame adapts to the screen, like any page under
 `app/scene/`; in the mobile app, the scene takes the whole screen. A scene opens
-on its title, in the middle, over its background blurred and desaturated, which
-then fades out with the title to show the scene; a tap skips it.
+on its title, in the middle, on black; its intro fades in under it, held long
+enough to be read (50 ms per character), then both fade out to show the scene; it
+cannot be skipped.
 
 - **The scene is written by Claude** (Opus 5.5) from a brief: the texts, the
   dialogues, the prompts for the images and the composition. The script checks

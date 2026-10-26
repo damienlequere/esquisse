@@ -2,7 +2,9 @@
 
 import {
   type Character,
+  INTRO,
   initialSceneState,
+  introHold,
   placeStyle,
   playScene,
   remainingTopics,
@@ -29,7 +31,8 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
   const [foldedAt, setFoldedAt] = useState<number | undefined>(narration.key);
   const folded = foldedAt === narration.key;
 
-  // The title over the blurred background, until it has faded out (see the CSS).
+  // The title on black, then the intro under it, until they have faded out
+  // (see the CSS).
   const [intro, setIntro] = useState(true);
 
   // ── Dialogue: an open conversation, until it is left ─────────────────────────
@@ -130,15 +133,21 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
       </button>
 
       {intro && (
-        // biome-ignore lint/a11y/useKeyWithClickEvents lint/a11y/noStaticElementInteractions: a shortcut, it ends by itself
         <div
           className={styles.intro}
-          style={{ "--image-ratio": layout.ratio } as CSSProperties}
-          onClick={() => setIntro(false)}
-          onAnimationEnd={() => setIntro(false)}
+          style={
+            {
+              "--intro-hold": `${introHold(scene)}ms`,
+              "--intro-text-delay": `${INTRO.textDelay}ms`,
+              "--intro-text-fade": `${INTRO.textFade}ms`,
+              "--intro-fade": `${INTRO.fade}ms`,
+            } as CSSProperties
+          }
+          // Its own fade out, not the intro text's fade in.
+          onAnimationEnd={(event) => event.target === event.currentTarget && setIntro(false)}
         >
-          <img src={images.background.src} alt="" />
           <h1>{scene.title}</h1>
+          <p>{scene.intro}</p>
         </div>
       )}
 
