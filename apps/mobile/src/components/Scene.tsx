@@ -24,17 +24,10 @@ import {
   Text,
   View,
 } from "react-native";
-import Animated, {
-  FadeIn,
-  FadeInDown,
-  FadeOut,
-  SlideInDown,
-  SlideInRight,
-  SlideOutDown,
-  SlideOutRight,
-} from "react-native-reanimated";
+import Animated, { FadeIn, FadeInDown, FadeOut } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { SceneImages } from "../scenes.ts";
+import { Drawer } from "./Drawer.tsx";
 
 // Same scene as the web one (apps/web/components/Scene.tsx): the background
 // covers the screen, each object is one action, each character opens a dialogue.
@@ -48,6 +41,8 @@ import type { SceneImages } from "../scenes.ts";
 // leave them free (see packages/generator). Either can be folded, to see the
 // whole image.
 const BAND = 0.22;
+
+type DrawerTabId = "narration" | "two" | "three";
 
 const panelWidth = (screenWidth: number) => Math.min(256, screenWidth * 0.3);
 
@@ -105,10 +100,14 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
   const panel = screen ? panelWidth(screen.width) : 0;
   const band = screen ? screen.height * BAND : 0;
 
-  // The text can be folded to see the whole image; a new text opens it again.
-  // It starts folded: the scene's intro waits for the tab.
-  const [foldedAt, setFoldedAt] = useState<number | undefined>(narration.key);
-  const folded = foldedAt === narration.key;
+  // The drawer shows the text, or another content (2 and 3, to come); it can be
+  // folded to see the whole image. A new text opens it again, on the text. It
+  // starts folded: the scene's intro waits for its button.
+  const [choice, setChoice] = useState<{ tab: DrawerTabId | undefined; at: number }>({
+    tab: undefined,
+    at: narration.key,
+  });
+  const drawerTab = choice.at === narration.key ? choice.tab : "narration";
 
   // Opening the scene: its title on black, then its intro fading in under it,
   // which fade out, with the title, to show the scene (the web's
@@ -146,10 +145,29 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
     </ScrollView>
   );
 
+  // The drawer's other contents, to come.
+  const placeholder = (text: string) => (
+    <ScrollView
+      key={text}
+      contentContainerClassName={layout.landscape ? undefined : "px-5 pt-4"}
+      contentContainerStyle={
+        layout.landscape ? panelPadding : { paddingBottom: Math.max(16, insets.bottom) }
+      }
+    >
+      <Animated.View entering={FadeInDown.duration(400)}>
+        <Text className="font-serif text-base leading-6 text-stone-100">{text}</Text>
+      </Animated.View>
+    </ScrollView>
+  );
+
   return (
     <View
       className="flex-1 overflow-hidden bg-stone-950"
       onLayout={(event) => setScreen(event.nativeEvent.layout)}
+      // A touch out of the drawer folds it (see Drawer).
+      onTouchStart={() => {
+        if (drawerTab !== undefined) setChoice({ tab: undefined, at: narration.key });
+      }}
     >
       <StatusBar style="light" />
 
@@ -225,55 +243,23 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
       )}
 
       {/* Narration: the bottom band, over the image; in landscape, the panel on
-          the right, the whole height (see BAND and panelWidth), bordered on the
-          top or on the left; folded, it slides out, down
-          or to the right. */}
-      {!folded &&
-        (layout.landscape ? (
-          <Animated.View
-            entering={SlideInRight.duration(300)}
-            exiting={SlideOutRight.duration(300)}
-            className="absolute bottom-0 right-0 top-0 border-l border-amber-300/35 bg-stone-950/85"
-            style={{ width: panel }}
-          >
-            {narrationText}
-          </Animated.View>
-        ) : (
-          <Animated.View
-            entering={SlideInDown.duration(300)}
-            exiting={SlideOutDown.duration(300)}
-            className="absolute bottom-0 left-0 right-0 border-t border-amber-300/35 bg-stone-950/85"
-            style={{ height: band }}
-          >
-            {narrationText}
-          </Animated.View>
-        ))}
-
-      {/* The tab which folds it, astride its border; folded, on the screen's
-          edge. Its chevron points where the text goes. */}
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={folded ? sceneText.unfoldText : sceneText.foldText}
-        accessibilityState={{ expanded: !folded }}
-        onPress={() => setFoldedAt(folded ? undefined : narration.key)}
-        className={`absolute items-center justify-center rounded-full border border-amber-300/35 bg-stone-950 active:bg-stone-900 ${layout.landscape ? "h-12 w-6" : "h-6 w-12"}`}
-        style={
-          layout.landscape
-            ? { top: "50%", marginTop: -24, right: folded ? Math.max(8, insets.right) : panel - 12 }
-            : {
-                left: "50%",
-                marginLeft: -24,
-                bottom: folded ? Math.max(8, insets.bottom) : band - 12,
-              }
-        }
-      >
-        <Text
-          className="text-lg text-amber-200"
-          style={layout.landscape ? undefined : { transform: [{ rotate: "90deg" }] }}
-        >
-          {folded ? "‹" : "›"}
-        </Text>
-      </Pressable>
+          the right, the whole height (see BAND and panelWidth). */}
+      <Drawer
+        side={layout.landscape ? "right" : "bottom"}
+        size={layout.landscape ? panel : band}
+        open={drawerTab}
+        onOpen={(tab) => setChoice({ tab, at: narration.key })}
+        tabs={[
+          {
+            id: "narration",
+            icon: "1",
+            label: drawerTab === "narration" ? sceneText.foldText : sceneText.unfoldText,
+            content: narrationText,
+          },
+          { id: "two", icon: "2", label: "2", content: placeholder("2") },
+          { id: "three", icon: "3", label: "3", content: placeholder("3") },
+        ]}
+      />
 
       {/* Dialogue: an open conversation takes the scene, the background waits. */}
       {conversation && (

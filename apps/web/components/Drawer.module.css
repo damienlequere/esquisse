@@ -1,0 +1,108 @@
+/* The panel, over what it is placed on: at the bottom, the whole width; on the
+   right, the whole height. A border marks its edge. */
+.panel {
+  --fold: 300ms;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--drawer-size);
+  overflow-y: auto;
+  padding: 1rem 1.25rem max(1rem, env(safe-area-inset-bottom));
+  border-top: 1px solid rgb(252 211 77 / 0.35);
+  background: rgb(12 10 9 / 0.85);
+  translate: 0 100%;
+  visibility: hidden;
+  /* Folded, it slides out, then leaves the accessibility tree. */
+  transition:
+    translate var(--fold) ease,
+    visibility 0s var(--fold);
+  /* Its own layer: it slides without being painted again. */
+  will-change: translate;
+}
+
+.panel[data-open] {
+  translate: none;
+  visibility: visible;
+  transition:
+    translate var(--fold) ease,
+    visibility 0s;
+}
+
+.panel[data-side="right"] {
+  top: 0;
+  left: auto;
+  width: var(--drawer-size);
+  height: auto;
+  padding: max(1.25rem, env(safe-area-inset-top)) max(1.25rem, env(safe-area-inset-right))
+    max(1.25rem, env(safe-area-inset-bottom)) 1.25rem;
+  border-top: 0;
+  border-left: 1px solid rgb(252 211 77 / 0.35);
+  translate: 100% 0;
+}
+
+.panel[data-side="right"][data-open] {
+  translate: none;
+}
+
+/* The round buttons, over the panel or the edge: in a row, centered, at the
+   bottom; in a column, centered, on the right. Their strip lets clicks through
+   between them. The open content's is lighter. */
+.buttons {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+
+.buttons[data-side="right"] {
+  top: 0;
+  bottom: 0;
+  left: auto;
+  right: max(1rem, env(safe-area-inset-right));
+  flex-direction: column;
+}
+
+.buttons button {
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 1px solid rgb(252 211 77 / 0.35);
+  border-radius: 50%;
+  background: #0c0a09;
+  color: #fde68a;
+  font: inherit;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: background 150ms;
+}
+
+.buttons button:hover,
+.buttons button[aria-expanded="true"] {
+  background: #1c1917;
+}
+
+.buttons button[aria-expanded="true"] {
+  border-color: rgb(252 211 77 / 0.8);
+}
+
+.buttons button:focus-visible {
+  outline: 2px solid #fcd34d;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel {
+    --fold: 0s;
+  }
+
+  .buttons button {
+    transition: none;
+  }
+}

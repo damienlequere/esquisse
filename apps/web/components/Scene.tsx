@@ -21,7 +21,10 @@ import {
   useSyncExternalStore,
 } from "react";
 import type { SceneImages } from "../scenes.ts";
+import { Drawer } from "./Drawer.tsx";
 import styles from "./Scene.module.css";
+
+type DrawerTabId = "narration" | "two" | "three";
 
 // Clickable scene: the background covers the frame, each object is one action,
 // each character opens a dialogue. Everything is placed in % of the image (see
@@ -51,10 +54,14 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
   const layout = sceneLayout(data);
   const [{ narration, conversation }, dispatch] = useReducer(playScene, data, initialSceneState);
 
-  // The text can be folded to see the whole image; a new text opens it again.
-  // It starts folded: the scene's intro waits for the tab.
-  const [foldedAt, setFoldedAt] = useState<number | undefined>(narration.key);
-  const folded = foldedAt === narration.key;
+  // The drawer shows the text, or another content (2 and 3, to come); it can be
+  // folded to see the whole image. A new text opens it again, on the text. It
+  // starts folded: the scene's intro waits for its button.
+  const [choice, setChoice] = useState<{ tab: DrawerTabId | undefined; at: number }>({
+    tab: undefined,
+    at: narration.key,
+  });
+  const drawerTab = choice.at === narration.key ? choice.tab : "narration";
 
   // The title on black, then the intro under it, until they have faded out
   // (see the CSS). It waits for the screen to be turned like the scene, and
@@ -97,11 +104,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
   }, [inConversation]);
 
   return (
-    <div
-      className={styles.root}
-      data-orientation={layout.landscape ? "landscape" : "portrait"}
-      data-folded={folded || undefined}
-    >
+    <div className={styles.root} data-orientation={layout.landscape ? "landscape" : "portrait"}>
       <div className={styles.scene} style={{ "--image-ratio": layout.ratio } as CSSProperties}>
         <img className={styles.background} src={images.background.src} alt="" />
         <div className={styles.layer}>
@@ -138,26 +141,50 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
         </div>
       </div>
 
-      <section
-        key={narration.key}
-        id="narration"
-        className={`${styles.narration} ${styles.appear}`}
-        aria-live="polite"
-      >
-        <h2>{narration.title}</h2>
-        <p>{narration.text}</p>
-      </section>
-
-      <button
-        type="button"
-        className={styles.fold}
-        aria-controls="narration"
-        aria-expanded={!folded}
-        aria-label={folded ? sceneText.unfoldText : sceneText.foldText}
-        onClick={() => setFoldedAt(folded ? undefined : narration.key)}
-      >
-        <span aria-hidden="true">{folded ? "‹" : "›"}</span>
-      </button>
+      <Drawer
+        id="drawer"
+        side={layout.landscape ? "right" : "bottom"}
+        size={layout.landscape ? "var(--panel)" : "var(--band)"}
+        open={drawerTab}
+        onOpen={(tab) => setChoice({ tab, at: narration.key })}
+        tabs={[
+          {
+            id: "narration",
+            icon: "1",
+            label: drawerTab === "narration" ? sceneText.foldText : sceneText.unfoldText,
+            content: (
+              <section
+                key={narration.key}
+                className={`${styles.narration} ${styles.appear}`}
+                aria-live="polite"
+              >
+                <h2>{narration.title}</h2>
+                <p>{narration.text}</p>
+              </section>
+            ),
+          },
+          {
+            id: "two",
+            icon: "2",
+            label: "2",
+            content: (
+              <section className={`${styles.narration} ${styles.appear}`}>
+                <p>2</p>
+              </section>
+            ),
+          },
+          {
+            id: "three",
+            icon: "3",
+            label: "3",
+            content: (
+              <section className={`${styles.narration} ${styles.appear}`}>
+                <p>3</p>
+              </section>
+            ),
+          },
+        ]}
+      />
 
       {intro && !notTurned && (
         <div

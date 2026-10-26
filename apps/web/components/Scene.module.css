@@ -116,122 +116,21 @@
   opacity: 1;
 }
 
-/* Narration: the bottom band, 22% of the height, over the image. It can be
-   folded, to see the whole image, until the next text. */
+/* Narration: a drawer (see Drawer.tsx) over the image, the bottom band, 22% of
+   the height; in landscape, a panel on the right, 16rem wide but never more
+   than 30% of the frame, the whole height. The safe zones of the scenes leave
+   it free (see packages/generator). It can be folded, to see the whole image,
+   until the next text, which appears in it. The conversation takes its place. */
 .root {
   --band: 22cqh;
-  --fold: 300ms;
 }
 
-.narration {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: var(--band);
-  overflow-y: auto;
-  padding: 1rem 1.25rem max(1rem, env(safe-area-inset-bottom));
-  /* A border marks its edge, over the image. */
-  border-top: 1px solid rgb(252 211 77 / 0.35);
-  background: rgb(12 10 9 / 0.85);
-  line-height: 1.45;
-  transition:
-    translate var(--fold) ease,
-    visibility 0s;
-  /* Its own layer: it slides without being painted again. */
-  will-change: translate;
-}
-
-/* Folded, it slides out, down or to the right, then leaves the accessibility
-   tree. */
-.root[data-folded] .narration {
-  translate: 0 100%;
-  visibility: hidden;
-  transition:
-    translate var(--fold) ease,
-    visibility 0s var(--fold);
-}
-
-/* The tab which folds it, astride its border; folded, on the frame's edge. Its
-   chevron points where the text goes. Everything that slides moves by
-   translate only, which is not laid out nor painted again at each frame. */
-.fold {
-  position: absolute;
-  left: 50%;
-  bottom: calc(var(--band) - 0.8rem);
-  translate: -50% 0;
-  width: 3rem;
-  height: 1.6rem;
-  padding: 0;
-  border: 1px solid rgb(252 211 77 / 0.35);
-  border-radius: 999px;
-  background: #0c0a09;
-  color: #fde68a;
-  font-size: 1.1rem;
-  line-height: 1;
-  transition: translate var(--fold) ease;
-}
-
-.fold span {
-  display: block;
-  rotate: 90deg;
-}
-
-.root[data-folded] .fold {
-  translate: -50% calc(var(--band) - 0.8rem - max(0.5rem, env(safe-area-inset-bottom)));
-}
-
-/* Landscape: the text is a panel on the right, 16rem wide but never more than
-   30% of the frame, the whole height, over the image; the top bar stays left of
-   it. The safe zone of the landscape scenes leaves it free (see
-   packages/generator). It can be folded, to see the whole image. */
 .root[data-orientation="landscape"] {
   --panel: min(16rem, 30cqw);
 }
 
-.root[data-orientation="landscape"] .narration {
-  top: 0;
-  left: auto;
-  width: var(--panel);
-  height: auto;
-  /* Its border is on the left, the band's on the top in portrait. */
-  padding: max(1.25rem, env(safe-area-inset-top)) max(1.25rem, env(safe-area-inset-right))
-    max(1.25rem, env(safe-area-inset-bottom)) 1.25rem;
-  border-top: 0;
-  border-left: 1px solid rgb(252 211 77 / 0.35);
-}
-
-.root[data-orientation="landscape"][data-folded] .narration {
-  translate: 100% 0;
-}
-
-.root[data-orientation="landscape"] .fold {
-  left: auto;
-  right: calc(var(--panel) - 0.8rem);
-  top: 50%;
-  bottom: auto;
-  translate: 0 -50%;
-  width: 1.6rem;
-  height: 3rem;
-}
-
-.root[data-orientation="landscape"] .fold span {
-  rotate: none;
-}
-
-.root[data-orientation="landscape"][data-folded] .fold {
-  translate: calc(var(--panel) - 0.8rem - max(0.5rem, env(safe-area-inset-right))) -50%;
-}
-
-/* The panel stays put; only its text appears. */
-.root[data-orientation="landscape"] .narration.appear {
-  animation: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .root[data-orientation="landscape"] .narration.appear > * {
-    animation: appear 400ms ease-out;
-  }
+.narration {
+  line-height: 1.45;
 }
 
 .narration h2 {
@@ -429,10 +328,6 @@
   .hotspot,
   .tip {
     transition: none;
-  }
-
-  .root {
-    --fold: 0s;
   }
 
   /* The intro is shown at once, and still held to be read. */
