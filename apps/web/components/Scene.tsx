@@ -12,7 +12,14 @@ import {
   sceneLayout,
   sceneText,
 } from "@esquisse/shared";
-import { type CSSProperties, useEffect, useReducer, useRef, useState } from "react";
+import {
+  type CSSProperties,
+  useEffect,
+  useReducer,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import type { SceneImages } from "../scenes.ts";
 import styles from "./Scene.module.css";
 
@@ -20,6 +27,24 @@ import styles from "./Scene.module.css";
 // each character opens a dialogue. Everything is placed in % of the image (see
 // sceneLayout in packages/shared), so it follows the cropping. What it shows as
 // it is played is playScene's, shared with the mobile app.
+
+// A touch screen held the other way than the scene, which then asks to turn it
+// (see .turn in the CSS). A computer's frame is already turned like the scene.
+const COARSE = "(pointer: coarse)";
+const PORTRAIT = "(orientation: portrait)";
+const onScreenChange = (onChange: () => void) => {
+  const lists = [COARSE, PORTRAIT].map((q) => window.matchMedia(q));
+  for (const list of lists) list.addEventListener("change", onChange);
+  return () => {
+    for (const list of lists) list.removeEventListener("change", onChange);
+  };
+};
+const useNotTurned = (landscape: boolean) =>
+  useSyncExternalStore(
+    onScreenChange,
+    () => window.matchMedia(COARSE).matches && window.matchMedia(PORTRAIT).matches === landscape,
+    () => false,
+  );
 
 export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }) => {
   const { scene } = data;
@@ -32,8 +57,10 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
   const folded = foldedAt === narration.key;
 
   // The title on black, then the intro under it, until they have faded out
-  // (see the CSS).
+  // (see the CSS). It waits for the screen to be turned like the scene, and
+  // starts over if it is turned away before the end: it is never missed.
   const [intro, setIntro] = useState(true);
+  const notTurned = useNotTurned(layout.landscape);
 
   // ── Dialogue: an open conversation, until it is left ─────────────────────────
 
@@ -132,7 +159,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
         <span aria-hidden="true">{folded ? "‹" : "›"}</span>
       </button>
 
-      {intro && (
+      {intro && !notTurned && (
         <div
           className={styles.intro}
           style={

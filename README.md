@@ -58,7 +58,8 @@ the characters, clickable too, open a dialogue. On the web, the frame adapts to 
 `app/scene/`; in the mobile app, the scene takes the whole screen. A scene opens
 on its title, in the middle, on black; its intro fades in under it, held long
 enough to be read (50 ms per character), then both fade out to show the scene; it
-cannot be skipped.
+cannot be skipped. On the web, while a touch screen asks to be turned, it
+waits, and starts over if the screen is turned away before its end.
 
 - **The scene is written by Claude** (Opus 5.5) from a brief: the texts, the
   dialogues, the prompts for the images and the composition. The script checks
