@@ -20,10 +20,19 @@ import {
   Platform,
   Pressable,
   ScrollView,
+  type ScrollViewInstance,
   Text,
   View,
 } from "react-native";
-import Animated, { FadeIn, FadeInDown, FadeOut } from "react-native-reanimated";
+import Animated, {
+  FadeIn,
+  FadeInDown,
+  FadeOut,
+  SlideInDown,
+  SlideInRight,
+  SlideOutDown,
+  SlideOutRight,
+} from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { SceneImages } from "../scenes.ts";
 
@@ -33,10 +42,13 @@ import type { SceneImages } from "../scenes.ts";
 // so it follows the cropping. What it shows as it is played is playScene's,
 // shared with the web site.
 
-// In landscape, the text is a panel on the right, 30% of the screen's width,
-// over the image (the web's Scene.module.css has the same): the safe zone of
-// the landscape scenes leaves it free (see packages/generator).
-const PANEL = "30%";
+// The text is a band at the bottom, 22% of the screen's height; in landscape, a
+// panel on the right, 256 wide but never more than 30% of the screen. Both are
+// over the image (the web's Scene.module.css has the same): the safe zones
+// leave them free (see packages/generator). Either can be folded, to see the
+// whole image.
+const BAND = 0.22;
+const panelWidth = (screenWidth: number) => Math.min(256, screenWidth * 0.3);
 
 const place = (box: Box) => ({ position: "absolute" as const, ...placeStyle(box) });
 
@@ -85,7 +97,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
 
   // ── Dialogue: an open conversation, until it is left ─────────────────────────
 
-  const lines = useRef<ScrollView>(null);
+  const lines = useRef<ScrollViewInstance>(null);
   const close = () => dispatch({ type: "leave" });
 
   // Android's back button leaves the conversation, not the scene.
@@ -99,6 +111,13 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
     return () => sub.remove();
   }, [inConversation]);
 
+  const panel = screen ? panelWidth(screen.width) : 0;
+  const band = screen ? screen.height * BAND : 0;
+
+  // The text can be folded to see the whole image; a new text opens it again.
+  const [foldedAt, setFoldedAt] = useState<number>();
+  const folded = foldedAt === narration.key;
+
   // The panel's padding, inside the screen's safe area.
   const panelPadding = {
     paddingTop: Math.max(20, insets.top),
@@ -111,7 +130,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
     <ScrollView
       key={narration.key}
       accessibilityLiveRegion="polite"
-      contentContainerClassName={layout.landscape ? undefined : "px-5 pt-10"}
+      contentContainerClassName={layout.landscape ? undefined : "px-5 pt-4"}
       contentContainerStyle={
         layout.landscape ? panelPadding : { paddingBottom: Math.max(16, insets.bottom) }
       }
@@ -209,10 +228,10 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
         pointerEvents="box-none"
         className="absolute left-0 top-0 flex-row items-center justify-between pb-3"
         style={{
-          right: layout.landscape ? PANEL : 0,
+          right: layout.landscape && !folded ? panel : 0,
           paddingTop: Math.max(12, insets.top),
           paddingLeft: Math.max(16, insets.left),
-          paddingRight: layout.landscape ? 16 : Math.max(16, insets.right),
+          paddingRight: layout.landscape && !folded ? 16 : Math.max(16, insets.right),
         }}
       >
         <Text
@@ -236,25 +255,56 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
         </Pressable>
       </LinearGradient>
 
-      {/* Narration: the bottom band, 22% of the height, over the image; in
-          landscape, the panel on the right, the whole height (see PANEL). */}
-      {layout.landscape ? (
-        <View
-          className="absolute bottom-0 right-0 top-0 border-l border-amber-300/20 bg-stone-950/85"
-          style={{ width: PANEL }}
+      {/* Narration: the bottom band, over the image; in landscape, the panel on
+          the right, the whole height (see BAND and panelWidth), bordered on the
+          top or on the left; folded, it slides out, down
+          or to the right. */}
+      {!folded &&
+        (layout.landscape ? (
+          <Animated.View
+            entering={SlideInRight.duration(300)}
+            exiting={SlideOutRight.duration(300)}
+            className="absolute bottom-0 right-0 top-0 border-l border-amber-300/35 bg-stone-950/85"
+            style={{ width: panel }}
+          >
+            {narrationText}
+          </Animated.View>
+        ) : (
+          <Animated.View
+            entering={SlideInDown.duration(300)}
+            exiting={SlideOutDown.duration(300)}
+            className="absolute bottom-0 left-0 right-0 border-t border-amber-300/35 bg-stone-950/85"
+            style={{ height: band }}
+          >
+            {narrationText}
+          </Animated.View>
+        ))}
+
+      {/* The tab which folds it, astride its border; folded, on the screen's
+          edge. Its chevron points where the text goes. */}
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={folded ? sceneText.unfoldText : sceneText.foldText}
+        accessibilityState={{ expanded: !folded }}
+        onPress={() => setFoldedAt(folded ? undefined : narration.key)}
+        className={`absolute items-center justify-center rounded-full border border-amber-300/35 bg-stone-950 active:bg-stone-900 ${layout.landscape ? "h-12 w-6" : "h-6 w-12"}`}
+        style={
+          layout.landscape
+            ? { top: "50%", marginTop: -24, right: folded ? Math.max(8, insets.right) : panel - 12 }
+            : {
+                left: "50%",
+                marginLeft: -24,
+                bottom: folded ? Math.max(8, insets.bottom) : band - 12,
+              }
+        }
+      >
+        <Text
+          className="text-lg text-amber-200"
+          style={layout.landscape ? undefined : { transform: [{ rotate: "90deg" }] }}
         >
-          {narrationText}
-        </View>
-      ) : (
-        <LinearGradient
-          colors={["transparent", "rgba(12,10,9,0.85)"]}
-          locations={[0, 0.25]}
-          className="absolute bottom-0 left-0 right-0"
-          style={{ height: "22%" }}
-        >
-          {narrationText}
-        </LinearGradient>
-      )}
+          {folded ? "‹" : "›"}
+        </Text>
+      </Pressable>
 
       {/* Dialogue: an open conversation takes the scene, the background waits. */}
       {conversation && (
@@ -277,7 +327,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
                 ? "border-l border-amber-300/35 bg-stone-900"
                 : "max-h-[60%] rounded-t-3xl border-t border-amber-300/35 bg-stone-900"
             }
-            style={layout.landscape ? { width: PANEL } : undefined}
+            style={layout.landscape ? { width: panel } : undefined}
           >
             <ScrollView
               ref={lines}

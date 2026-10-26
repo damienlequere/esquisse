@@ -71,6 +71,9 @@ export const sceneText = {
   talkTo: (name: string) => `Parler à ${name}`,
   goodbye: "Au revoir.",
   reveal: "Révéler ce qui est cliquable",
+  // The text panel, in landscape.
+  foldText: "Replier le texte",
+  unfoldText: "Afficher le texte",
   // When the screen is not turned like the scene.
   turnLandscape: "Tourne ton écran à l'horizontale",
   turnPortrait: "Tourne ton écran à la verticale",

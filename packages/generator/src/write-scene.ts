@@ -34,7 +34,7 @@ export const FORMATS = {
   },
   landscape: {
     imageRatio: "16:9",
-    safe: { x0: 0.14, y0: 0.22, x1: 0.63, y1: 0.86 },
+    safe: { x0: 0.14, y0: 0.22, x1: 0.68, y1: 0.86 },
     words: "paysage 16:9",
     text: "le panneau de texte à droite",
     floor: "la moitié inférieure de l'image",

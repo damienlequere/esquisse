@@ -11,7 +11,7 @@ import {
   sceneLayout,
   sceneText,
 } from "@esquisse/shared";
-import { type CSSProperties, useEffect, useReducer, useRef } from "react";
+import { type CSSProperties, useEffect, useReducer, useRef, useState } from "react";
 import type { SceneImages } from "../scenes.ts";
 import styles from "./Scene.module.css";
 
@@ -24,6 +24,10 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
   const { scene } = data;
   const layout = sceneLayout(data);
   const [{ narration, conversation }, dispatch] = useReducer(playScene, data, initialSceneState);
+
+  // The text can be folded to see the whole image; a new text opens it again.
+  const [foldedAt, setFoldedAt] = useState<number>();
+  const folded = foldedAt === narration.key;
 
   // ── Dialogue: an open conversation, until it is left ─────────────────────────
 
@@ -75,7 +79,11 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
   useEffect(() => () => clearTimeout(revealTimer.current), []);
 
   return (
-    <div className={styles.root} data-orientation={layout.landscape ? "landscape" : "portrait"}>
+    <div
+      className={styles.root}
+      data-orientation={layout.landscape ? "landscape" : "portrait"}
+      data-folded={folded || undefined}
+    >
       <div
         className={styles.scene}
         style={{ "--image-ratio": layout.ratio, "--reveal": `${REVEAL_MS}ms` } as CSSProperties}
@@ -129,6 +137,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
 
       <section
         key={narration.key}
+        id="narration"
         className={`${styles.narration} ${styles.appear}`}
         aria-live="polite"
       >
@@ -136,9 +145,22 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
         <p>{narration.text}</p>
       </section>
 
+      <button
+        type="button"
+        className={styles.fold}
+        aria-controls="narration"
+        aria-expanded={!folded}
+        aria-label={folded ? sceneText.unfoldText : sceneText.foldText}
+        onClick={() => setFoldedAt(folded ? undefined : narration.key)}
+      >
+        <span aria-hidden="true">{folded ? "‹" : "›"}</span>
+      </button>
+
       {/* Over everything when the screen is not turned like the scene (see the CSS). */}
       <div className={styles.turn}>
-        <span aria-hidden="true">⟳</span>
+        <span className={styles.turnIcon} aria-hidden="true">
+          ⟳
+        </span>
         <p>{layout.landscape ? sceneText.turnLandscape : sceneText.turnPortrait}</p>
       </div>
 

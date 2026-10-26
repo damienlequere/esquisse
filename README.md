@@ -65,13 +65,15 @@ on a phone, the ✦ button shows for a moment what is clickable.
 - **The image is portrait (9:16) or landscape (16:9)**, chosen per scene
   (`imageRatio` in `scene.json`), in `cover`. In portrait, a phone crops its
   sides (9% each), a tablet its top and bottom (12.5% each), and the text is a
-  band at the bottom, 22% of the height. In landscape, the screen is turned: a
-  phone crops the top and bottom (9% each), a tablet the sides (12.5% each), and
-  the text is a panel on the right, 30% of the width, the whole height; a
-  conversation opens in it too. What stays visible everywhere, minus the top bar
-  and the text, is the **safe zone** (`safe` in `scene.json`):
-  `{0.09, 0.14, 0.91, 0.71}` in portrait, `{0.14, 0.22, 0.63, 0.86}` in
-  landscape, where the decor that matters is in the left two thirds.
+  band at the bottom, 22% of the height. In both orientations, the text has a
+  border, and a tab on it folds the text, to see the whole image, until the
+  next text. In landscape, the screen is turned: a phone crops the top and bottom (9% each), a tablet the sides (12.5% each), and
+  the text is a panel on the right, 16rem wide but never more than 30% of the
+  screen, the whole height; a conversation opens in it too. What stays
+  visible everywhere, minus the top bar and the text, is the **safe zone**
+  (`safe` in `scene.json`): `{0.09, 0.14, 0.91, 0.71}` in portrait,
+  `{0.14, 0.22, 0.68, 0.86}` in landscape, where the decor that matters is in
+  the left two thirds.
 - **The screen turns like the scene.** The mobile app locks each scene's screen
   to its orientation (the home screen stays portrait). The web site cannot turn a
   phone: on a touch screen held the other way, the scene asks to turn it. On a
