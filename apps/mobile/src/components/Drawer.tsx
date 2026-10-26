@@ -1,12 +1,17 @@
 import type { ReactNode } from "react";
-import { type GestureResponderEvent, Pressable, Text, View } from "react-native";
+import { type GestureResponderEvent, Pressable, Text } from "react-native";
 import Animated, {
   SlideInDown,
   SlideInRight,
   SlideOutDown,
   SlideOutRight,
+  useAnimatedStyle,
+  withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+// Between the buttons and the open panel.
+const GAP = 8;
 
 // A touch on the drawer stops there, its parent never folds it.
 const keepTouch = (event: GestureResponderEvent) => event.stopPropagation();
@@ -20,12 +25,12 @@ export type DrawerTab<Id extends string> = {
 };
 
 // A panel over its parent, against its bottom or right edge, showing one of
-// several contents, each opened by its round button on its edge (in a row,
-// centered, at the bottom; in a column, centered, on the right);
-// the open one's button folds it away, to see what is under it, and so does a
-// touch anywhere else, which still reaches what it is on: its parent folds it in
-// its onTouchStart, which the drawer's own touches never reach. Folded, it
-// slides out; the buttons stay put.
+// several contents, each opened by its round button. The buttons stand toward
+// the bottom right corner, just out of the panel: in a row above it, or in a
+// column on its left; folded, it slides out and they slide with it to the edge.
+// The open content's button folds it away, to see what is under it, and so
+// does a touch anywhere else, which still reaches what it is on: its parent
+// folds it in its onTouchStart, which the drawer's own touches never reach.
 // `size` is its height at the bottom, or its width on the right. The web has
 // the same (apps/web/components/Drawer.tsx).
 export const Drawer = <Id extends string>({
@@ -44,15 +49,26 @@ export const Drawer = <Id extends string>({
 }) => {
   const insets = useSafeAreaInsets();
   const shown = tabs.find((tab) => tab.id === open);
+
+  // The buttons stand just out of the panel; folded, they slide to the edge.
+  const right = side === "right";
+  const beside = size + GAP;
+  const edge = Math.max(16, right ? insets.right : insets.bottom);
+  const away = shown ? 0 : beside - edge;
+  const slide = useAnimatedStyle(() => ({
+    transform: right
+      ? [{ translateX: withTiming(away, { duration: 300 }) }]
+      : [{ translateY: withTiming(away, { duration: 300 }) }],
+  }));
   return (
     <>
       {shown &&
-        (side === "right" ? (
+        (right ? (
           <Animated.View
             entering={SlideInRight.duration(300)}
             exiting={SlideOutRight.duration(300)}
             onTouchStart={keepTouch}
-            className="absolute bottom-0 right-0 top-0 border-l border-amber-300/35 bg-stone-950/85"
+            className="absolute bottom-0 right-0 top-0 bg-stone-950/95"
             style={{ width: size }}
           >
             {shown.content}
@@ -62,25 +78,26 @@ export const Drawer = <Id extends string>({
             entering={SlideInDown.duration(300)}
             exiting={SlideOutDown.duration(300)}
             onTouchStart={keepTouch}
-            className="absolute bottom-0 left-0 right-0 border-t border-amber-300/35 bg-stone-950/85"
+            className="absolute bottom-0 left-0 right-0 bg-stone-950/95"
             style={{ height: size }}
           >
             {shown.content}
           </Animated.View>
         ))}
 
-      {/* The round buttons: in a row, centered, at the bottom; in a column,
-          centered, on the right. Their strip lets touches through between them.
+      {/* The round buttons, toward the bottom right corner: in a row at the
+          bottom; in a column on the right. Their strip lets touches through between them.
           The open content's is lighter. */}
-      <View
+      <Animated.View
         pointerEvents="box-none"
         onTouchStart={keepTouch}
-        className={`absolute justify-center gap-2 ${side === "right" ? "bottom-0 top-0 flex-col" : "left-0 right-0 flex-row"}`}
-        style={
-          side === "right"
-            ? { right: Math.max(16, insets.right) }
-            : { bottom: Math.max(16, insets.bottom) }
-        }
+        className={`absolute justify-end gap-2 ${right ? "bottom-0 top-0 flex-col" : "left-0 right-0 flex-row"}`}
+        style={[
+          right
+            ? { right: beside, paddingBottom: Math.max(16, insets.bottom) }
+            : { bottom: beside, paddingRight: Math.max(16, insets.right) },
+          slide,
+        ]}
       >
         {tabs.map((tab) => {
           const active = tab.id === open;
@@ -97,7 +114,7 @@ export const Drawer = <Id extends string>({
             </Pressable>
           );
         })}
-      </View>
+      </Animated.View>
     </>
   );
 };

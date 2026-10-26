@@ -10,11 +10,11 @@ export type DrawerTab<Id extends string> = {
 };
 
 // A panel over its parent, against its bottom or right edge, showing one of
-// several contents, each opened by its round button on its edge (in a row,
-// centered, at the bottom; in a column, centered, on the right);
-// the open one's button folds it away, to see what is under it, and so does a
-// click anywhere else, which still reaches what it is on. Folded, it slides
-// out; the buttons stay put.
+// several contents, each opened by its round button. The buttons stand toward
+// the bottom right corner, just out of the panel: in a row above it, or in a
+// column on its left; folded, it slides out and they slide with it to the edge.
+// The open content's button folds it away, to see what is under it, and so
+// does a click anywhere else, which still reaches what it is on.
 // Its parent is positioned; `size` is any CSS length, its height at the bottom
 // or its width on the right (in cqh or cqw when the parent is a size container).
 // The mobile app has the same (apps/mobile/src/components/Drawer.tsx).
@@ -54,19 +54,14 @@ export const Drawer = <Id extends string>({
     document.addEventListener("pointerdown", onDown);
     return () => document.removeEventListener("pointerdown", onDown);
   }, [isOpen]);
+  const style = { "--drawer-size": size } as CSSProperties;
+  const state = { "data-side": side, "data-open": isOpen || undefined };
   return (
     <>
-      <div
-        ref={panel}
-        id={id}
-        className={styles.panel}
-        style={{ "--drawer-size": size } as CSSProperties}
-        data-side={side}
-        data-open={isOpen || undefined}
-      >
+      <div ref={panel} id={id} className={styles.panel} style={style} {...state}>
         {shown?.content}
       </div>
-      <div ref={buttons} className={styles.buttons} data-side={side}>
+      <div ref={buttons} className={styles.buttons} style={style} {...state}>
         {tabs.map((tab) => (
           <button
             key={tab.id}
