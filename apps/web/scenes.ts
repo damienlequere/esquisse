@@ -3,6 +3,7 @@
 import foretFond from "@esquisse/shared/assets/scenes/foret/fond.webp";
 import foret2Fond from "@esquisse/shared/assets/scenes/foret2/fond.webp";
 import foret3Fond from "@esquisse/shared/assets/scenes/foret3/fond.webp";
+import foret4Fond from "@esquisse/shared/assets/scenes/foret4/fond.webp";
 import phareFond from "@esquisse/shared/assets/scenes/phare/fond.webp";
 import phareGardienne from "@esquisse/shared/assets/scenes/phare/gardienne.webp";
 import phareMousse from "@esquisse/shared/assets/scenes/phare/mousse.webp";
@@ -26,6 +27,10 @@ export const sceneImages = {
   },
   foret3: {
     background: foret3Fond,
+    characters: {},
+  },
+  foret4: {
+    background: foret4Fond,
     characters: {},
   },
   phare: {

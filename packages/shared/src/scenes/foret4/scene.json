@@ -1,0 +1,66 @@
+{
+  "brief": "l'orée d'une forêt verdoyante à l'aube",
+  "title": "L'orée de Brocéliande",
+  "intro": "La rosée trempe tes chevilles quand tu quittes la lande. Devant toi, la forêt s'éveille dans une brume dorée, et un silence étrange, sans un chant d'oiseau, flotte sous les premiers arbres.",
+  "imageRatio": "16:9",
+  "safe": {
+    "x0": 0.14,
+    "y0": 0.22,
+    "x1": 0.68,
+    "y1": 0.86
+  },
+  "style": "Peinture à l'huile réaliste, dans l'esprit du concept art et du matte painting de cinéma : proportions et perspective justes, matières rendues avec précision (écorce crevassée des chênes, mousse humide, fougères perlées de rosée, pierre grise couverte de lichen, terre noire du sentier), touche visible mais maîtrisée, profondeur atmosphérique marquée par la brume. Palette de verts profonds et frais, de gris bleutés dans les lointains et d'or pâle et rosé là où perce le soleil levant ; clair-obscur doux entre la clairière éclairée et la pénombre du sous-bois. Atmosphère calme, fraîche, solennelle, avec une pointe de mystère et d'attente. Aucun texte, lettre, chiffre, signature ni logo ; pas de style cartoon, bande dessinée, anime ni caricature, pas de contours encrés ni d'aplats ; pas de photographie ni de rendu 3D lisse ; pas de cadre ni de bordure.",
+  "light": "soleil levant bas à gauche, lumière dorée et rasante filtrant entre les troncs, brume claire, ombres longues vers la droite, sous-bois bleuté",
+  "background": {
+    "prompt": "L'orée d'une forêt ancienne et verdoyante à l'aube, vue de face à hauteur d'homme. Dans les deux tiers gauches de l'image, la lisière : de grands chênes et hêtres centenaires aux troncs massifs, écorce crevassée tachée de mousse et de lichen, racines noueuses qui affleurent, branches basses chargées de feuillage frais ; entre eux s'ouvre l'entrée sombre d'un sous-bois où s'enfonce un étroit sentier de terre, et la brume du matin s'y accroche en nappes traversées de rayons dorés venus du soleil levant à gauche. Au fond, entre les troncs, des fûts plus lointains s'estompent dans un gris bleuté, quelques fougères et des digitales en bordure du bois, une vieille souche couverte de mousse contre un tronc. La moitié inférieure de l'image est une clairière d'herbe rase et humide, perlée de rosée, avec quelques touffes de trèfle et de petites fleurs blanches, large, plane et entièrement dégagée, sans rocher, ni souche, ni objet posé au milieu. Le tiers droit ne montre que du décor secondaire : la lande qui s'éloigne en pente douce, quelques bouleaux clairsemés, des genêts dans la brume et le ciel pâle rosé de l'aube. Le lieu est vide de toute personne et de tout animal.",
+    "details": [
+      {
+        "paint": "une fine toile d'araignée perlée de gouttes de rosée, tendue entre deux brindilles basses à la droite du grand chêne de gauche, qui scintille doucement dans un rayon de soleil doré",
+        "zone": {
+          "x0": 0.24,
+          "y0": 0.46,
+          "x1": 0.3,
+          "y1": 0.56
+        }
+      },
+      {
+        "paint": "quelques polypores plats et ocre pâle, en petites consoles, accrochés à l'écorce crevassée du chêne de droite, à mi-hauteur du tronc, entre des plaques de lichen gris-vert",
+        "zone": {
+          "x0": 0.53,
+          "y0": 0.4,
+          "x1": 0.58,
+          "y1": 0.5
+        }
+      },
+      {
+        "paint": "une petite flaque d'eau boueuse dans une ornière du sentier de terre noire, à l'entrée du sous-bois, qui reflète le ciel pâle et quelques feuilles",
+        "zone": {
+          "x0": 0.36,
+          "y0": 0.71,
+          "x1": 0.44,
+          "y1": 0.76
+        }
+      },
+      {
+        "paint": "une ligne d'empreintes de sabots fendus, fraîches et nettes, imprimées dans la boue humide du sentier et qui s'enfoncent vers le sous-bois",
+        "zone": {
+          "x0": 0.4,
+          "y0": 0.63,
+          "x1": 0.47,
+          "y1": 0.69
+        }
+      },
+      {
+        "paint": "un tapis plat de feuilles mortes de l'an passé, brunes et cuivrées, détrempées de rosée, entre les racines au pied du grand chêne de gauche",
+        "zone": {
+          "x0": 0.22,
+          "y0": 0.64,
+          "x1": 0.3,
+          "y1": 0.7
+        }
+      }
+    ]
+  },
+  "objects": [],
+  "characters": []
+}
