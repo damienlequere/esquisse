@@ -163,7 +163,7 @@ Tout est en français, sauf detect, et sauf si la demande dit une autre langue. 
 
 Les coordonnées sont des fractions de l'image, de 0 à 1, depuis son coin en haut à gauche ; une zone est {x0, y0, x1, y1}.
 
-- Zone sûre : ${JSON.stringify(format.safe)}. C'est la partie de l'image visible sur tous les écrans, moins la barre du haut et ${format.text}. Les zones des objets et des personnages y tiennent entières.
+- Zone sûre : ${JSON.stringify(format.safe)}. C'est la partie de l'image visible sur tous les écrans, moins une marge en haut et ${format.text}. Les zones des objets et des personnages y tiennent entières.
 - Les objets ne se recouvrent pas, et chacun fait au moins 0,12 de large et 0,08 de haut, pour se toucher du doigt sur un téléphone.
 - Un personnage occupe la zone : x de anchor.x − w/2 à anchor.x + w/2, y de anchor.y − height à anchor.y, avec w = height × ${(CHARACTER_ASPECT / sceneRatio(format)).toFixed(2)} (un personnage est environ ${CHARACTER_ASPECT} fois aussi large que haut, et l'image est ${format.imageRatio}). Ses pieds sont sur le sol, anchor.y entre ${decimal(format.feet.min)} et ${decimal(format.feet.max)} ; height entre 0,18 et 0,42, plus petit s'il est plus loin.
 - Les zones des personnages ne recouvrent pas celles des objets. Deux personnages peuvent être proches, sans se recouvrir de plus de moitié.

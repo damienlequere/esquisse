@@ -64,13 +64,9 @@ export const playScene = (state: SceneState, action: SceneAction): SceneState =>
 export const remainingTopics = ({ character, asked }: Conversation) =>
   character.dialogue.topics.filter((topic) => !asked.includes(topic.ask));
 
-// How long the ✦ button shows what is clickable.
-export const REVEAL_MS = 1600;
-
 export const sceneText = {
   talkTo: (name: string) => `Parler à ${name}`,
   goodbye: "Au revoir.",
-  reveal: "Révéler ce qui est cliquable",
   // The text panel, in landscape.
   foldText: "Replier le texte",
   unfoldText: "Afficher le texte",

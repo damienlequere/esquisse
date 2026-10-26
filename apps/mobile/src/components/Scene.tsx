@@ -3,13 +3,11 @@ import {
   initialSceneState,
   placeStyle,
   playScene,
-  REVEAL_MS,
   remainingTopics,
   type SceneData,
   sceneLayout,
   sceneText,
 } from "@esquisse/shared";
-import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
 import { cssInterop } from "nativewind";
 import { useEffect, useReducer, useRef, useState } from "react";
@@ -48,12 +46,15 @@ import type { SceneImages } from "../scenes.ts";
 // leave them free (see packages/generator). Either can be folded, to see the
 // whole image.
 const BAND = 0.22;
+
+// How long the title stays over the blurred background, then fades out.
+const INTRO_HOLD_MS = 1600;
+const INTRO_FADE_MS = 1200;
 const panelWidth = (screenWidth: number) => Math.min(256, screenWidth * 0.3);
 
 const place = (box: Box) => ({ position: "absolute" as const, ...placeStyle(box) });
 
 // NativeWind styles only the components it knows.
-cssInterop(LinearGradient, { className: "style" });
 cssInterop(Animated.View, { className: "style" });
 
 // The action's label, above what it names, centered and on one line even when
@@ -85,16 +86,6 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
 
   const [{ narration, conversation }, dispatch] = useReducer(playScene, data, initialSceneState);
 
-  // Reveal what is clickable: there is no hover with a finger.
-  const [revealed, setRevealed] = useState(false);
-  const revealTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
-  const reveal = () => {
-    setRevealed(true);
-    clearTimeout(revealTimer.current);
-    revealTimer.current = setTimeout(() => setRevealed(false), REVEAL_MS);
-  };
-  useEffect(() => () => clearTimeout(revealTimer.current), []);
-
   // ── Dialogue: an open conversation, until it is left ─────────────────────────
 
   const lines = useRef<ScrollViewInstance>(null);
@@ -115,8 +106,18 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
   const band = screen ? screen.height * BAND : 0;
 
   // The text can be folded to see the whole image; a new text opens it again.
-  const [foldedAt, setFoldedAt] = useState<number>();
+  // It starts folded: the scene's intro waits for the tab.
+  const [foldedAt, setFoldedAt] = useState<number | undefined>(narration.key);
   const folded = foldedAt === narration.key;
+
+  // Opening the scene: its title over the background blurred and desaturated,
+  // which fades out, with the title, to show the scene (the web's
+  // Scene.module.css has the same). A tap skips it.
+  const [intro, setIntro] = useState(true);
+  useEffect(() => {
+    const timer = setTimeout(() => setIntro(false), INTRO_HOLD_MS);
+    return () => clearTimeout(timer);
+  }, []);
 
   // The panel's padding, inside the screen's safe area.
   const panelPadding = {
@@ -175,14 +176,14 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
             >
               {({ pressed }) => (
                 <>
-                  {(pressed || revealed) && (
+                  {pressed && (
                     <Animated.View
                       entering={FadeIn.duration(200)}
                       exiting={FadeOut.duration(300)}
                       className="absolute inset-0 rounded-xl border-2 border-amber-300/80 bg-amber-300/15"
                     />
                   )}
-                  {(pressed || revealed) && <Tip label={object.label} />}
+                  {pressed && <Tip label={object.label} />}
                 </>
               )}
             </Pressable>
@@ -213,7 +214,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
                       resizeMode="contain"
                       style={{ width: "100%", height: "100%", opacity: pressed ? 0.85 : 1 }}
                     />
-                    {(pressed || revealed) && <Tip label={label} />}
+                    {pressed && <Tip label={label} />}
                   </>
                 )}
               </Pressable>
@@ -221,39 +222,6 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
           })}
         </View>
       )}
-
-      {/* Top bar. */}
-      <LinearGradient
-        colors={["rgba(0,0,0,0.6)", "transparent"]}
-        pointerEvents="box-none"
-        className="absolute left-0 top-0 flex-row items-center justify-between pb-3"
-        style={{
-          right: layout.landscape && !folded ? panel : 0,
-          paddingTop: Math.max(12, insets.top),
-          paddingLeft: Math.max(16, insets.left),
-          paddingRight: layout.landscape && !folded ? 16 : Math.max(16, insets.right),
-        }}
-      >
-        <Text
-          accessibilityRole="header"
-          className="font-serif text-base tracking-wide text-stone-100"
-          style={{
-            textShadowColor: "#000",
-            textShadowRadius: 3,
-            textShadowOffset: { width: 0, height: 1 },
-          }}
-        >
-          {scene.title}
-        </Text>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={sceneText.reveal}
-          onPress={reveal}
-          className="h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-stone-950/50 active:bg-stone-950/80"
-        >
-          <Text className="text-base text-amber-200">✦</Text>
-        </Pressable>
-      </LinearGradient>
 
       {/* Narration: the bottom band, over the image; in landscape, the panel on
           the right, the whole height (see BAND and panelWidth), bordered on the
@@ -364,6 +332,50 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
               </View>
             </ScrollView>
           </Animated.View>
+        </Animated.View>
+      )}
+
+      {intro && screen && image && (
+        <Animated.View
+          exiting={FadeOut.duration(INTRO_FADE_MS)}
+          className="absolute inset-0 items-center justify-center overflow-hidden"
+        >
+          {/* Desaturated by its view's filter, which iOS and Android both draw. */}
+          <View
+            style={{
+              position: "absolute",
+              width: image.width,
+              height: image.height,
+              left: (screen.width - image.width) / 2,
+              top: (screen.height - image.height) / 2,
+              transform: [{ scale: 1.08 }],
+              filter: [{ grayscale: 1 }],
+            }}
+          >
+            <Image
+              source={images.background}
+              blurRadius={16}
+              style={{ width: "100%", height: "100%" }}
+            />
+          </View>
+          <View className="absolute inset-0 bg-black/55" />
+          <Pressable
+            className="absolute inset-0 items-center justify-center px-8"
+            accessibilityRole="button"
+            onPress={() => setIntro(false)}
+          >
+            <Text
+              accessibilityRole="header"
+              className="text-center font-serif text-4xl leading-tight text-stone-100"
+              style={{
+                textShadowColor: "rgba(0,0,0,0.8)",
+                textShadowRadius: 12,
+                textShadowOffset: { width: 0, height: 2 },
+              }}
+            >
+              {scene.title}
+            </Text>
+          </Pressable>
         </Animated.View>
       )}
     </View>

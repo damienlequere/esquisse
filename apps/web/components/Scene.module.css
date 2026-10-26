@@ -112,64 +112,8 @@
 .hotspot:hover .tip,
 .hotspot:focus-visible .tip,
 .character:hover .tip,
-.character:focus-visible .tip,
-.layer[data-revealed] .tip {
+.character:focus-visible .tip {
   opacity: 1;
-}
-
-.layer[data-revealed] .hotspot {
-  animation: glow var(--reveal) ease-in-out;
-}
-
-.layer[data-revealed] .character img {
-  animation: glow-img var(--reveal) ease-in-out;
-}
-
-@keyframes glow {
-  50% {
-    background: rgb(252 211 77 / 0.15);
-    box-shadow:
-      0 0 0 2px rgb(252 211 77 / 0.8),
-      0 0 30px rgb(252 211 77 / 0.6);
-  }
-}
-
-@keyframes glow-img {
-  50% {
-    filter: drop-shadow(0 0 1cqh rgb(252 211 77 / 1));
-  }
-}
-
-.top {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.75rem 1rem;
-  padding-top: max(0.75rem, env(safe-area-inset-top));
-  background: linear-gradient(rgb(0 0 0 / 0.6), transparent);
-  pointer-events: none;
-}
-
-.top h1 {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: normal;
-  letter-spacing: 0.04em;
-  text-shadow: 0 1px 3px #000;
-}
-
-.reveal {
-  width: 2.5rem;
-  height: 2.5rem;
-  border: 1px solid rgb(255 255 255 / 0.3);
-  border-radius: 50%;
-  background: rgb(12 10 9 / 0.5);
-  color: #fde68a;
-  pointer-events: auto;
 }
 
 /* Narration: the bottom band, 22% of the height, over the image. It can be
@@ -243,29 +187,6 @@
    packages/generator). It can be folded, to see the whole image. */
 .root[data-orientation="landscape"] {
   --panel: min(16rem, 30cqw);
-}
-
-/* The top bar spans the frame; its title stays left of the panel, and the ✦
-   button slides with it. */
-.root[data-orientation="landscape"] .top {
-  padding-left: max(1rem, env(safe-area-inset-left));
-  padding-right: max(1rem, env(safe-area-inset-right));
-}
-
-.root[data-orientation="landscape"] .top h1 {
-  max-width: calc(100cqw - var(--panel) - 5rem);
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.root[data-orientation="landscape"] .reveal {
-  translate: calc(-1 * var(--panel)) 0;
-  transition: translate var(--fold) ease;
-}
-
-.root[data-orientation="landscape"][data-folded] .reveal {
-  translate: none;
 }
 
 .root[data-orientation="landscape"] .narration {
@@ -413,6 +334,58 @@
   background: rgb(252 211 77 / 0.15);
 }
 
+/* Opening a scene: its title in the middle, over the background blurred and
+   desaturated, which then fades out, with the title, to show the scene. The
+   filter is painted once, on a copy of the background, and only its opacity
+   changes: cheap on a large screen. A tap skips it. */
+.root {
+  --intro-hold: 1.6s;
+  --intro-fade: 1.2s;
+}
+
+.intro {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  overflow: hidden;
+  animation: intro var(--intro-fade) ease-in var(--intro-hold) forwards;
+}
+
+.intro img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  aspect-ratio: var(--image-ratio);
+  width: max(100cqw, 100cqh * var(--image-ratio));
+  /* It overflows the frame, like the scene's image (Tailwind's reset caps it). */
+  max-width: none;
+  translate: -50% -50%;
+  /* A little larger, so the blur does not fade at the edges. */
+  scale: 1.1;
+  filter: blur(1.6cqmin) grayscale(1) brightness(0.45);
+}
+
+.intro h1 {
+  position: relative;
+  margin: 0;
+  max-width: 24ch;
+  font-size: clamp(1.75rem, 7cqmin, 3.25rem);
+  font-weight: normal;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  text-align: center;
+  text-shadow: 0 2px 12px rgb(0 0 0 / 0.8);
+}
+
+@keyframes intro {
+  to {
+    opacity: 0;
+  }
+}
+
 /* The screen is not turned like the scene: a landscape scene on a portrait
    phone, or the reverse. The whole frame asks to turn it. Only on a touch
    screen: a computer's window is not turned, and its frame already is. */
@@ -461,12 +434,11 @@
 
   .root {
     --fold: 0s;
+    --intro-fade: 1ms;
   }
 
   .appear,
-  .panel,
-  .layer[data-revealed] .hotspot,
-  .layer[data-revealed] .character img {
+  .panel {
     animation: none;
   }
 }

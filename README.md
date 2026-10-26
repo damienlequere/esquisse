@@ -55,8 +55,9 @@ The scripts are not named `deploy`: `pnpm deploy` is a built-in pnpm command.
 clickable scene, ported from protagonist's `prototypes/scene-cliquable`: the
 place's image fills the frame, each action is a clickable part of the image, and
 the characters, clickable too, open a dialogue. On the web, the frame adapts to the screen, like any page under
-`app/scene/`; in the mobile app, the scene takes the whole screen. With no hover
-on a phone, the ✦ button shows for a moment what is clickable.
+`app/scene/`; in the mobile app, the scene takes the whole screen. A scene opens
+on its title, in the middle, over its background blurred and desaturated, which
+then fades out with the title to show the scene; a tap skips it.
 
 - **The scene is written by Claude** (Opus 5.5) from a brief: the texts, the
   dialogues, the prompts for the images and the composition. The script checks
@@ -67,10 +68,10 @@ on a phone, the ✦ button shows for a moment what is clickable.
   sides (9% each), a tablet its top and bottom (12.5% each), and the text is a
   band at the bottom, 22% of the height. In both orientations, the text has a
   border, and a tab on it folds the text, to see the whole image, until the
-  next text. In landscape, the screen is turned: a phone crops the top and bottom (9% each), a tablet the sides (12.5% each), and
+  next text. It starts folded: the scene's intro waits for the tab. In landscape, the screen is turned: a phone crops the top and bottom (9% each), a tablet the sides (12.5% each), and
   the text is a panel on the right, 16rem wide but never more than 30% of the
   screen, the whole height; a conversation opens in it too. What stays
-  visible everywhere, minus the top bar and the text, is the **safe zone**
+  visible everywhere, minus a margin at the top and the text, is the **safe zone**
   (`safe` in `scene.json`): `{0.09, 0.14, 0.91, 0.71}` in portrait,
   `{0.14, 0.22, 0.68, 0.86}` in landscape, where the decor that matters is in
   the left two thirds.

@@ -31,7 +31,7 @@ export type Scene = {
   title: string;
   intro: string;
   imageRatio: string;
-  // The part of the image visible in every frame, minus the top bar and the text band.
+  // The part of the image visible in every frame, minus a margin at the top and the text.
   safe: Box;
   style: string;
   // The scene's light, for the characters' layers to match the background.

@@ -5,7 +5,6 @@ import {
   initialSceneState,
   placeStyle,
   playScene,
-  REVEAL_MS,
   remainingTopics,
   type SceneData,
   sceneLayout,
@@ -26,8 +25,12 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
   const [{ narration, conversation }, dispatch] = useReducer(playScene, data, initialSceneState);
 
   // The text can be folded to see the whole image; a new text opens it again.
-  const [foldedAt, setFoldedAt] = useState<number>();
+  // It starts folded: the scene's intro waits for the tab.
+  const [foldedAt, setFoldedAt] = useState<number | undefined>(narration.key);
   const folded = foldedAt === narration.key;
+
+  // The title over the blurred background, until it has faded out (see the CSS).
+  const [intro, setIntro] = useState(true);
 
   // ── Dialogue: an open conversation, until it is left ─────────────────────────
 
@@ -63,33 +66,15 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
     return () => window.removeEventListener("keydown", onKey);
   }, [inConversation]);
 
-  // ── Reveal what is clickable (no hover with a finger) ────────────────────────
-
-  const layer = useRef<HTMLDivElement>(null);
-  const revealTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
-  const reveal = () => {
-    const el = layer.current;
-    if (el === null) return;
-    el.removeAttribute("data-revealed");
-    void el.offsetWidth;
-    el.setAttribute("data-revealed", "");
-    clearTimeout(revealTimer.current);
-    revealTimer.current = setTimeout(() => el.removeAttribute("data-revealed"), REVEAL_MS);
-  };
-  useEffect(() => () => clearTimeout(revealTimer.current), []);
-
   return (
     <div
       className={styles.root}
       data-orientation={layout.landscape ? "landscape" : "portrait"}
       data-folded={folded || undefined}
     >
-      <div
-        className={styles.scene}
-        style={{ "--image-ratio": layout.ratio, "--reveal": `${REVEAL_MS}ms` } as CSSProperties}
-      >
+      <div className={styles.scene} style={{ "--image-ratio": layout.ratio } as CSSProperties}>
         <img className={styles.background} src={images.background.src} alt="" />
-        <div ref={layer} className={styles.layer}>
+        <div className={styles.layer}>
           {layout.objects.map(({ object, box }) => (
             <button
               key={object.id}
@@ -123,18 +108,6 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
         </div>
       </div>
 
-      <header className={styles.top}>
-        <h1>{scene.title}</h1>
-        <button
-          type="button"
-          className={styles.reveal}
-          aria-label={sceneText.reveal}
-          onClick={reveal}
-        >
-          ✦
-        </button>
-      </header>
-
       <section
         key={narration.key}
         id="narration"
@@ -155,6 +128,19 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
       >
         <span aria-hidden="true">{folded ? "‹" : "›"}</span>
       </button>
+
+      {intro && (
+        // biome-ignore lint/a11y/useKeyWithClickEvents lint/a11y/noStaticElementInteractions: a shortcut, it ends by itself
+        <div
+          className={styles.intro}
+          style={{ "--image-ratio": layout.ratio } as CSSProperties}
+          onClick={() => setIntro(false)}
+          onAnimationEnd={() => setIntro(false)}
+        >
+          <img src={images.background.src} alt="" />
+          <h1>{scene.title}</h1>
+        </div>
+      )}
 
       {/* Over everything when the screen is not turned like the scene (see the CSS). */}
       <div className={styles.turn}>
