@@ -7,7 +7,7 @@ import { spawn } from "node:child_process";
 import { writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { Box, Character, Scene, SceneData, SceneObject } from "@esquisse/shared";
+import type { Box, Character, Detail, Scene, SceneData, SceneObject } from "@esquisse/shared";
 import { characterBox, isLandscape, sceneRatio } from "@esquisse/shared/layout";
 import sharp from "sharp";
 import { pct } from "./check-scene.ts";
@@ -51,6 +51,20 @@ export const addObject = (key: string, scene: Scene, background: Buffer, o: Scen
       scene.style,
       `Retouche l'image jointe : ajoute-y ${o.paint}, ${where(o.zone)}.`,
       `Il s'intègre au décor comme s'il y avait toujours été : même technique de peinture, même touche, même lumière (${scene.light}), même perspective, avec ses ombres et ses reflets.`,
+      "Ne change rien d'autre : le cadrage, le décor et tout ce qui s'y trouve restent identiques, à la même place. N'ajoute aucune personne ni aucun texte.",
+    ].join("\n"),
+    [background],
+  );
+
+// The details, all in one retouch: each one degrades the image a little.
+export const addDetails = (key: string, scene: Scene, background: Buffer, details: Detail[]) =>
+  paint(
+    key,
+    scene.imageRatio,
+    [
+      scene.style,
+      `Retouche l'image jointe pour rendre le lieu plus crédible et plus vécu : ajoute-y ces détails, chacun entier dans sa zone, sans en déborder.\n- ${details.map((d) => `${d.paint}, ${where(d.zone)}`).join("\n- ")}`,
+      `Ils s'intègrent au décor comme s'ils y avaient toujours été : même technique de peinture, même touche, même lumière (${scene.light}), même perspective. Ils restent discrets : ils enrichissent le décor sans attirer l'œil plus que ce qui s'y trouve déjà.`,
       "Ne change rien d'autre : le cadrage, le décor et tout ce qui s'y trouve restent identiques, à la même place. N'ajoute aucune personne ni aucun texte.",
     ].join("\n"),
     [background],

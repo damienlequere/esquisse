@@ -8,7 +8,9 @@
 //
 // First the background: Claude writes the decor from the brief, Gemini paints
 // it, and the author validates it, has it painted again, or asks for a change.
-// Then, one at a time, the elements the author asks for: Claude writes each one
+// Then, if the author wants, details for realism: Claude suggests them from the
+// render, the author keeps some, and Gemini retouches them into the background,
+// never clickable. Then, one at a time, the elements the author asks for: Claude writes each one
 // from the current render, Gemini adds it (an object by retouching the
 // validated background, a character as a layer), and the author validates it
 // on the new render, has it redone, changes it, or drops it. Each render opens
@@ -24,12 +26,13 @@
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { createInterface } from "node:readline/promises";
-import type { Character, SceneData, SceneObject } from "@esquisse/shared";
+import type { Character, Detail, Scene, SceneData, SceneObject } from "@esquisse/shared";
 import { isLandscape } from "@esquisse/shared/layout";
 import sharp from "sharp";
 import { inside } from "./check-scene.ts";
 import { apiKey } from "./env.ts";
 import {
+  addDetails,
   addObject,
   detectObjects,
   paintBackground,
@@ -42,6 +45,7 @@ import { writeRegistries } from "./registry.ts";
 import {
   type Base,
   baseWriter,
+  detailWriter,
   type Element,
   elementId,
   elementWriter,
@@ -195,12 +199,9 @@ const createBackground = async (
 
 // ── The elements ─────────────────────────────────────────────────────────────
 
-const withObject = async (state: State, o: SceneObject): Promise<Candidate> => {
-  const { scene } = state.data;
-  console.log(`Adding ${o.id} to the background…`);
-  const background = await addObject(geminiKey, scene, state.background, o);
-  const objects = [...scene.objects, o];
-  // Every object is found again: the retouch may have moved the others a little.
+// Every object is found again after a retouch: it may have moved them a little.
+const findObjects = async (scene: Scene, background: Buffer, objects: SceneObject[]) => {
+  if (objects.length === 0) return {};
   console.log("Detecting the objects…");
   const boxes = await detectObjects(geminiKey, background, objects);
   for (const { id: oid } of objects) {
@@ -208,8 +209,35 @@ const withObject = async (state: State, o: SceneObject): Promise<Candidate> => {
     if (box === undefined) console.log(`⚠ ${oid}: not found in the image`);
     else if (!inside(box, scene.safe)) console.log(`⚠ ${oid}: outside the safe zone`);
   }
+  return boxes;
+};
+
+const withObject = async (state: State, o: SceneObject): Promise<Candidate> => {
+  const { scene } = state.data;
+  console.log(`Adding ${o.id} to the background…`);
+  const background = await addObject(geminiKey, scene, state.background, o);
+  const objects = [...scene.objects, o];
+  const boxes = await findObjects(scene, background, objects);
   return {
     data: { ...state.data, scene: { ...scene, objects }, objects: boxes },
+    background,
+    layers: state.layers,
+    backgroundChanged: true,
+  };
+};
+
+const withDetails = async (state: State, details: Detail[]): Promise<Candidate> => {
+  const { scene } = state.data;
+  console.log("Adding the details to the background…");
+  const background = await addDetails(geminiKey, scene, state.background, details);
+  const boxes = await findObjects(scene, background, scene.objects);
+  const all = [...(scene.background.details ?? []), ...details];
+  return {
+    data: {
+      ...state.data,
+      scene: { ...scene, background: { ...scene.background, details: all } },
+      objects: boxes,
+    },
     background,
     layers: state.layers,
     backgroundChanged: true,
@@ -273,6 +301,56 @@ const addElement = async (state: State, request: string): Promise<State> => {
   }
 };
 
+// ── The details ──────────────────────────────────────────────────────────────
+
+// Returns the new state if the details are validated, the same one otherwise.
+const addRealism = async (state: State): Promise<State> => {
+  const writer = detailWriter(
+    anthropicKey,
+    state.data,
+    await render(state.data, state.background, state.layers),
+  );
+  const list = (details: Detail[]) =>
+    details.map((d, i) => `\n  ${i + 1}. ${d.paint}\n     ${where(d.zone)}`).join("");
+  const suggested = await writer.suggest();
+  console.log(`\nDétails de réalisme : ${list(suggested)}`);
+  let details: Detail[] = [];
+  while (details.length === 0) {
+    const answer = (
+      await rl.question(
+        "Lesquels ajouter ? (des numéros, « tous », une description, ou Entrée pour passer)\n> ",
+      )
+    ).trim();
+    if (answer === "") return state;
+    const numbers = answer.split(/[\s,]+/);
+    if (answer.toLowerCase() === "tous") details = suggested;
+    else if (numbers.every((n) => /^\d+$/.test(n))) {
+      details = numbers.flatMap((n) => suggested[Number(n) - 1] ?? []);
+    } else details = await writer.write(answer);
+  }
+  for (;;) {
+    console.log(`\nLes détails : ${list(details)}\n`);
+    const candidate = await withDetails(state, details);
+    await showState(candidate);
+    const answer = await choose("Les détails :", {
+      v: "valider",
+      r: "refaire",
+      m: "modifier",
+      a: "abandonner",
+    });
+    if (answer === "v") {
+      await save(candidate);
+      return candidate;
+    }
+    if (answer === "a") return state;
+    if (answer === "m") {
+      const revised = await writer.revise(details, await rl.question("Que changer ?\n> "));
+      // All of them out of the safe zone: the previous ones stay.
+      if (revised.length > 0) details = revised;
+    }
+  }
+};
+
 // ── Run ──────────────────────────────────────────────────────────────────────
 
 const exists = existsSync(SCENE);
@@ -288,6 +366,7 @@ if (orientation !== undefined && brief !== undefined) {
     for (const dir of [DIR, SOURCES, MEDIA]) rmSync(dir, { recursive: true, force: true });
   }
   ({ state, suggestions } = await createBackground(brief, FORMATS[orientation]));
+  state = await addRealism(state);
 } else {
   if (!exists) throw new Error(`No scene "${id}": pnpm generate ${id} portrait|landscape "brief"`);
   state = load();
@@ -303,10 +382,14 @@ for (;;) {
   }
   const answer = (
     await rl.question(
-      "\nQue veux-tu ajouter ? (une description, un numéro d'idée, ou Entrée pour finir)\n> ",
+      "\nQue veux-tu ajouter ? (une description, un numéro d'idée, d pour des détails de réalisme, ou Entrée pour finir)\n> ",
     )
   ).trim();
   if (answer === "") break;
+  if (answer.toLowerCase() === "d") {
+    state = await addRealism(state);
+    continue;
+  }
   const picked = /^\d+$/.test(answer) ? suggestions[Number(answer) - 1] : undefined;
   if (/^\d+$/.test(answer) && picked === undefined) continue;
   const request = picked ?? answer;

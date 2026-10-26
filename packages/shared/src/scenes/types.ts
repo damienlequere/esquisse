@@ -15,6 +15,13 @@ export type SceneObject = {
   text: string;
 };
 
+// A detail for realism, retouched into the background, never clickable.
+export type Detail = {
+  paint: string;
+  // Where it must appear, inside the safe zone.
+  zone: Box;
+};
+
 export type Character = {
   id: string;
   name: string;
@@ -36,7 +43,7 @@ export type Scene = {
   style: string;
   // The scene's light, for the characters' layers to match the background.
   light: string;
-  background: { prompt: string };
+  background: { prompt: string; details?: Detail[] };
   objects: SceneObject[];
   characters: Character[];
 };

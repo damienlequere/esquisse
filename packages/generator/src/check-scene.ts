@@ -1,9 +1,10 @@
 // What a scene's scene.json must respect for the generator to make it work: ids
 // usable as file names, and a composition that fits in the safe zone, with the
-// characters standing clear of the objects. Used when the scene is written
+// characters standing clear of the objects; the details for realism in the safe
+// zone too. Used when the scene is written
 // (write-scene.ts) and when the objects are detected (generate-scene.ts).
 
-import type { Box, Scene } from "@esquisse/shared";
+import type { Box, Detail, Scene } from "@esquisse/shared";
 import { characterBox, sceneRatio } from "@esquisse/shared/layout";
 
 // Tolerance on the safe zone's edges.
@@ -42,6 +43,18 @@ const HEIGHT = { min: 0.18, max: 0.42 };
 // The zone a character will take, from its feet and height.
 export const characterZone = (scene: Scene, c: Scene["characters"][number]) =>
   characterBox(c, CHARACTER_ASPECT, sceneRatio(scene));
+
+// The details' problems, numbered as in their list.
+export const detailProblems = (safe: Box, details: Detail[]): string[] =>
+  details.flatMap(({ zone: z }, i) => {
+    if (z.x0 >= z.x1 || z.y0 >= z.y1) {
+      return [`détail ${i + 1} : zone ${box(z)} vide ou inversée (x0 < x1 et y0 < y1).`];
+    }
+    if (!inside(z, safe)) {
+      return [`détail ${i + 1} : zone ${box(z)} hors de la zone sûre ${box(safe)}.`];
+    }
+    return [];
+  });
 
 // The problems found, in words the model that wrote the scene can act on.
 export const sceneProblems = (scene: Scene): string[] => {

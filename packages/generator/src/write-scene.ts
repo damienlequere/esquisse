@@ -7,10 +7,10 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
-import type { Box, Character, Scene, SceneData, SceneObject } from "@esquisse/shared";
+import type { Box, Character, Detail, Scene, SceneData, SceneObject } from "@esquisse/shared";
 import { characterBox, isLandscape, sceneRatio } from "@esquisse/shared/layout";
 import { z } from "zod";
-import { CHARACTER_ASPECT, sceneProblems } from "./check-scene.ts";
+import { CHARACTER_ASPECT, detailProblems, sceneProblems } from "./check-scene.ts";
 
 const TEXT_MODEL = "claude-opus-5-5";
 // The model writes, the script checks; after that many rounds, it gives up.
@@ -84,6 +84,8 @@ const character = z.object({
   }),
 });
 
+const details = z.object({ details: z.array(z.object({ paint: z.string(), zone: box })) });
+
 // Structured outputs need an object at the root.
 const element = z.object({
   element: z.union([
@@ -112,7 +114,7 @@ const example = () => {
 const system = (format: Format) =>
   `Tu crées des scènes cliquables pour Esquisse : une image peinte au format ${format.words}, où chaque objet du décor est une action cliquable qui affiche un court texte, et où chaque personnage ouvre un dialogue. Les images sont générées par un modèle d'image à partir de tes descriptions, puis les objets sont repérés par un modèle de vision.
 
-La scène se construit pas à pas, avec son auteur : d'abord le fond, qu'il valide ; puis, un par un, les éléments qu'il demande, chacun validé sur le rendu.
+La scène se construit pas à pas, avec son auteur : d'abord le fond, qu'il valide ; puis, s'il le veut, des détails de réalisme retouchés dans le fond ; puis, un par un, les éléments qu'il demande, chacun validé sur le rendu.
 
 ## La direction artistique
 
@@ -136,6 +138,18 @@ Les images sont du réalisme pictural : de la peinture réaliste et détaillée,
 - suggestions : 3 à 5 ajouts possibles, objets ou personnages, en quelques mots chacun (« un feu de camp au premier plan »), dans l'esprit de la demande, en commençant par ceux qu'elle cite.
 
 Si l'auteur demande une modification, tu renvoies le fond entier, modifié.
+
+## Les détails
+
+On peut te demander, à partir du rendu actuel, des détails de réalisme : de petites choses qui ne sont pas cliquables, mais qui rendent le lieu crédible et vécu. Usure, salissures, coulures, mousse, lichen, rouille, flaques, toiles d'araignée, feuilles mortes, poussière dans un rayon de lumière, fumée, buée, vie lointaine (des oiseaux, une fenêtre éclairée au loin).
+
+- details : 4 à 6 détails, chacun avec :
+  - paint : sa description pour le modèle d'image, en une phrase : ce que c'est, sa matière, son état, et où il est, en mots (« sur le mur de gauche, au-dessus de la porte »).
+  - zone : où il doit apparaître dans l'image, entière dans la zone sûre (les pointillés du rendu ; voir La composition) : ce qui en sort est caché sur certains écrans.
+- Ils sont discrets : petits, plats ou au loin, pour que le joueur ne les prenne pas pour des objets à toucher. Ils ne posent rien de haut sur le sol, qui reste libre pour les personnages, et ne touchent pas aux zones des objets et des personnages.
+- Ils restent dans la lumière, l'époque et l'atmosphère de la scène, sans personne ni texte, et ne répètent pas ce que le décor montre déjà.
+
+Si l'auteur décrit ses propres détails, tu les écris de la même façon. S'il demande une modification, tu renvoies la liste entière des détails qu'il a retenus, modifiée.
 
 ## Les éléments
 
@@ -255,6 +269,44 @@ const describe = ({ scene, objects, aspects }: SceneData) => {
   ].join("\n");
 };
 
+const image = (render: Buffer) =>
+  ({
+    type: "image",
+    source: { type: "base64", media_type: "image/jpeg", data: render.toString("base64") },
+  }) as const;
+
+// One conversation for the details: suggested from the current render (or
+// written from the author's description), their zones checked against the safe
+// zone and sent back, then those the author kept, changed as asked. A detail
+// still out of the safe zone after the last round is dropped: it is never painted.
+export const detailWriter = (apiKey: string, data: SceneData, render: Buffer) => {
+  const ask = conversation(details, apiKey, formatOf(data.scene));
+  const checked = async (first: Content) => {
+    let content = first;
+    for (let attempt = 1; ; attempt++) {
+      const written: Detail[] = (await ask(content)).details;
+      const problems = detailProblems(data.scene.safe, written);
+      if (problems.length === 0) return written;
+      if (attempt === ATTEMPTS) {
+        console.log(`⚠ Dropped, still out of the safe zone:\n  ${problems.join("\n  ")}`);
+        return written.filter((d) => detailProblems(data.scene.safe, [d]).length === 0);
+      }
+      console.log(`⚠ ${problems.length} problem(s), sent back to fix:\n  ${problems.join("\n  ")}`);
+      content = `La composition ne tient pas :\n- ${problems.join("\n- ")}\nCorrige les détails et renvoie la liste entière.`;
+    }
+  };
+  const first = (request: string) =>
+    checked([image(render), { type: "text", text: `${describe(data)}\n\n${request}` }]);
+  return {
+    suggest: () => first("Propose des détails de réalisme."),
+    write: (description: string) => first(`L'auteur veut ajouter ces détails : ${description}`),
+    revise: (kept: Detail[], change: string) =>
+      checked(
+        `L'auteur a retenu ces détails :\n${JSON.stringify(kept, null, 2)}\nModifie-les ainsi : ${change}`,
+      ),
+  };
+};
+
 // One conversation per element: written from the current render, its
 // composition checked and sent back, then changed as the author asks.
 export const elementWriter = (apiKey: string, data: SceneData, render: Buffer) => {
@@ -274,10 +326,7 @@ export const elementWriter = (apiKey: string, data: SceneData, render: Buffer) =
   return {
     write: (request: string) =>
       checked([
-        {
-          type: "image",
-          source: { type: "base64", media_type: "image/jpeg", data: render.toString("base64") },
-        },
+        image(render),
         { type: "text", text: `${describe(data)}\n\nL'auteur veut ajouter : ${request}` },
       ]),
     revise: (change: string) => checked(`Modifie l'élément ainsi : ${change}`),

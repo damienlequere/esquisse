@@ -143,7 +143,7 @@ pnpm generate <id> portrait|landscape "<brief>"
 pnpm generate foret portrait "l'orée d'une forêt au crépuscule, un bivouac abandonné"
 ```
 
-The session goes in two stages. Each render is saved in the system's temporary
+The session goes in three stages. Each render is saved in the system's temporary
 folder and opens in the image viewer, with the safe zone dashed, the objects
 outlined in orange and the characters in blue.
 
@@ -151,7 +151,19 @@ outlined in orange and the characters in blue.
    the light and the decor, and Gemini (Nano Banana 2.1) paints it, empty. Then:
    `v` validate, `r` paint it again, `m` describe a change (Claude rewrites the
    decor, Gemini repaints it), `q` quit.
-2. **The elements, one at a time.** Claude suggests a few ideas; type one's
+2. **The details, for realism.** Claude looks at the validated background and
+   suggests 4 to 6 small details that make the place credible and lived in
+   (wear, moss, puddles, cobwebs, smoke, distant birds), kept discreet, off the
+   floor and away from what is clickable. Each has a zone, which must lie in the
+   safe zone: one outside is sent back to Claude, up to three times, then
+   dropped. Type their numbers (`1 3 4`), `tous`, or describe your own (Claude
+   places them the same way); Enter skips. Gemini retouches them all into the
+   background at once; they are never clickable, and are listed in
+   `background.details`. Then: `v` validate, `r` redo, `m` describe a change
+   (Claude rewrites the kept details), `a` drop them. Each retouch degrades the
+   image a little, so this pass is best done before the objects; `d` at the
+   question of the next stage runs it again.
+3. **The elements, one at a time.** Claude suggests a few ideas; type one's
    number, or describe what to add (`un cheval à l'arrière-plan`, `une vieille
    gardienne près de la porte`). Claude writes the element from the current
    render: an object (something clickable that shows a text) or a character
@@ -181,18 +193,36 @@ Painting the background…
 Le fond :  [v] valider  [r] repeindre  [m] modifier  [q] quitter
 > v
 ✓ Saved: /scene/foret in both apps
+Writing with claude-opus-5-5…
+
+Détails de réalisme :
+  1. de la mousse sur les racines au pied du grand chêne, à gauche
+     de 10 % à 30 % de la largeur, de 58 % à 68 % de la hauteur
+  2. une fine brume entre les troncs, au fond
+     de 20 % à 85 % de la largeur, de 30 % à 45 % de la hauteur
+  …
+Lesquels ajouter ? (des numéros, « tous », une description, ou Entrée pour passer)
+> 1 2
+
+Les détails : …
+
+Adding the details to the background…
+  Render: /tmp/esquisse-foret-2.jpg
+Les détails :  [v] valider  [r] refaire  [m] modifier  [a] abandonner
+> v
+✓ Saved: /scene/foret in both apps
 
 Idées :
   1. un feu de camp au premier plan
   2. un cheval attaché entre les arbres
-Que veux-tu ajouter ? (une description, un numéro d'idée, ou Entrée pour finir)
+Que veux-tu ajouter ? (une description, un numéro d'idée, d pour des détails de réalisme, ou Entrée pour finir)
 > 1
 Writing with claude-opus-5-5…
 
 Objet « feu-de-camp », de 55 % à 88 % de la largeur, de 58 % à 70 % de la hauteur
 Adding feu-de-camp to the background…
 Detecting the objects…
-  Render: /tmp/esquisse-foret-2.jpg
+  Render: /tmp/esquisse-foret-3.jpg
 « feu-de-camp » :  [v] valider  [r] refaire  [m] modifier  [a] abandonner
 > m
 Que changer ?
@@ -200,7 +230,7 @@ Que changer ?
 …
 > v
 ✓ Saved: /scene/foret in both apps
-Que veux-tu ajouter ? (une description, un numéro d'idée, ou Entrée pour finir)
+Que veux-tu ajouter ? (une description, un numéro d'idée, d pour des détails de réalisme, ou Entrée pour finir)
 >
 ✓ Le bivouac abandonné: /scene/foret, run pnpm dev to play it
 ```
@@ -236,7 +266,8 @@ When something goes wrong:
 
 Each step calls the APIs, which are paid: one Claude request per writing or
 change (more if the composition is sent back), one Gemini request per painting
-or retouch, and one per detection after an object.
+or retouch, and one per detection after an object or after details on a scene
+that has objects.
 
 ### Removing a scene
 
