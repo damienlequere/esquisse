@@ -14,6 +14,14 @@ export const sceneImages = {
     background: require("@esquisse/shared/assets/scenes/foret/fond.webp"),
     characters: {},
   },
+  foret2: {
+    background: require("@esquisse/shared/assets/scenes/foret2/fond.webp"),
+    characters: {},
+  },
+  foret3: {
+    background: require("@esquisse/shared/assets/scenes/foret3/fond.webp"),
+    characters: {},
+  },
   phare: {
     background: require("@esquisse/shared/assets/scenes/phare/fond.webp"),
     characters: {

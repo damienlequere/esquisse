@@ -1,0 +1,19 @@
+{
+  "brief": "l'orée d'une forêt à l'aube",
+  "title": "L'orée du bois de Brocéliane",
+  "intro": "La nuit se retire à peine quand tu atteins la lisière. Entre les troncs, la brume s'accroche encore, et le silence de la forêt a quelque chose d'une attente.",
+  "imageRatio": "16:9",
+  "safe": {
+    "x0": 0.14,
+    "y0": 0.22,
+    "x1": 0.86,
+    "y1": 0.68
+  },
+  "style": "Peinture à l'huile réaliste, dans l'esprit du concept art et du matte painting de cinéma : proportions et perspective justes, matières rendues avec précision (écorce rugueuse et crevassée, mousse humide, herbe chargée de rosée, pierre lichénée, bois mort grisé par les pluies), touche visible mais maîtrisée, profondeur atmosphérique marquée par la brume. Palette de bleus froids et de gris-vert dans l'ombre des sous-bois, réchauffée par l'or pâle et le rose de l'aube qui perce à l'horizon ; contre-jour doux, rayons obliques dans la brume, clair-obscur délicat. Atmosphère calme, fraîche, silencieuse, un peu mystérieuse, comme au seuil d'un lieu ancien. Aucun texte, lettre, chiffre, signature ni logo ; pas de style cartoon, bande dessinée, anime ni caricature, pas de contours encrés ni d'aplats ; pas de photographie ni de rendu 3D lisse ; pas de cadre ni de bordure.",
+  "light": "soleil levant bas à droite, or pâle et rosé, rayons obliques dans la brume, ombres longues et bleutées vers la gauche",
+  "background": {
+    "prompt": "L'orée d'une vieille forêt de chênes et de hêtres à l'aube, vue de face à hauteur d'homme. Au fond et sur les côtés, une rangée de grands troncs noueux, couverts de mousse et de lierre, aux écorces crevassées, dont les branches basses se rejoignent en voûte sombre ; entre eux, la brume blanche s'étire en nappes et le sous-bois s'enfonce dans un bleu profond. Sur la droite, une trouée entre les arbres laisse voir un ciel pâle, rose et or, d'où le soleil levant envoie des rayons obliques à travers la brume. Détails secondaires aux lisières : fougères roussies au pied des troncs, une vieille clôture de piquets de bois gris à demi effondrée tout à gauche, des toiles d'araignée perlées de rosée entre les branches basses, quelques champignons sur une souche à l'arrière-plan, du gui dans les hauteurs. Le sol occupe toute la moitié inférieure de l'image : une prairie d'herbe rase et humide, scintillante de rosée, traversée par les ombres longues des arbres, avec un sentier de terre à peine marqué qui s'enfonce vers le sous-bois ; ce sol reste vide et dégagé, sans rocher, souche, meuble ni objet au centre. La scène est vide de toute personne et de tout animal.\n"
+  },
+  "objects": [],
+  "characters": []
+}
