@@ -33,6 +33,11 @@ import type { SceneImages } from "../scenes.ts";
 // so it follows the cropping. What it shows as it is played is playScene's,
 // shared with the web site.
 
+// In landscape, the text is a panel on the right, 30% of the screen's width,
+// over the image (the web's Scene.module.css has the same): the safe zone of
+// the landscape scenes leaves it free (see packages/generator).
+const PANEL = "30%";
+
 const place = (box: Box) => ({ position: "absolute" as const, ...placeStyle(box) });
 
 // NativeWind styles only the components it knows.
@@ -93,6 +98,32 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
     });
     return () => sub.remove();
   }, [inConversation]);
+
+  // The panel's padding, inside the screen's safe area.
+  const panelPadding = {
+    paddingTop: Math.max(20, insets.top),
+    paddingRight: Math.max(20, insets.right),
+    paddingBottom: Math.max(20, insets.bottom),
+    paddingLeft: 20,
+  };
+
+  const narrationText = (
+    <ScrollView
+      key={narration.key}
+      accessibilityLiveRegion="polite"
+      contentContainerClassName={layout.landscape ? undefined : "px-5 pt-10"}
+      contentContainerStyle={
+        layout.landscape ? panelPadding : { paddingBottom: Math.max(16, insets.bottom) }
+      }
+    >
+      <Animated.View entering={FadeInDown.duration(400)}>
+        <Text className="mb-1 font-serif text-xs uppercase tracking-widest text-amber-300">
+          {narration.title}
+        </Text>
+        <Text className="font-serif text-base leading-6 text-stone-100">{narration.text}</Text>
+      </Animated.View>
+    </ScrollView>
+  );
 
   return (
     <View
@@ -176,8 +207,13 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
       <LinearGradient
         colors={["rgba(0,0,0,0.6)", "transparent"]}
         pointerEvents="box-none"
-        className="absolute left-0 right-0 top-0 flex-row items-center justify-between px-4 pb-3"
-        style={{ paddingTop: Math.max(12, insets.top) }}
+        className="absolute left-0 top-0 flex-row items-center justify-between pb-3"
+        style={{
+          right: layout.landscape ? PANEL : 0,
+          paddingTop: Math.max(12, insets.top),
+          paddingLeft: Math.max(16, insets.left),
+          paddingRight: layout.landscape ? 16 : Math.max(16, insets.right),
+        }}
       >
         <Text
           accessibilityRole="header"
@@ -200,33 +236,31 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
         </Pressable>
       </LinearGradient>
 
-      {/* Narration: the bottom band, 22% of the height, over the image. */}
-      <LinearGradient
-        colors={["transparent", "rgba(12,10,9,0.85)"]}
-        locations={[0, 0.25]}
-        className="absolute bottom-0 left-0 right-0"
-        style={{ height: "22%" }}
-      >
-        <ScrollView
-          key={narration.key}
-          accessibilityLiveRegion="polite"
-          contentContainerClassName="px-5 pt-10"
-          contentContainerStyle={{ paddingBottom: Math.max(16, insets.bottom) }}
+      {/* Narration: the bottom band, 22% of the height, over the image; in
+          landscape, the panel on the right, the whole height (see PANEL). */}
+      {layout.landscape ? (
+        <View
+          className="absolute bottom-0 right-0 top-0 border-l border-amber-300/20 bg-stone-950/85"
+          style={{ width: PANEL }}
         >
-          <Animated.View entering={FadeInDown.duration(400)}>
-            <Text className="mb-1 font-serif text-xs uppercase tracking-widest text-amber-300">
-              {narration.title}
-            </Text>
-            <Text className="font-serif text-base leading-6 text-stone-100">{narration.text}</Text>
-          </Animated.View>
-        </ScrollView>
-      </LinearGradient>
+          {narrationText}
+        </View>
+      ) : (
+        <LinearGradient
+          colors={["transparent", "rgba(12,10,9,0.85)"]}
+          locations={[0, 0.25]}
+          className="absolute bottom-0 left-0 right-0"
+          style={{ height: "22%" }}
+        >
+          {narrationText}
+        </LinearGradient>
+      )}
 
       {/* Dialogue: an open conversation takes the scene, the background waits. */}
       {conversation && (
         <Animated.View
           entering={FadeIn.duration(200)}
-          className="absolute inset-0 justify-end bg-black/35"
+          className={`absolute inset-0 justify-end bg-black/35 ${layout.landscape ? "flex-row" : ""}`}
         >
           <Pressable
             className="absolute inset-0"
@@ -237,12 +271,20 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
           <Animated.View
             entering={FadeInDown.duration(250)}
             accessibilityViewIsModal
-            className="max-h-[60%] rounded-t-3xl border-t border-amber-300/35 bg-stone-900"
+            // In landscape, the conversation takes the text panel's place.
+            className={
+              layout.landscape
+                ? "border-l border-amber-300/35 bg-stone-900"
+                : "max-h-[60%] rounded-t-3xl border-t border-amber-300/35 bg-stone-900"
+            }
+            style={layout.landscape ? { width: PANEL } : undefined}
           >
             <ScrollView
               ref={lines}
-              contentContainerClassName="p-5"
-              contentContainerStyle={{ paddingBottom: Math.max(20, insets.bottom) }}
+              contentContainerClassName={layout.landscape ? undefined : "p-5"}
+              contentContainerStyle={
+                layout.landscape ? panelPadding : { paddingBottom: Math.max(20, insets.bottom) }
+              }
               onContentSizeChange={() => lines.current?.scrollToEnd({ animated: true })}
             >
               <Text

@@ -185,6 +185,41 @@
   line-height: 1.45;
 }
 
+/* Landscape: the text is a panel on the right, 30% of the frame's width, the
+   whole height, over the image; the top bar stays left of it. The safe zone of
+   the landscape scenes leaves it free (see packages/generator). */
+.root[data-orientation="landscape"] {
+  --panel: 30cqw;
+}
+
+.root[data-orientation="landscape"] .top {
+  right: var(--panel);
+  padding-left: max(1rem, env(safe-area-inset-left));
+}
+
+.root[data-orientation="landscape"] .narration {
+  top: 0;
+  left: auto;
+  width: var(--panel);
+  height: auto;
+  padding: max(1.25rem, env(safe-area-inset-top)) max(1.25rem, env(safe-area-inset-right))
+    max(1.25rem, env(safe-area-inset-bottom)) 1.25rem;
+  border-left: 1px solid rgb(252 211 77 / 0.2);
+  background: rgb(12 10 9 / 0.85);
+  backdrop-filter: blur(6px);
+}
+
+/* The panel stays put; only its text appears. */
+.root[data-orientation="landscape"] .narration.appear {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .root[data-orientation="landscape"] .narration.appear > * {
+    animation: appear 400ms ease-out;
+  }
+}
+
 .narration h2 {
   margin: 0 0 0.3rem;
   font-size: 0.8rem;
@@ -230,6 +265,22 @@
   animation: appear 250ms ease-out;
 }
 
+/* Landscape: the conversation takes the text panel's place, on the right. */
+.root[data-orientation="landscape"] .dialogue {
+  justify-content: flex-end;
+  align-items: stretch;
+}
+
+.root[data-orientation="landscape"] .panel {
+  width: var(--panel);
+  max-height: none;
+  padding: max(1.25rem, env(safe-area-inset-top)) max(1.25rem, env(safe-area-inset-right))
+    max(1.25rem, env(safe-area-inset-bottom)) 1.25rem;
+  border-top: 0;
+  border-left: 1px solid rgb(252 211 77 / 0.35);
+  border-radius: 0;
+}
+
 .panel h2 {
   margin: 0 0 0.75rem;
   font-size: 0.85rem;
@@ -267,6 +318,46 @@
 
 .choices button:hover {
   background: rgb(252 211 77 / 0.15);
+}
+
+/* The screen is not turned like the scene: a landscape scene on a portrait
+   phone, or the reverse. The whole frame asks to turn it. Only on a touch
+   screen: a computer's window is not turned, and its frame already is. */
+.turn {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2rem;
+  background: #0c0a09;
+  color: #fde68a;
+  text-align: center;
+}
+
+.turn span {
+  font-size: 3rem;
+}
+
+.turn p {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+@media (pointer: coarse) {
+  @container (orientation: portrait) {
+    .root[data-orientation="landscape"] .turn {
+      display: flex;
+    }
+  }
+
+  @container (orientation: landscape) {
+    .root[data-orientation="portrait"] .turn {
+      display: flex;
+    }
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

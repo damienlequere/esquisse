@@ -8,7 +8,7 @@ import { join } from "node:path";
 import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import type { Box, Character, Scene, SceneData, SceneObject } from "@esquisse/shared";
-import { characterBox, sceneRatio } from "@esquisse/shared/layout";
+import { characterBox, isLandscape, sceneRatio } from "@esquisse/shared/layout";
 import { z } from "zod";
 import { CHARACTER_ASPECT, sceneProblems } from "./check-scene.ts";
 
@@ -16,9 +16,40 @@ const TEXT_MODEL = "claude-opus-5-5";
 // The model writes, the script checks; after that many rounds, it gives up.
 const ATTEMPTS = 3;
 
-// Every scene is 9:16, so the safe zone is the same for all (see the README).
-export const IMAGE_RATIO = "9:16";
-export const SAFE: Box = { x0: 0.09, y0: 0.14, x1: 0.91, y1: 0.71 };
+// A scene is portrait (9:16) or landscape (16:9), chosen when it is created.
+// Each has its safe zone, from the frames it is played in and where the text
+// goes (see the README): a band at the bottom in portrait, a panel on the right
+// in landscape. And the band where the characters' feet go, on the floor.
+export type Orientation = "portrait" | "landscape";
+
+export const FORMATS = {
+  portrait: {
+    imageRatio: "9:16",
+    safe: { x0: 0.09, y0: 0.14, x1: 0.91, y1: 0.71 },
+    words: "portrait 9:16",
+    text: "la bande de texte du bas",
+    floor: "le tiers inférieur de l'image",
+    focus: "",
+    feet: { min: 0.62, max: 0.71 },
+  },
+  landscape: {
+    imageRatio: "16:9",
+    safe: { x0: 0.14, y0: 0.22, x1: 0.63, y1: 0.86 },
+    words: "paysage 16:9",
+    text: "le panneau de texte à droite",
+    floor: "la moitié inférieure de l'image",
+    focus:
+      " Ce qui compte dans le décor est dans ses deux tiers gauches : le tiers droit passe sous le panneau de texte, il ne porte que du décor secondaire.",
+    feet: { min: 0.62, max: 0.86 },
+  },
+} satisfies Record<Orientation, { imageRatio: string; safe: Box; [k: string]: unknown }>;
+
+export type Format = (typeof FORMATS)[Orientation];
+
+export const formatOf = (scene: Scene): Format =>
+  FORMATS[isLandscape(scene) ? "landscape" : "portrait"];
+
+const decimal = (v: number) => String(v).replace(".", ",");
 
 const box = z.object({ x0: z.number(), y0: z.number(), x1: z.number(), y1: z.number() });
 
@@ -71,14 +102,15 @@ export type Element =
 const EXAMPLE_STYLE =
   "Peinture à l'huile réaliste, dans l'esprit du concept art et du matte painting de cinéma : proportions et perspective justes, matières rendues avec précision (bois ciré et usé, laiton terni, verre épais, cordages effilochés, pierre chaulée), touche visible mais maîtrisée, profondeur de champ légère. Palette de bleus nuit et d'ocres chauds, clair-obscur : la lumière dorée d'une lampe à pétrole contre la nuit bleue au hublot. Atmosphère grave, calme, mystérieuse, un peu inquiète. Aucun texte, lettre, chiffre, signature ni logo ; pas de style cartoon, bande dessinée, anime ni caricature, pas de contours encrés ni d'aplats ; pas de photographie ni de rendu 3D lisse ; pas de cadre ni de bordure.";
 
+// The example is portrait: its coordinates only show the form.
 const example = () => {
   const path = join(import.meta.dirname, "../../shared/src/scenes/phare/scene.json");
   const { brief, imageRatio, safe, notes, ...rest } = JSON.parse(readFileSync(path, "utf8"));
   return JSON.stringify({ ...rest, style: EXAMPLE_STYLE }, null, 2);
 };
 
-const system = () =>
-  `Tu crées des scènes cliquables pour Esquisse : une image peinte au format portrait 9:16, où chaque objet du décor est une action cliquable qui affiche un court texte, et où chaque personnage ouvre un dialogue. Les images sont générées par un modèle d'image à partir de tes descriptions, puis les objets sont repérés par un modèle de vision.
+const system = (format: Format) =>
+  `Tu crées des scènes cliquables pour Esquisse : une image peinte au format ${format.words}, où chaque objet du décor est une action cliquable qui affiche un court texte, et où chaque personnage ouvre un dialogue. Les images sont générées par un modèle d'image à partir de tes descriptions, puis les objets sont repérés par un modèle de vision.
 
 La scène se construit pas à pas, avec son auteur : d'abord le fond, qu'il valide ; puis, un par un, les éléments qu'il demande, chacun validé sur le rendu.
 
@@ -100,7 +132,7 @@ Les images sont du réalisme pictural : de la peinture réaliste et détaillée,
 - intro : 1 à 2 phrases, à la deuxième personne (« tu »), au présent, qui posent le lieu et l'ambiance quand le joueur arrive.
 - style : un paragraphe de direction artistique commun à toutes les images de la scène (technique de peinture réaliste, rendu des matières, palette, lumière, atmosphère), qui suit la direction artistique ci-dessus. Il finit toujours par les interdits : aucun texte, lettre, chiffre, signature ni logo ; pas de style cartoon, bande dessinée, anime ni caricature, pas de contours encrés ni d'aplats ; pas de photographie ni de rendu 3D lisse ; pas de cadre ni de bordure.
 - light : la lumière de la scène en quelques mots (sources, couleur, direction), pour que les éléments ajoutés ensuite soient éclairés comme le décor.
-- background.prompt : le décor seul, vu de face à hauteur d'homme, vide de toute personne et de tout animal. Le sol occupe le tiers inférieur de l'image et reste dégagé, pour recevoir ensuite des objets et des personnages. Il décrit le lieu en détail : ses matières, leur état, et les détails secondaires aux murs et au fond qui le font vivre. Les objets et les personnages que la demande cite n'y sont pas : ils seront ajoutés un à un.
+- background.prompt : le décor seul, vu de face à hauteur d'homme, vide de toute personne et de tout animal. Le sol occupe ${format.floor} et reste dégagé, pour recevoir ensuite des objets et des personnages.${format.focus} Il décrit le lieu en détail : ses matières, leur état, et les détails secondaires aux murs et au fond qui le font vivre. Les objets et les personnages que la demande cite n'y sont pas : ils seront ajoutés un à un.
 - suggestions : 3 à 5 ajouts possibles, objets ou personnages, en quelques mots chacun (« un feu de camp au premier plan »), dans l'esprit de la demande, en commençant par ceux qu'elle cite.
 
 Si l'auteur demande une modification, tu renvoies le fond entier, modifié.
@@ -131,9 +163,9 @@ Tout est en français, sauf detect, et sauf si la demande dit une autre langue. 
 
 Les coordonnées sont des fractions de l'image, de 0 à 1, depuis son coin en haut à gauche ; une zone est {x0, y0, x1, y1}.
 
-- Zone sûre : ${JSON.stringify(SAFE)}. C'est la partie de l'image visible sur tous les écrans, moins la barre du haut et la bande de texte du bas. Les zones des objets et des personnages y tiennent entières.
+- Zone sûre : ${JSON.stringify(format.safe)}. C'est la partie de l'image visible sur tous les écrans, moins la barre du haut et ${format.text}. Les zones des objets et des personnages y tiennent entières.
 - Les objets ne se recouvrent pas, et chacun fait au moins 0,12 de large et 0,08 de haut, pour se toucher du doigt sur un téléphone.
-- Un personnage occupe la zone : x de anchor.x − w/2 à anchor.x + w/2, y de anchor.y − height à anchor.y, avec w = height × ${((CHARACTER_ASPECT * 16) / 9).toFixed(2)} (un personnage est environ ${CHARACTER_ASPECT} fois aussi large que haut, et l'image est 9:16). Ses pieds sont sur le sol, anchor.y entre 0,62 et 0,71 ; height entre 0,18 et 0,42, plus petit s'il est plus loin.
+- Un personnage occupe la zone : x de anchor.x − w/2 à anchor.x + w/2, y de anchor.y − height à anchor.y, avec w = height × ${(CHARACTER_ASPECT / sceneRatio(format)).toFixed(2)} (un personnage est environ ${CHARACTER_ASPECT} fois aussi large que haut, et l'image est ${format.imageRatio}). Ses pieds sont sur le sol, anchor.y entre ${decimal(format.feet.min)} et ${decimal(format.feet.max)} ; height entre 0,18 et 0,42, plus petit s'il est plus loin.
 - Les zones des personnages ne recouvrent pas celles des objets. Deux personnages peuvent être proches, sans se recouvrir de plus de moitié.
 
 ## La demande
@@ -142,7 +174,7 @@ Elle peut ne donner qu'un thème, ou fixer des choses : le lieu, l'époque, le t
 
 ## Exemple
 
-Une scène finie, pour le ton et le niveau de détail :
+Une scène finie, pour le ton et le niveau de détail (elle est en portrait : ses coordonnées ne valent que pour la forme) :
 
 ${example()}`;
 
@@ -151,7 +183,7 @@ type Content = Message["content"];
 
 // One conversation with Claude, one structured answer per turn: what was
 // written stays in the conversation, for the changes asked next.
-const conversation = <T extends z.ZodType>(schema: T, apiKey: string) => {
+const conversation = <T extends z.ZodType>(schema: T, apiKey: string, format: Format) => {
   const client = new Anthropic({ apiKey });
   const messages: Message[] = [];
   return async (content: Content): Promise<z.infer<T>> => {
@@ -163,7 +195,7 @@ const conversation = <T extends z.ZodType>(schema: T, apiKey: string) => {
       betas: ["server-side-fallback-2026-07-01"],
       fallbacks: "default",
       cache_control: { type: "ephemeral" },
-      system: system(),
+      system: system(format),
       output_config: { effort: "high", format: betaZodOutputFormat(schema) },
       messages,
     });
@@ -184,8 +216,8 @@ const conversation = <T extends z.ZodType>(schema: T, apiKey: string) => {
   };
 };
 
-export const baseWriter = (apiKey: string) => {
-  const ask = conversation(base, apiKey);
+export const baseWriter = (apiKey: string, format: Format) => {
+  const ask = conversation(base, apiKey, format);
   return {
     write: (brief: string) => ask(`Écris le fond de la scène : ${brief}`),
     revise: (change: string) => ask(`Modifie le fond ainsi : ${change}`),
@@ -226,7 +258,7 @@ const describe = ({ scene, objects, aspects }: SceneData) => {
 // One conversation per element: written from the current render, its
 // composition checked and sent back, then changed as the author asks.
 export const elementWriter = (apiKey: string, data: SceneData, render: Buffer) => {
-  const ask = conversation(element, apiKey);
+  const ask = conversation(element, apiKey, formatOf(data.scene));
   const checked = async (first: Content) => {
     let content = first;
     for (let attempt = 1; ; attempt++) {

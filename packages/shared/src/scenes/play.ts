@@ -71,4 +71,7 @@ export const sceneText = {
   talkTo: (name: string) => `Parler à ${name}`,
   goodbye: "Au revoir.",
   reveal: "Révéler ce qui est cliquable",
+  // When the screen is not turned like the scene.
+  turnLandscape: "Tourne ton écran à l'horizontale",
+  turnPortrait: "Tourne ton écran à la verticale",
 };

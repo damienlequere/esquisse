@@ -8,7 +8,7 @@ import { writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { Box, Character, Scene, SceneData, SceneObject } from "@esquisse/shared";
-import { characterBox, sceneRatio } from "@esquisse/shared/layout";
+import { characterBox, isLandscape, sceneRatio } from "@esquisse/shared/layout";
 import sharp from "sharp";
 import { pct } from "./check-scene.ts";
 import { detectBoxes, generateImage } from "./gemini.ts";
@@ -19,22 +19,34 @@ const VISION_MODEL = "gemini-3.8-flash";
 export const where = (b: Box) =>
   `de ${pct(b.x0)} à ${pct(b.x1)} de la largeur, de ${pct(b.y0)} à ${pct(b.y1)} de la hauteur`;
 
-const paint = (key: string, prompt: string, references: Buffer[]) =>
+// The background is painted in the scene's format (9:16 or 16:9); a character
+// always stands in a 9:16 frame, which its layer is cropped from once keyed out.
+const paint = (key: string, aspectRatio: string, prompt: string, references: Buffer[]) =>
   generateImage(key, {
     model: IMAGE_MODEL,
     prompt,
     references: references.map((data) => ({ mimeType: "image/jpeg", data })),
-    aspectRatio: "9:16",
+    aspectRatio,
     imageSize: "2K",
   });
 
 export const paintBackground = (key: string, scene: Scene) =>
-  paint(key, [scene.style, scene.background.prompt, "Format portrait."].join("\n"), []);
+  paint(
+    key,
+    scene.imageRatio,
+    [
+      scene.style,
+      scene.background.prompt,
+      isLandscape(scene) ? "Format paysage." : "Format portrait.",
+    ].join("\n"),
+    [],
+  );
 
 // The object is painted into the background as it is: the rest must not move.
 export const addObject = (key: string, scene: Scene, background: Buffer, o: SceneObject) =>
   paint(
     key,
+    scene.imageRatio,
     [
       scene.style,
       `Retouche l'image jointe : ajoute-y ${o.paint}, ${where(o.zone)}.`,
@@ -81,14 +93,15 @@ export const paintCharacter = async (
   background: Buffer,
   c: Character,
 ) => {
-  const jpg = await paint(key, characterPrompt(scene, c), [background]);
+  const jpg = await paint(key, "9:16", characterPrompt(scene, c), [background]);
   const { data, info } = await chromaKey(jpg);
   return { jpg, layer: data, aspect: info.width / info.height };
 };
 
 // ── The render ───────────────────────────────────────────────────────────────
 
-const WIDTH = 1080;
+// The render's longest side.
+const LENGTH = 1920;
 
 // The background, the characters' layers placed by their feet, and outlines:
 // the safe zone dashed, the objects in orange and the characters in blue, with
@@ -99,8 +112,8 @@ export const render = async (
   layers: Record<string, Buffer>,
 ) => {
   const ratio = sceneRatio(scene);
-  const W = WIDTH;
-  const H = Math.round(WIDTH / ratio);
+  const W = Math.round(ratio > 1 ? LENGTH : LENGTH * ratio);
+  const H = Math.round(W / ratio);
   const px = (b: Box) => ({
     left: Math.round(b.x0 * W),
     top: Math.round(b.y0 * H),

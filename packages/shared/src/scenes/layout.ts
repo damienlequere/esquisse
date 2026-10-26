@@ -6,6 +6,8 @@ import type { Box, Character, Scene, SceneData, SceneObject } from "./types.ts";
 export type SceneLayout = {
   // Width / height of the image.
   ratio: number;
+  // The screen is turned to match: a landscape scene is played sideways.
+  landscape: boolean;
   objects: { object: SceneObject; box: Box }[];
   characters: { character: Character; box: Box }[];
 };
@@ -13,11 +15,13 @@ export type SceneLayout = {
 // Width / height of a layer whose proportions are not known yet.
 const DEFAULT_ASPECT = 0.4;
 
-// Width / height of a scene's image, from its "9:16" ratio.
-export const sceneRatio = (scene: Scene) => {
+// Width / height of a scene's image, from its "9:16" or "16:9" ratio.
+export const sceneRatio = (scene: Pick<Scene, "imageRatio">) => {
   const [rw = 9, rh = 16] = scene.imageRatio.split(":").map(Number);
   return rw / rh;
 };
+
+export const isLandscape = (scene: Pick<Scene, "imageRatio">) => sceneRatio(scene) > 1;
 
 // A character is placed by its feet. Its width, as a fraction of the image's
 // width, follows from its height and its layer's proportions (aspect): the image
@@ -36,6 +40,7 @@ export const sceneLayout = ({ scene, objects, aspects }: SceneData): SceneLayout
   const ratio = sceneRatio(scene);
   return {
     ratio,
+    landscape: ratio > 1,
     // An object not found in the image is left out.
     objects: scene.objects.flatMap((object) => {
       const box = objects[object.id];

@@ -75,7 +75,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
   useEffect(() => () => clearTimeout(revealTimer.current), []);
 
   return (
-    <div className={styles.root}>
+    <div className={styles.root} data-orientation={layout.landscape ? "landscape" : "portrait"}>
       <div
         className={styles.scene}
         style={{ "--image-ratio": layout.ratio, "--reveal": `${REVEAL_MS}ms` } as CSSProperties}
@@ -135,6 +135,12 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
         <h2>{narration.title}</h2>
         <p>{narration.text}</p>
       </section>
+
+      {/* Over everything when the screen is not turned like the scene (see the CSS). */}
+      <div className={styles.turn}>
+        <span aria-hidden="true">⟳</span>
+        <p>{layout.landscape ? sceneText.turnLandscape : sceneText.turnPortrait}</p>
+      </div>
 
       {conversation && (
         // biome-ignore lint/a11y/useKeyWithClickEvents lint/a11y/noStaticElementInteractions: Escape closes it too

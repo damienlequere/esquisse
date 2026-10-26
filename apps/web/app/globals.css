@@ -68,6 +68,32 @@ body {
     }
   }
 
+  /* A landscape scene's frame: a phone turned sideways, 19.5:9, then a tablet,
+     4:3, on a large screen. It takes the window's width, within its height. */
+  #device[data-orientation="landscape"] {
+    --ratio: 2.1667;
+    --max-width: 60rem;
+    height: auto;
+    width: min(
+      100vw -
+      2 *
+      var(--margin),
+      (100dvh - 2 * var(--margin)) *
+      var(--ratio),
+      var(--max-width)
+    );
+    aspect-ratio: var(--ratio);
+    border-radius: 2.75rem;
+  }
+
+  @media (min-width: 1024px) {
+    #device[data-orientation="landscape"] {
+      --ratio: 1.3333;
+      --max-width: 80rem;
+      border-radius: 2rem;
+    }
+  }
+
   @media (prefers-color-scheme: dark) {
     #stage {
       background: var(--color-black);

@@ -3,11 +3,12 @@
     "name": "Esquisse",
     "slug": "esquisse",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "requireFullScreen": true
     },
     "android": {
       "adaptiveIcon": {

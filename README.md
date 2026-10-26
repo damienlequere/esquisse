@@ -32,7 +32,7 @@ pnpm dev:all         # both, through Turborepo
 pnpm build           # production builds
 pnpm typecheck
 pnpm lint            # pnpm format to fix
-pnpm generate <id> "brief"  # a new scene, built step by step (see Generating a scene)
+pnpm generate <id> portrait|landscape "brief"  # a new scene, built step by step (see Generating a scene)
 pnpm remove-scene <id> # removes a scene, its texts and its images
 pnpm loc             # lines of code per app and package (source / tests)
 pnpm deploy:preview  # lint, typecheck, then deploy the web site to a Vercel preview URL
@@ -62,10 +62,20 @@ on a phone, the ✦ button shows for a moment what is clickable.
   dialogues, the prompts for the images and the composition. The script checks
   the composition (`packages/generator/src/check-scene.ts`) and sends what does not hold back to
   the model, up to three times.
-- **The image is 9:16**, in `cover`: a phone crops its sides (9% each), a tablet
-  its top and bottom (12.5% each). What stays visible everywhere, minus the text
-  band at the bottom and the top bar, is the **safe zone** (`safe` in
-  `scene.json`).
+- **The image is portrait (9:16) or landscape (16:9)**, chosen per scene
+  (`imageRatio` in `scene.json`), in `cover`. In portrait, a phone crops its
+  sides (9% each), a tablet its top and bottom (12.5% each), and the text is a
+  band at the bottom, 22% of the height. In landscape, the screen is turned: a
+  phone crops the top and bottom (9% each), a tablet the sides (12.5% each), and
+  the text is a panel on the right, 30% of the width, the whole height; a
+  conversation opens in it too. What stays visible everywhere, minus the top bar
+  and the text, is the **safe zone** (`safe` in `scene.json`):
+  `{0.09, 0.14, 0.91, 0.71}` in portrait, `{0.14, 0.22, 0.63, 0.86}` in
+  landscape, where the decor that matters is in the left two thirds.
+- **The screen turns like the scene.** The mobile app locks each scene's screen
+  to its orientation (the home screen stays portrait). The web site cannot turn a
+  phone: on a touch screen held the other way, the scene asks to turn it. On a
+  computer, the device frame is portrait or landscape.
 - **The composition is imposed** at generation by a guide sent with the prompt
   (`sources/guide.png`): one colored rectangle per object, "VIDE" zones where
   the characters will stand.
@@ -115,17 +125,19 @@ Node as they are (`--experimental-strip-types`, from Node 22.6).
 ### A new scene
 
 ```bash
-pnpm generate <id> "<brief>"
+pnpm generate <id> portrait|landscape "<brief>"
 ```
 
 - **`<id>`** is the scene's name in the code and its URL (`/scene/<id>`):
   lowercase letters, digits and dashes, like `marche` or `cave-a-vin`.
+- **`portrait`** or **`landscape`** is the image's orientation, 9:16 or 16:9,
+  fixed for the scene's life.
 - **`<brief>`**, in quotes, says what the scene is about: the place, the era,
   the tone, what you want to see. Claude follows what it pins and invents the
   rest.
 
 ```bash
-pnpm generate foret "l'orée d'une forêt au crépuscule, un bivouac abandonné"
+pnpm generate foret portrait "l'orée d'une forêt au crépuscule, un bivouac abandonné"
 ```
 
 The session goes in two stages. Each render is saved in the system's temporary
@@ -155,7 +167,7 @@ outlined in orange and the characters in blue.
 A session looks like this (Claude's texts shortened):
 
 ```text
-$ pnpm generate foret "l'orée d'une forêt au crépuscule, un bivouac abandonné"
+$ pnpm generate foret portrait "l'orée d'une forêt au crépuscule, un bivouac abandonné"
 Writing with claude-opus-5-5…
 
 Le bivouac abandonné
@@ -206,7 +218,7 @@ shows the scene on the home page and at `/scene/<id>`.
 
 - **Add to a scene** later: `pnpm generate <id>`, without a brief, shows the
   current render and asks what to add.
-- **Start over**: `pnpm generate <id> "<brief>"` on an existing scene asks, then
+- **Start over**: `pnpm generate <id> portrait|landscape "<brief>"` on an existing scene asks, then
   deletes it and starts again from the background.
 - **Edit by hand**: everything in `scene.json` can be changed (a text, a
   dialogue, a prompt); a position changed by hand is not repainted.

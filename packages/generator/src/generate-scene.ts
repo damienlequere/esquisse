@@ -1,7 +1,10 @@
 // Builds a scene step by step, with its author, in the terminal:
 //
-//   pnpm generate <id> "brief"   a new scene, from its brief
-//   pnpm generate <id>           an existing scene, to add to it
+//   pnpm generate <id> portrait|landscape "brief"   a new scene, from its brief
+//   pnpm generate <id>                              an existing scene, to add to it
+//
+// The orientation is the image's: portrait (9:16) or landscape (16:9), played
+// with the screen turned to match.
 //
 // First the background: Claude writes the decor from the brief, Gemini paints
 // it, and the author validates it, has it painted again, or asks for a change.
@@ -22,6 +25,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node
 import { join } from "node:path";
 import { createInterface } from "node:readline/promises";
 import type { Character, SceneData, SceneObject } from "@esquisse/shared";
+import { isLandscape } from "@esquisse/shared/layout";
 import sharp from "sharp";
 import { inside } from "./check-scene.ts";
 import { apiKey } from "./env.ts";
@@ -41,19 +45,28 @@ import {
   type Element,
   elementId,
   elementWriter,
-  IMAGE_RATIO,
-  SAFE,
+  FORMATS,
+  type Format,
+  type Orientation,
 } from "./write-scene.ts";
 
 const GENERATOR = join(import.meta.dirname, "..");
 const ROOT = join(GENERATOR, "../..");
 
+const USAGE = 'Usage: pnpm generate <id> [portrait|landscape "brief"]';
 const [id, ...args] = process.argv.slice(2);
-if (id === undefined) throw new Error('Usage: pnpm generate <id> ["brief"]');
+if (id === undefined) throw new Error(USAGE);
 // The id is a folder, a URL and a name in the registries' imports.
 if (!/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/.test(id)) throw new Error(`Invalid id: ${id} (kebab-case)`);
-if (args.length > 1) throw new Error("Only one brief, in quotes.");
-const brief = args[0];
+const isOrientation = (o: string | undefined): o is Orientation =>
+  o !== undefined && Object.hasOwn(FORMATS, o);
+if (args.length > 0 && !isOrientation(args[0])) {
+  throw new Error(`The orientation comes first, portrait or landscape.\n${USAGE}`);
+}
+if (args.length === 1) throw new Error(`The brief is missing, in quotes.\n${USAGE}`);
+if (args.length > 2) throw new Error(`Only one brief, in quotes.\n${USAGE}`);
+const orientation = args[0] as Orientation | undefined;
+const brief = args[1];
 
 const DIR = join(ROOT, "packages/shared/src/scenes", id);
 const SOURCES = join(GENERATOR, "sources", id);
@@ -100,7 +113,8 @@ const save = async ({ data, background, backgroundChanged, character }: Candidat
   if (backgroundChanged) {
     writeFileSync(join(SOURCES, "fond.jpg"), background);
     await sharp(background)
-      .resize({ width: 1440 })
+      // 1440 × 2560 or 2560 × 1440.
+      .resize(isLandscape(data.scene) ? { width: 2560 } : { width: 1440 })
       .webp({ quality: 90 })
       .toFile(join(MEDIA, "fond.webp"));
   }
@@ -136,8 +150,9 @@ const showState = async (s: State) => show(id, await render(s.data, s.background
 
 const createBackground = async (
   brief: string,
+  format: Format,
 ): Promise<{ state: State; suggestions: string[] }> => {
-  const writer = baseWriter(anthropicKey);
+  const writer = baseWriter(anthropicKey, format);
   let base: Base = await writer.write(brief);
   for (;;) {
     const { suggestions, ...written } = base;
@@ -145,8 +160,8 @@ const createBackground = async (
       brief,
       title: written.title,
       intro: written.intro,
-      imageRatio: IMAGE_RATIO,
-      safe: SAFE,
+      imageRatio: format.imageRatio,
+      safe: format.safe,
       style: written.style,
       light: written.light,
       background: written.background,
@@ -263,7 +278,7 @@ const addElement = async (state: State, request: string): Promise<State> => {
 const exists = existsSync(SCENE);
 let state: State;
 let suggestions: string[] = [];
-if (brief !== undefined) {
+if (orientation !== undefined && brief !== undefined) {
   if (exists) {
     const answer = await choose(`The scene "${id}" exists: start it over, losing it?`, {
       o: "oui",
@@ -272,9 +287,9 @@ if (brief !== undefined) {
     if (answer === "n") process.exit(0);
     for (const dir of [DIR, SOURCES, MEDIA]) rmSync(dir, { recursive: true, force: true });
   }
-  ({ state, suggestions } = await createBackground(brief));
+  ({ state, suggestions } = await createBackground(brief, FORMATS[orientation]));
 } else {
-  if (!exists) throw new Error(`No scene "${id}": pnpm generate ${id} "brief"`);
+  if (!exists) throw new Error(`No scene "${id}": pnpm generate ${id} portrait|landscape "brief"`);
   state = load();
   console.log(
     `${state.data.scene.title}: ${state.data.scene.objects.length} object(s), ${state.data.scene.characters.length} character(s)`,
