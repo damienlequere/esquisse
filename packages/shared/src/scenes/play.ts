@@ -20,39 +20,14 @@ export type SceneAction =
   | { type: "leave" };
 
 // Opening a scene, in ms: its title alone, then its intro fading in under it
-// (textFade); once it has been held long enough to be read, footprints to enter
-// show under it, one step after another (each fading in for stepFade, stepDelay
-// after the one before). The scene waits for them: pressed, everything fades out
-// (fade) to show the scene. Each app draws it.
-export const INTRO = { textDelay: 1000, textFade: 1500, stepDelay: 300, stepFade: 400, fade: 1200 };
+// (textFade); once it has been held long enough to be read, an arrow to enter
+// fades in, in the bottom right corner of the frame (buttonFade). The scene
+// waits for it: pressed, everything fades out (fade) to show the scene. Each app
+// draws it.
+export const INTRO = { textDelay: 1000, textFade: 1500, buttonFade: 800, fade: 1200 };
 
-// The footprints which enter the scene, in a viewBox of width × height: steps
-// walking up and to the right, a left foot and a right one in turn, on a ground
-// seen in perspective: it is squashed upward (tilt), and each step, farther than
-// the one before, is smaller (scale). Each is a shoe's print, its sole and its
-// heel, drawn as a right shoe pointing up, around (0, 0); a left one is that
-// mirrored.
-export const FOOTPRINTS = {
-  width: 60,
-  height: 56,
-  // The way they walk on the ground, in degrees from straight ahead.
-  heading: 30,
-  tilt: 0.62,
-  sole: "M0.6,-12 C4,-12 5.4,-8 5.2,-4 C5,-1 4,1.5 3.4,3.4 L-2.4,3.4 C-2.8,1 -4.2,-2 -4.2,-5.2 C-4.2,-9.2 -2.6,-12 0.6,-12 Z",
-  heel: "M-2.7,5.4 L3.3,5.4 C3.7,8.2 3.5,12 0.3,12 C-2.9,12 -3.1,8.2 -2.7,5.4 Z",
-  steps: [
-    { x: 10, y: 47, scale: 1, left: true },
-    { x: 30.4, y: 36.3, scale: 0.8, left: false },
-    { x: 34.2, y: 23.2, scale: 0.64, left: true },
-    { x: 47.3, y: 16.4, scale: 0.51, left: false },
-    { x: 49.8, y: 8, scale: 0.41, left: true },
-  ],
-};
-
-// A step's SVG transform: the shoe mirrored if left, turned the way they walk,
-// laid on the ground, then placed.
-export const footprintTransform = ({ x, y, scale, left }: (typeof FOOTPRINTS.steps)[number]) =>
-  `translate(${x} ${y}) scale(${scale} ${scale * FOOTPRINTS.tilt}) rotate(${FOOTPRINTS.heading}) scale(${left ? -1 : 1} 1)`;
+// The arrow which enters the scene, pointing right: a stroke in a 24 × 24 viewBox.
+export const ENTER_ARROW = "M4,12 H20 M13,5 L20,12 L13,19";
 
 const READING_MS_PER_CHAR = 35;
 
@@ -106,7 +81,7 @@ export const remainingTopics = ({ character, asked }: Conversation) =>
   character.dialogue.topics.filter((topic) => !asked.includes(topic.ask));
 
 export const sceneText = {
-  // The footprints which end the scene's opening, for screen readers.
+  // The arrow which ends the scene's opening, for screen readers.
   enter: "Entrer",
   talkTo: (name: string) => `Parler à ${name}`,
   goodbye: "Au revoir.",

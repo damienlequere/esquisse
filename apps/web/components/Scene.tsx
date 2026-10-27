@@ -2,8 +2,7 @@
 
 import {
   type Character,
-  FOOTPRINTS,
-  footprintTransform,
+  ENTER_ARROW,
   INTRO,
   initialSceneState,
   introHold,
@@ -243,9 +242,9 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
 };
 
 // The scene's opening: its title on black, then its intro fading in under it;
-// once it has been read, footprints to enter show under it, one step after
-// another, and the scene waits for them. Pressed, everything fades out to show
-// the scene (see the CSS).
+// once it has been read, an arrow to enter fades in, in the bottom right corner
+// of the frame, and the scene waits for it. Pressed, everything fades out to
+// show the scene (see the CSS).
 const Intro = ({ scene, onEnd }: { scene: SceneData["scene"]; onEnd(): void }) => {
   const [ready, setReady] = useState(false);
   const [leaving, setLeaving] = useState(false);
@@ -269,8 +268,7 @@ const Intro = ({ scene, onEnd }: { scene: SceneData["scene"]; onEnd(): void }) =
         {
           "--intro-text-delay": `${INTRO.textDelay}ms`,
           "--intro-text-fade": `${INTRO.textFade}ms`,
-          "--intro-step-delay": `${INTRO.stepDelay}ms`,
-          "--intro-step-fade": `${INTRO.stepFade}ms`,
+          "--intro-button-fade": `${INTRO.buttonFade}ms`,
           "--intro-fade": `${INTRO.fade}ms`,
         } as CSSProperties
       }
@@ -287,19 +285,8 @@ const Intro = ({ scene, onEnd }: { scene: SceneData["scene"]; onEnd(): void }) =
         disabled={leaving}
         onClick={() => setLeaving(true)}
       >
-        <svg
-          viewBox={`0 0 ${FOOTPRINTS.width} ${FOOTPRINTS.height}`}
-          aria-hidden="true"
-          focusable="false"
-        >
-          {FOOTPRINTS.steps.map((step, i) => (
-            <g key={`${step.x},${step.y}`} transform={footprintTransform(step)}>
-              <g style={{ "--step": i } as CSSProperties}>
-                <path d={FOOTPRINTS.sole} />
-                <path d={FOOTPRINTS.heel} />
-              </g>
-            </g>
-          ))}
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d={ENTER_ARROW} />
         </svg>
       </button>
     </div>
