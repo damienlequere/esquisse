@@ -59,6 +59,10 @@ const place = (box: Box) => ({ position: "absolute" as const, ...placeStyle(box)
 cssInterop(Animated.View, { className: "style" });
 cssInterop(Animated.Text, { className: "style" });
 
+// The enter button fades in, with an animated style that NativeWind breaks on
+// the Animated.View it styles: this one it does not know (Drawer has the same).
+const Fading = Animated.createAnimatedComponent(View);
+
 // The action's label, above what it names, centered and on one line even when
 // wider than it.
 const Tip = ({ label }: { label: string }) => (
@@ -369,9 +373,8 @@ const EnterButton = ({ ready, onPress }: { ready: boolean; onPress(): void }) =>
   const style = useAnimatedStyle(() => ({ opacity: opacity.value }));
 
   return (
-    <Animated.View
-      className="mt-12"
-      style={style}
+    <Fading
+      style={[{ marginTop: 48 }, style]}
       pointerEvents={ready ? "auto" : "none"}
       accessibilityElementsHidden={!ready}
       importantForAccessibility={ready ? "auto" : "no-hide-descendants"}
@@ -393,7 +396,7 @@ const EnterButton = ({ ready, onPress }: { ready: boolean; onPress(): void }) =>
           </View>
         )}
       </Pressable>
-    </Animated.View>
+    </Fading>
   );
 };
 
