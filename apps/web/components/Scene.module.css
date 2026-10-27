@@ -231,8 +231,8 @@
 }
 
 /* Opening a scene: its title in the middle, on black, then its intro fading in
-   under it; once it has been read, an arrow to enter fades in, in the bottom
-   right corner of the frame.
+   under it; shortly after it has appeared, an arrow to enter fades in, in the
+   bottom right corner of the frame.
    Pressed, everything fades out to show the scene. The durations are set by the scene (INTRO in
    packages/shared). It cannot be skipped. */
 .intro {

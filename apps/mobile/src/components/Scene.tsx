@@ -2,8 +2,8 @@ import {
   type Box,
   ENTER_ARROW,
   INTRO,
+  INTRO_HOLD,
   initialSceneState,
-  introHold,
   placeStyle,
   playScene,
   remainingTopics,
@@ -123,16 +123,15 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
   const drawerTab = choice.at === narration.key ? choice.tab : "narration";
 
   // Opening the scene: its title on black, then its intro fading in under it;
-  // once it has been read, the arrow to enter fades in, in the bottom right
-  // corner, and the scene waits for it. Pressed, everything fades out to show the scene (the web's
-  // Scene.module.css has the same). It cannot be skipped.
+  // shortly after it has appeared, the arrow to enter fades in, in the bottom
+  // right corner, and the scene waits for it. Pressed, everything fades out to
+  // show the scene (the web's Scene.module.css has the same). It cannot be skipped.
   const [intro, setIntro] = useState(true);
   const [introReady, setIntroReady] = useState(false);
-  const hold = introHold(scene);
   useEffect(() => {
-    const timer = setTimeout(() => setIntroReady(true), hold);
+    const timer = setTimeout(() => setIntroReady(true), INTRO_HOLD);
     return () => clearTimeout(timer);
-  }, [hold]);
+  }, []);
 
   // The panel's padding, inside the screen's safe area.
   const panelPadding = {

@@ -1,4 +1,4 @@
-import type { Character, Scene, SceneData, Topic } from "./types.ts";
+import type { Character, SceneData, Topic } from "./types.ts";
 
 // What a scene shows as it is played, the same in both apps: the narration
 // band, and the open conversation if any. The apps only draw it, and turn their
@@ -20,20 +20,23 @@ export type SceneAction =
   | { type: "leave" };
 
 // Opening a scene, in ms: its title alone, then its intro fading in under it
-// (textFade); once it has been held long enough to be read, an arrow to enter
-// fades in, in the bottom right corner of the frame (buttonFade). The scene
-// waits for it: pressed, everything fades out (fade) to show the scene. Each app
-// draws it.
-export const INTRO = { textDelay: 1000, textFade: 1500, buttonFade: 800, fade: 1200 };
+// (textFade); shortly after it has fully appeared (buttonDelay), whatever its
+// length, an arrow to enter fades in, in the bottom right corner of the frame
+// (buttonFade). The scene waits for it: pressed, everything fades out (fade) to
+// show the scene. Each app draws it.
+export const INTRO = {
+  textDelay: 1000,
+  textFade: 1500,
+  buttonDelay: 500,
+  buttonFade: 800,
+  fade: 1200,
+};
 
 // The arrow which enters the scene, pointing right: a stroke in a 24 × 24 viewBox.
 export const ENTER_ARROW = "M4,12 H20 M13,5 L20,12 L13,19";
 
-const READING_MS_PER_CHAR = 35;
-
 // From the opening to the button to enter.
-export const introHold = (scene: Scene) =>
-  INTRO.textDelay + INTRO.textFade + Math.max(1500, scene.intro.length * READING_MS_PER_CHAR);
+export const INTRO_HOLD = INTRO.textDelay + INTRO.textFade + INTRO.buttonDelay;
 
 export const initialSceneState = ({ scene }: SceneData): SceneState => ({
   narration: { title: scene.title, text: scene.intro, key: 0 },

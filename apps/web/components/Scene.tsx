@@ -4,8 +4,8 @@ import {
   type Character,
   ENTER_ARROW,
   INTRO,
+  INTRO_HOLD,
   initialSceneState,
-  introHold,
   placeStyle,
   playScene,
   remainingTopics,
@@ -242,19 +242,18 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
 };
 
 // The scene's opening: its title on black, then its intro fading in under it;
-// once it has been read, an arrow to enter fades in, in the bottom right corner
-// of the frame, and the scene waits for it. Pressed, everything fades out to
+// shortly after it has appeared, an arrow to enter fades in, in the bottom right
+// corner of the frame, and the scene waits for it. Pressed, everything fades out to
 // show the scene (see the CSS).
 const Intro = ({ scene, onEnd }: { scene: SceneData["scene"]; onEnd(): void }) => {
   const [ready, setReady] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const enter = useRef<HTMLButtonElement>(null);
 
-  const hold = introHold(scene);
   useEffect(() => {
-    const timer = setTimeout(() => setReady(true), hold);
+    const timer = setTimeout(() => setReady(true), INTRO_HOLD);
     return () => clearTimeout(timer);
-  }, [hold]);
+  }, []);
   useEffect(() => {
     if (ready) enter.current?.focus();
   }, [ready]);
