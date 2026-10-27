@@ -1,5 +1,7 @@
 import {
   type Box,
+  FOOTPRINTS,
+  footprintTransform,
   INTRO,
   initialSceneState,
   introHold,
@@ -28,11 +30,13 @@ import Animated, {
   FadeIn,
   FadeInDown,
   FadeOut,
-  useAnimatedStyle,
+  useAnimatedProps,
   useSharedValue,
+  withDelay,
   withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Svg, { G, Path } from "react-native-svg";
 import type { SceneImages } from "../scenes.ts";
 import { Drawer } from "./Drawer.tsx";
 
@@ -58,10 +62,6 @@ const place = (box: Box) => ({ position: "absolute" as const, ...placeStyle(box)
 // NativeWind styles only the components it knows.
 cssInterop(Animated.View, { className: "style" });
 cssInterop(Animated.Text, { className: "style" });
-
-// The enter button fades in, with an animated style that NativeWind breaks on
-// the Animated.View it styles: this one it does not know (Drawer has the same).
-const Fading = Animated.createAnimatedComponent(View);
 
 // The action's label, above what it names, centered and on one line even when
 // wider than it.
@@ -121,7 +121,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
   const drawerTab = choice.at === narration.key ? choice.tab : "narration";
 
   // Opening the scene: its title on black, then its intro fading in under it;
-  // once it has been read, the button to enter fades in, and the scene waits
+  // once it has been read, the footprints to enter show, and the scene waits
   // for it. Pressed, everything fades out to show the scene (the web's
   // Scene.module.css has the same). It cannot be skipped.
   const [intro, setIntro] = useState(true);
@@ -362,41 +362,60 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
   );
 };
 
-// The button to enter, under the intro. Its place is kept from the start, so the
-// title and the intro do not move when it fades in (the web's Scene.module.css
-// has the same): a thin outline, filled while it is pressed.
-const EnterButton = ({ ready, onPress }: { ready: boolean; onPress(): void }) => {
+// The footprints to enter, under the intro. Their place is kept from the start,
+// so the title and the intro do not move when they show (the web's
+// Scene.module.css has the same): steps walking up and to the right, each fading in
+// after the one before, brighter while they are pressed.
+const EnterButton = ({ ready, onPress }: { ready: boolean; onPress(): void }) => (
+  <View
+    style={{ marginTop: 40 }}
+    pointerEvents={ready ? "auto" : "none"}
+    accessibilityElementsHidden={!ready}
+    importantForAccessibility={ready ? "auto" : "no-hide-descendants"}
+  >
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={sceneText.enter}
+      onPress={onPress}
+      hitSlop={12}
+    >
+      {({ pressed }) => (
+        <Svg
+          width={110}
+          height={(110 * FOOTPRINTS.height) / FOOTPRINTS.width}
+          viewBox={`0 0 ${FOOTPRINTS.width} ${FOOTPRINTS.height}`}
+          fill={pressed ? "#ffffff" : "rgba(245,245,244,0.7)"}
+        >
+          {FOOTPRINTS.steps.map((step, i) => (
+            <G key={`${step.x},${step.y}`} transform={footprintTransform(step)}>
+              <Step ready={ready} index={i} />
+            </G>
+          ))}
+        </Svg>
+      )}
+    </Pressable>
+  </View>
+);
+
+const FadingG = Animated.createAnimatedComponent(G);
+
+// One footprint, fading in index steps after the first.
+const Step = ({ ready, index }: { ready: boolean; index: number }) => {
   const opacity = useSharedValue(0);
   useEffect(() => {
-    if (ready) opacity.value = withTiming(1, { duration: INTRO.buttonFade });
-  }, [ready, opacity]);
-  const style = useAnimatedStyle(() => ({ opacity: opacity.value }));
+    if (ready)
+      opacity.value = withDelay(
+        index * INTRO.stepDelay,
+        withTiming(1, { duration: INTRO.stepFade }),
+      );
+  }, [ready, index, opacity]);
+  const props = useAnimatedProps(() => ({ opacity: opacity.value }));
 
   return (
-    <Fading
-      style={[{ marginTop: 48 }, style]}
-      pointerEvents={ready ? "auto" : "none"}
-      accessibilityElementsHidden={!ready}
-      importantForAccessibility={ready ? "auto" : "no-hide-descendants"}
-    >
-      <Pressable accessibilityRole="button" accessibilityLabel={sceneText.enter} onPress={onPress}>
-        {({ pressed }) => (
-          <View
-            className={`rounded-full border px-7 py-2.5 ${
-              pressed ? "border-white bg-white" : "border-stone-100/40"
-            }`}
-          >
-            <Text
-              className={`text-sm font-semibold uppercase tracking-widest ${
-                pressed ? "text-black" : "text-stone-100"
-              }`}
-            >
-              {sceneText.enter} →
-            </Text>
-          </View>
-        )}
-      </Pressable>
-    </Fading>
+    <FadingG animatedProps={props}>
+      <Path d={FOOTPRINTS.sole} />
+      <Path d={FOOTPRINTS.heel} />
+    </FadingG>
   );
 };
 

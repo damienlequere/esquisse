@@ -57,8 +57,9 @@ place's image fills the frame, each action is a clickable part of the image, and
 the characters, clickable too, open a dialogue. On the web, the frame adapts to the screen, like any page under
 `app/scene/`; in the mobile app, the scene takes the whole screen. A scene opens
 on its title, in the middle, on black; its intro fades in under it, and once it
-has had time to be read (35 ms per character), a button to enter fades in under
-it, outlined, its place kept from the start; the scene waits for it, then both fade out to show the
+has had time to be read (35 ms per character), footprints to enter show under
+it, one step after another, walking up and to the right in perspective, their place kept from the start (`FOOTPRINTS` in
+`packages/shared`); the scene waits for them to be pressed, then both fade out to show the
 scene. It cannot be skipped. On the web, while a touch screen asks to be turned, it
 waits, and starts over if the screen is turned away before its end.
 

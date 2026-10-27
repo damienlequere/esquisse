@@ -231,7 +231,8 @@
 }
 
 /* Opening a scene: its title in the middle, on black, then its intro fading in
-   under it; once it has been read, the button to enter fades in under it.
+   under it; once it has been read, footprints to enter show under it, one step
+   after another.
    Pressed, everything fades out to show the scene. The durations are set by the scene (INTRO in
    packages/shared). It cannot be skipped. */
 .intro {
@@ -274,57 +275,62 @@
 }
 
 /* In the flow, under the intro: its place is kept from the start, so the title
-   and the intro do not move when it shows. A thin outline, filled when it is
-   pointed at, focused or pressed. */
+   and the intro do not move when it shows. Footprints walking up and to the
+   right, each step fading in after the one before; brighter, all together,
+   when they are pointed at, focused or pressed. */
 .enter {
-  margin-top: 3rem;
-  padding: 0.6rem 1.75rem;
-  border: 1px solid rgb(245 245 244 / 0.4);
-  border-radius: 999px;
+  margin-top: 2.5rem;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  border-radius: 0.5rem;
   background: transparent;
-  color: #f5f5f4;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  opacity: 0;
+  color: rgb(245 245 244 / 0.7);
   visibility: hidden;
-  transition:
-    background 150ms,
-    border-color 150ms,
-    color 150ms;
+  transition: color 150ms;
 }
 
-/* The system's sans serif, against the title's serif (over .root button's). */
-.intro .enter {
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  font-size: 0.85rem;
-  font-weight: 600;
+.enter svg {
+  display: block;
+  width: clamp(5.5rem, 20cqmin, 7.5rem);
+  height: auto;
+  fill: currentColor;
+  transition: filter 150ms;
+}
+
+.enter svg g g {
+  opacity: 0;
 }
 
 .intro[data-ready] .enter {
   visibility: visible;
-  animation: introText var(--intro-button-fade) ease-out forwards;
+}
+
+.intro[data-ready] .enter svg g g {
+  animation: introText var(--intro-step-fade) ease-out calc(var(--step) * var(--intro-step-delay))
+    forwards;
 }
 
 .enter:hover,
 .enter:focus-visible,
 .enter:active {
-  border-color: #fff;
-  background: #fff;
-  color: #000;
+  color: #fff;
 }
 
+/* It is focused as soon as it shows, to be entered with the keyboard: a soft
+   glow around the steps rather than an outline around the button. */
 .enter:focus-visible {
-  outline: 2px solid #fcd34d;
-  outline-offset: 2px;
+  outline: none;
 }
 
-.enter span {
-  display: inline-block;
-  transition: transform 150ms;
+.enter:focus-visible svg {
+  filter: drop-shadow(0 0 4px rgb(255 255 255 / 0.5));
 }
 
-.enter:hover span {
-  transform: translateX(3px);
+/* Pointed at or pressed: a stronger glow than the focus's, which they already
+   have when they show. */
+.enter:hover svg,
+.enter:active svg {
+  filter: drop-shadow(0 0 3px #fff) drop-shadow(0 0 10px rgb(255 255 255 / 0.7));
 }
 
 @keyframes intro {
@@ -383,18 +389,18 @@
   .hotspot,
   .tip,
   .enter,
-  .enter span {
+  .enter svg {
     transition: none;
   }
 
-  .enter:hover span {
-    transform: none;
+  /* The intro is shown at once, and still held to be read. */
+  .intro[data-leaving] {
+    animation-duration: 1ms;
   }
 
-  /* The intro is shown at once, and still held to be read. */
-  .intro[data-leaving],
-  .intro[data-ready] .enter {
+  .intro[data-ready] .enter svg g g {
     animation-duration: 1ms;
+    animation-delay: 0s;
   }
 
   .intro p {
