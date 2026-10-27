@@ -1,13 +1,20 @@
 // Writes a scene with Claude, step by step: first its background (title, intro,
 // style, light, the decor), then each element the author asks for, one at a
-// time, seeing the current render. An element's composition is checked (see
-// check-scene.ts) and sent back to the model to fix until it holds.
+// time, seeing the current render, then each character's dialogue, one line at
+// a time. An element's composition is checked (see check-scene.ts) and sent back
+// to the model to fix until it holds.
 
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
-import type { Box, Character, Detail, Scene, SceneData, SceneObject } from "@esquisse/shared";
+import type {
+  Box,
+  Character,
+  Detail,
+  Scene,
+  SceneData,
+  SceneObject,
+  Topic,
+} from "@esquisse/shared";
 import { characterBox, isLandscape, sceneRatio } from "@esquisse/shared/layout";
 import { z } from "zod";
 import { CHARACTER_ASPECT, detailProblems, sceneProblems } from "./check-scene.ts";
@@ -77,12 +84,11 @@ const character = z.object({
   anchor: z.object({ x: z.number(), y: z.number() }),
   height: z.number(),
   paint: z.string(),
-  dialogue: z.object({
-    greeting: z.string(),
-    topics: z.array(z.object({ ask: z.string(), answer: z.string() })),
-    farewell: z.string(),
-  }),
 });
+
+// A dialogue's line: its greeting or its farewell, or a topic, a question and its answer.
+const line = z.object({ text: z.string() });
+const topic = z.object({ ask: z.string(), answer: z.string() });
 
 const details = z.object({ details: z.array(z.object({ paint: z.string(), zone: box })) });
 
@@ -98,24 +104,13 @@ export type Base = z.infer<typeof base>;
 export type Element =
   | { kind: "object"; object: SceneObject }
   | { kind: "character"; character: Character };
-
-// The lighthouse, as an example of what is expected, without what the script sets:
-// a scene removed from the apps, kept here (example-scene.json) for its texts.
-// Its images predated the digital matte painting, so its style is given as it would be now.
-const EXAMPLE_STYLE =
-  "Matte painting numérique de cinéma : proportions et perspective justes, perspective atmosphérique, matières rendues avec une grande précision (bois ciré et usé, laiton terni, verre épais, cordages effilochés, pierre chaulée), profondeur de champ légère, étalonnage contrasté. Palette de bleus nuit et d'ocres chauds, clair-obscur : la lumière dorée d'une lampe à pétrole contre la nuit bleue au hublot. Atmosphère grave, calme, mystérieuse, un peu inquiète. Aucun texte, lettre, chiffre, signature ni logo ; pas de style cartoon, bande dessinée, anime ni caricature, pas de contours encrés ni d'aplats ; pas de photographie ni de rendu 3D lisse ; pas de cadre ni de bordure.";
-
-// The example is portrait: its coordinates only show the form.
-const example = () => {
-  const path = join(import.meta.dirname, "example-scene.json");
-  const { brief, imageRatio, safe, notes, ...rest } = JSON.parse(readFileSync(path, "utf8"));
-  return JSON.stringify({ ...rest, style: EXAMPLE_STYLE }, null, 2);
-};
+export type LineKind = "greeting" | "topic" | "farewell";
+export type Line = { text: string } | Topic;
 
 const system = (format: Format) =>
   `Tu crées des scènes cliquables pour Esquisse : une image peinte au format ${format.words}, où chaque objet du décor est une action cliquable qui affiche un court texte, et où chaque personnage ouvre un dialogue. Les images sont générées par un modèle d'image à partir de tes descriptions, puis les objets sont repérés par un modèle de vision.
 
-La scène se construit pas à pas, avec son auteur : d'abord le fond, qu'il valide ; puis, s'il le veut, des détails de réalisme retouchés dans le fond ; puis, un par un, les éléments qu'il demande, chacun validé sur le rendu.
+La scène se construit pas à pas, avec son auteur : d'abord le fond, qu'il valide ; puis, s'il le veut, des détails de réalisme retouchés dans le fond ; puis, un par un, les éléments qu'il demande, chacun validé sur le rendu ; puis, pour chaque personnage, son dialogue, une réplique à la fois.
 
 ## La direction artistique
 
@@ -168,9 +163,19 @@ Ensuite, on t'envoie le rendu actuel (le fond avec les éléments déjà validé
   - name : « Prénom, rôle » (« Maïwenn, la gardienne »).
   - anchor : le milieu de ses pieds ; height : sa hauteur, en fraction de la hauteur de l'image.
   - paint : sa description en pied pour le modèle d'image (âge, visage, silhouette, vêtements et leurs matières, leur usure, ce qu'il tient, posture), debout, de trois quarts, avec des proportions réalistes. Jamais de vert dans ses vêtements ni dans ce qu'il tient : il est détouré sur fond vert.
-  - dialogue : greeting (sa première réplique), topics (2 ou 3 questions que le joueur peut poser, ask, avec la réponse du personnage, answer, 1 à 3 phrases), farewell (sa dernière réplique). Il a sa voix.
+  - Son dialogue s'écrit ensuite, à part (voir Les dialogues).
 
 Si l'auteur demande une modification, tu renvoies l'élément entier, modifié.
+
+## Les dialogues
+
+Une fois un personnage validé, on te demande son dialogue réplique par réplique, chacune validée par l'auteur avant la suivante. On t'envoie la scène telle qu'elle est, avec les répliques déjà validées, et la réplique à écrire :
+
+- l'accueil (text) : sa première réplique, quand le joueur vient lui parler ;
+- une question (ask, ce que le joueur lui demande, une phrase courte, à la première personne ou à l'impératif) et sa réponse (answer, 1 à 3 phrases), distincte de celles déjà posées ;
+- l'au revoir (text) : sa dernière réplique, quand le joueur le quitte.
+
+Il a sa voix, son âge, son milieu, son époque, et ne sait que ce qu'il peut savoir. Chaque réplique tient compte de celles déjà validées. L'auteur peut dire ce qu'il veut ; sinon, tu choisis. S'il demande une modification, tu renvoies la réplique entière, modifiée.
 
 Tout est en français, sauf detect, et sauf si la demande dit une autre langue. Les textes, les objets et les dialogues se répondent : chaque nouvel élément tient compte de ceux qui sont déjà là, et ensemble ils posent une même énigme, sans la résoudre.
 
@@ -185,13 +190,7 @@ Les coordonnées sont des fractions de l'image, de 0 à 1, depuis son coin en ha
 
 ## La demande
 
-Elle peut ne donner qu'un thème, ou fixer des choses : le lieu, l'époque, le ton, le style, ce qu'elle veut voir. Ce qu'elle fixe, tu le respectes ; le reste, tu l'inventes. Le ton qu'elle donne vaut pour les textes ; les images ne changent de direction artistique que si elle demande un autre style en toutes lettres.
-
-## Exemple
-
-Une scène finie, pour le ton et le niveau de détail (elle est en portrait : ses coordonnées ne valent que pour la forme) :
-
-${example()}`;
+Elle peut ne donner qu'un thème, ou fixer des choses : le lieu, l'époque, le ton, le style, ce qu'elle veut voir. Ce qu'elle fixe, tu le respectes ; le reste, tu l'inventes. Le ton qu'elle donne vaut pour les textes ; les images ne changent de direction artistique que si elle demande un autre style en toutes lettres.`;
 
 type Message = Anthropic.Beta.BetaMessageParam;
 type Content = Message["content"];
@@ -315,7 +314,18 @@ export const elementWriter = (apiKey: string, data: SceneData, render: Buffer) =
   const checked = async (first: Content) => {
     let content = first;
     for (let attempt = 1; ; attempt++) {
-      const e = (await ask(content)).element as Element;
+      const written = (await ask(content)).element;
+      // A character comes without its dialogue: it is written afterwards, line by line.
+      const e: Element =
+        written.kind === "character"
+          ? {
+              kind: "character",
+              character: {
+                ...written.character,
+                dialogue: { greeting: "", topics: [], farewell: "" },
+              },
+            }
+          : written;
       const id = elementId(e);
       // The problems of this element: those already in the scene are not its own.
       const problems = sceneProblems(withElement(data, e)).filter((p) => p.includes(`"${id}"`));
@@ -331,5 +341,27 @@ export const elementWriter = (apiKey: string, data: SceneData, render: Buffer) =
         { type: "text", text: `${describe(data)}\n\nL'auteur veut ajouter : ${request}` },
       ]),
     revise: (change: string) => checked(`Modifie l'élément ainsi : ${change}`),
+  };
+};
+
+const LINES = {
+  greeting: { schema: line, what: "l'accueil" },
+  topic: { schema: topic, what: "une nouvelle question et sa réponse" },
+  farewell: { schema: line, what: "l'au revoir" },
+};
+
+// One conversation per line of a character's dialogue: written from the scene as
+// it is, with the lines already validated, then changed as the author asks.
+export const lineWriter = (apiKey: string, data: SceneData, c: Character, kind: LineKind) => {
+  const { schema, what } = LINES[kind];
+  const ask = conversation(schema, apiKey, formatOf(data.scene)) as (
+    content: Content,
+  ) => Promise<Line>;
+  return {
+    write: (request: string) =>
+      ask(
+        `${describe(data)}\n\nÉcris ${what} de « ${c.name} » (${c.id}).${request === "" ? "" : ` L'auteur veut : ${request}`}`,
+      ),
+    revise: (change: string) => ask(`Modifie la réplique ainsi : ${change}`),
   };
 };

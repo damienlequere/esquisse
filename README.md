@@ -102,7 +102,7 @@ waits, and starts over if the screen is turned away before its end.
 | `packages/shared/assets/scenes/<id>/` | Converted images, for both apps |
 | `apps/web/scenes.ts`, `apps/mobile/src/scenes.ts` | Each app's list of the images (generated): Next and Metro each need every import spelled out |
 | `apps/web/components/Scene.tsx`, `apps/mobile/src/components/Scene.tsx` | The scene, in each app |
-| `packages/generator/src/generate-scene.ts` | The session: the background, then each element, validated one at a time, saved and listed for both apps |
+| `packages/generator/src/generate-scene.ts` | The session: the background, then each element, then each character's dialogue line by line, validated one at a time, saved and listed for both apps |
 | `packages/generator/src/write-scene.ts`, `paint.ts`, `check-scene.ts`, `registry.ts` | The writing with Claude, the images with Gemini and the renders, the checks, the generated lists |
 
 ## Generating a scene
@@ -146,7 +146,7 @@ pnpm generate <id> portrait|landscape "<brief>"
 pnpm generate foret portrait "l'orée d'une forêt au crépuscule, un bivouac abandonné"
 ```
 
-The session goes in three stages. Each render is saved in the system's temporary
+The session goes in four stages. Each render is saved in the system's temporary
 folder and opens in the image viewer, with the safe zone dashed, the objects
 outlined in orange and the characters in blue.
 
@@ -181,6 +181,15 @@ outlined in orange and the characters in blue.
    Then: `v` validate, `r` redo it (an object is retouched again from the
    validated background, never from a rejected one), `m` describe a change, `a`
    drop it. Press Enter at the question to finish.
+4. **A character's dialogue, one line at a time**, right after the character is
+   validated. Claude writes its greeting; then, as many times as you want, a
+   question the player can ask and its answer (type the question you want, or
+   `n` for Claude to suggest one; Enter when there are enough); then its
+   farewell. Each line is shown before the next: `v` validate, `r` rewrite it,
+   `m` describe a change, `a` drop it (for the greeting and the farewell, keep
+   it for later). Each validated line is saved at once. `p`, at the question of
+   the elements, goes back to a character's dialogue: it asks for what it still
+   lacks, and more questions.
 
 A session looks like this (Claude's texts shortened):
 
@@ -253,7 +262,7 @@ shows the scene on the home page and at `/scene/<id>`.
 ### Going on, starting over
 
 - **Add to a scene** later: `pnpm generate <id>`, without a brief, shows the
-  current render and asks what to add.
+  current render and asks what to add, or `p` for a character's dialogue.
 - **Start over**: `pnpm generate <id> portrait|landscape "<brief>"` on an existing scene asks, then
   deletes it and starts again from the background.
 - **Edit by hand**: everything in `scene.json` can be changed (a text, a
@@ -268,7 +277,7 @@ When something goes wrong:
   put the object where planned. `r` to retouch again.
 
 Each step calls the APIs, which are paid: one Claude request per writing or
-change (more if the composition is sent back), one Gemini request per painting
+change (a dialogue's line, its rewriting or its change included) (more if the composition is sent back), one Gemini request per painting
 or retouch, and one per detection after an object or after details on a scene
 that has objects.
 

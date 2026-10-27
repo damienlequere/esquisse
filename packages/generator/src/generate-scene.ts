@@ -13,7 +13,9 @@
 // never clickable. Then, one at a time, the elements the author asks for: Claude writes each one
 // from the current render, Gemini adds it (an object by retouching the
 // validated background, a character as a layer), and the author validates it
-// on the new render, has it redone, changes it, or drops it. Each render opens
+// on the new render, has it redone, changes it, or drops it. A character's
+// dialogue is then written one line at a time, each validated the same way:
+// its greeting, the questions the author wants, its farewell. Each render opens
 // in the image viewer.
 //
 // What is validated is saved at once, so the session can stop at any time: the
@@ -51,6 +53,9 @@ import {
   elementWriter,
   FORMATS,
   type Format,
+  type Line,
+  type LineKind,
+  lineWriter,
   type Orientation,
 } from "./write-scene.ts";
 
@@ -264,7 +269,7 @@ const withCharacter = async (state: State, c: Character): Promise<Candidate> => 
 const summary = (e: Element) =>
   e.kind === "object"
     ? `Objet « ${e.object.id} », ${where(e.object.zone)}\n  ${e.object.paint}\n  ${e.object.label} : ${e.object.text}`
-    : `Personnage « ${e.character.name} » (${e.character.id})\n  ${e.character.paint}\n  « ${e.character.dialogue.greeting} »`;
+    : `Personnage « ${e.character.name} » (${e.character.id})\n  ${e.character.paint}`;
 
 // Returns the new state if the element is validated, the same one otherwise.
 const addElement = async (state: State, request: string): Promise<State> => {
@@ -292,13 +297,114 @@ const addElement = async (state: State, request: string): Promise<State> => {
     });
     if (answer === "v") {
       await save(candidate);
-      return candidate;
+      return element.kind === "character"
+        ? writeDialogue(candidate, element.character.id)
+        : candidate;
     }
     if (answer === "a") return state;
     if (answer === "m") {
       ({ element, problems } = await writer.revise(await rl.question("Que changer ?\n> ")));
     }
   }
+};
+
+// ── The dialogues ────────────────────────────────────────────────────────────
+
+const character = (state: State, cid: string) => {
+  const c = state.data.scene.characters.find((c) => c.id === cid);
+  if (c === undefined) throw new Error(`No character "${cid}"`);
+  return c;
+};
+
+const LINE_NAMES: Record<LineKind, string> = {
+  greeting: "L'accueil",
+  topic: "La question",
+  farewell: "L'au revoir",
+};
+
+const showLine = (l: Line) => ("ask" in l ? `— ${l.ask}\n  « ${l.answer} »` : `« ${l.text} »`);
+
+// The state with the line in the character's dialogue, saved: only texts change.
+const withLine = async (state: State, cid: string, kind: LineKind, l: Line) => {
+  const { scene } = state.data;
+  const characters = scene.characters.map((c) => {
+    if (c.id !== cid) return c;
+    const { dialogue } = c;
+    if ("ask" in l) return { ...c, dialogue: { ...dialogue, topics: [...dialogue.topics, l] } };
+    return { ...c, dialogue: { ...dialogue, [kind]: l.text } };
+  });
+  const candidate: Candidate = {
+    ...state,
+    data: { ...state.data, scene: { ...scene, characters } },
+    backgroundChanged: false,
+  };
+  await save(candidate);
+  return candidate;
+};
+
+// One line, written then validated, rewritten or changed until the author keeps
+// or drops it. Returns the new state if it is validated, the same one otherwise.
+const addLine = async (state: State, cid: string, kind: LineKind, request: string) => {
+  const c = character(state, cid);
+  const writer = lineWriter(anthropicKey, state.data, c, kind);
+  let l = await writer.write(request);
+  for (;;) {
+    console.log(`\n${LINE_NAMES[kind]} de ${c.name} :\n  ${showLine(l)}\n`);
+    const answer = await choose(`${LINE_NAMES[kind]} :`, {
+      v: "valider",
+      r: "réécrire",
+      m: "modifier",
+      a: kind === "topic" ? "abandonner" : "plus tard",
+    });
+    if (answer === "v") return withLine(state, cid, kind, l);
+    if (answer === "a") return state;
+    l = await writer.revise(
+      answer === "r"
+        ? "Propose une autre version, différente."
+        : await rl.question("Que changer ?\n> "),
+    );
+  }
+};
+
+// The character's greeting if it has none, then the questions the author wants,
+// one at a time, then its farewell if it has none.
+const writeDialogue = async (start: State, cid: string): Promise<State> => {
+  let state = start;
+  console.log(`\nLe dialogue de ${character(state, cid).name}`);
+  if (character(state, cid).dialogue.greeting === "") {
+    state = await addLine(state, cid, "greeting", "");
+  }
+  for (;;) {
+    const { topics } = character(state, cid).dialogue;
+    console.log(
+      topics.length === 0
+        ? "\nAucune question pour l'instant."
+        : `\nLes questions : ${topics.map((t, i) => `\n  ${i + 1}. ${t.ask}`).join("")}`,
+    );
+    const answer = (
+      await rl.question(
+        "Une question à ajouter ? (ce que le joueur demande, n pour que Claude en propose une, ou Entrée pour finir)\n> ",
+      )
+    ).trim();
+    if (answer === "") break;
+    state = await addLine(state, cid, "topic", answer.toLowerCase() === "n" ? "" : answer);
+  }
+  if (character(state, cid).dialogue.farewell === "") {
+    state = await addLine(state, cid, "farewell", "");
+  }
+  return state;
+};
+
+// Picks a character of the scene, by number, to go on with its dialogue.
+const pickCharacter = async (state: State) => {
+  const { characters } = state.data.scene;
+  if (characters.length === 0) {
+    console.log("Aucun personnage dans la scène.");
+    return undefined;
+  }
+  console.log(characters.map((c, i) => `  ${i + 1}. ${c.name}`).join("\n"));
+  const answer = (await rl.question("Lequel ? (un numéro, ou Entrée pour revenir)\n> ")).trim();
+  return characters[Number(answer) - 1]?.id;
 };
 
 // ── The details ──────────────────────────────────────────────────────────────
@@ -382,12 +488,17 @@ for (;;) {
   }
   const answer = (
     await rl.question(
-      "\nQue veux-tu ajouter ? (une description, un numéro d'idée, d pour des détails de réalisme, ou Entrée pour finir)\n> ",
+      "\nQue veux-tu ajouter ? (une description, un numéro d'idée, d pour des détails de réalisme, p pour le dialogue d'un personnage, ou Entrée pour finir)\n> ",
     )
   ).trim();
   if (answer === "") break;
   if (answer.toLowerCase() === "d") {
     state = await addRealism(state);
+    continue;
+  }
+  if (answer.toLowerCase() === "p") {
+    const cid = await pickCharacter(state);
+    if (cid !== undefined) state = await writeDialogue(state, cid);
     continue;
   }
   const picked = /^\d+$/.test(answer) ? suggestions[Number(answer) - 1] : undefined;
@@ -399,4 +510,13 @@ for (;;) {
     suggestions = suggestions.filter((s) => s !== picked);
 }
 rl.close();
+for (const c of state.data.scene.characters) {
+  const missing = [
+    c.dialogue.greeting === "" && "son accueil",
+    c.dialogue.farewell === "" && "son au revoir",
+  ].filter(Boolean);
+  if (missing.length > 0) {
+    console.log(`⚠ ${c.name} n'a pas encore ${missing.join(" ni ")} : pnpm generate ${id}, puis p`);
+  }
+}
 console.log(`✓ ${state.data.scene.title}: /scene/${id}, run pnpm dev to play it`);
