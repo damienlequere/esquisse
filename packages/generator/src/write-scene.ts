@@ -99,14 +99,15 @@ export type Element =
   | { kind: "object"; object: SceneObject }
   | { kind: "character"; character: Character };
 
-// The lighthouse, as an example of what is expected, without what the script sets.
-// Its images predate the pictorial realism, so its style is given as it would be now.
+// The lighthouse, as an example of what is expected, without what the script sets:
+// a scene removed from the apps, kept here (example-scene.json) for its texts.
+// Its images predated the digital matte painting, so its style is given as it would be now.
 const EXAMPLE_STYLE =
-  "Peinture à l'huile réaliste, dans l'esprit du concept art et du matte painting de cinéma : proportions et perspective justes, matières rendues avec précision (bois ciré et usé, laiton terni, verre épais, cordages effilochés, pierre chaulée), touche visible mais maîtrisée, profondeur de champ légère. Palette de bleus nuit et d'ocres chauds, clair-obscur : la lumière dorée d'une lampe à pétrole contre la nuit bleue au hublot. Atmosphère grave, calme, mystérieuse, un peu inquiète. Aucun texte, lettre, chiffre, signature ni logo ; pas de style cartoon, bande dessinée, anime ni caricature, pas de contours encrés ni d'aplats ; pas de photographie ni de rendu 3D lisse ; pas de cadre ni de bordure.";
+  "Matte painting numérique de cinéma : proportions et perspective justes, perspective atmosphérique, matières rendues avec une grande précision (bois ciré et usé, laiton terni, verre épais, cordages effilochés, pierre chaulée), profondeur de champ légère, étalonnage contrasté. Palette de bleus nuit et d'ocres chauds, clair-obscur : la lumière dorée d'une lampe à pétrole contre la nuit bleue au hublot. Atmosphère grave, calme, mystérieuse, un peu inquiète. Aucun texte, lettre, chiffre, signature ni logo ; pas de style cartoon, bande dessinée, anime ni caricature, pas de contours encrés ni d'aplats ; pas de photographie ni de rendu 3D lisse ; pas de cadre ni de bordure.";
 
 // The example is portrait: its coordinates only show the form.
 const example = () => {
-  const path = join(import.meta.dirname, "../../shared/src/scenes/phare/scene.json");
+  const path = join(import.meta.dirname, "example-scene.json");
   const { brief, imageRatio, safe, notes, ...rest } = JSON.parse(readFileSync(path, "utf8"));
   return JSON.stringify({ ...rest, style: EXAMPLE_STYLE }, null, 2);
 };
@@ -118,7 +119,7 @@ La scène se construit pas à pas, avec son auteur : d'abord le fond, qu'il vali
 
 ## La direction artistique
 
-Les images sont du réalisme pictural : de la peinture réaliste et détaillée, comme le concept art ou le matte painting d'un film, pas une illustration jeunesse ni une bande dessinée.
+Les images sont du matte painting numérique de cinéma : des décors peints numériquement, réalistes et très détaillés, comme ceux d'un film, pas une illustration jeunesse ni une bande dessinée.
 
 - Les proportions, l'anatomie et la perspective sont justes ; les visages sont naturels, sans traits exagérés ni expressions de dessin animé.
 - La lumière est crédible : des sources précises, des ombres qui en découlent, un clair-obscur qui sert l'atmosphère.
@@ -132,7 +133,7 @@ Les images sont du réalisme pictural : de la peinture réaliste et détaillée,
 
 - title : le titre de la scène, court.
 - intro : 1 à 2 phrases, à la deuxième personne (« tu »), au présent, qui posent le lieu et l'ambiance quand le joueur arrive.
-- style : un paragraphe de direction artistique commun à toutes les images de la scène (technique de peinture réaliste, rendu des matières, palette, lumière, atmosphère), qui suit la direction artistique ci-dessus. Il finit toujours par les interdits : aucun texte, lettre, chiffre, signature ni logo ; pas de style cartoon, bande dessinée, anime ni caricature, pas de contours encrés ni d'aplats ; pas de photographie ni de rendu 3D lisse ; pas de cadre ni de bordure.
+- style : un paragraphe de direction artistique commun à toutes les images de la scène (matte painting numérique, rendu des matières, palette, lumière, atmosphère), qui suit la direction artistique ci-dessus. Il finit toujours par les interdits : aucun texte, lettre, chiffre, signature ni logo ; pas de style cartoon, bande dessinée, anime ni caricature, pas de contours encrés ni d'aplats ; pas de photographie ni de rendu 3D lisse ; pas de cadre ni de bordure.
 - light : la lumière de la scène en quelques mots (sources, couleur, direction), pour que les éléments ajoutés ensuite soient éclairés comme le décor.
 - background.prompt : le décor seul, vu de face à hauteur d'homme, vide de toute personne et de tout animal. Le sol occupe ${format.floor} et reste dégagé, pour recevoir ensuite des objets et des personnages.${format.focus} Il décrit le lieu en détail : ses matières, leur état, et les détails secondaires aux murs et au fond qui le font vivre. Les objets et les personnages que la demande cite n'y sont pas : ils seront ajoutés un à un.
 - suggestions : 3 à 5 ajouts possibles, objets ou personnages, en quelques mots chacun (« un feu de camp au premier plan »), dans l'esprit de la demande, en commençant par ceux qu'elle cite.

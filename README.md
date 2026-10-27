@@ -26,7 +26,7 @@ eas init      # for builds on Expo's servers
 
 ```bash
 pnpm install
-pnpm dev             # web site: http://localhost:3000 (the scene: /scene/phare)
+pnpm dev             # web site: http://localhost:3000 (a scene: /scene/foret)
 pnpm dev:mobile      # Expo dev server: scan the QR code with Expo Go
 pnpm dev:all         # both, through Turborepo
 pnpm build           # production builds
@@ -51,7 +51,7 @@ The scripts are not named `deploy`: `pnpm deploy` is a built-in pnpm command.
 
 ## Clickable scenes
 
-`/scene/phare` on the web site, and in the mobile app, is a
+Each scene, at `/scene/<id>` on the web site (`/scene/foret` for now), and in the mobile app, is a
 clickable scene, ported from protagonist's `prototypes/scene-cliquable`: the
 place's image fills the frame, each action is a clickable part of the image, and
 the characters, clickable too, open a dialogue. On the web, the frame adapts to the screen, like any page under
@@ -97,7 +97,7 @@ waits, and starts over if the screen is turned away before its end.
 | --- | --- |
 | `packages/shared/src/scenes/<id>/scene.json` | The scene: safe zone, prompts, positions, texts and dialogues |
 | `packages/shared/src/scenes/<id>/objects.json`, `characters.json` | Detected boxes, layers' proportions (generated) |
-| `packages/shared/src/scenes/index.ts` | The scenes, for both apps (`scenes.phare`), and their types (generated) |
+| `packages/shared/src/scenes/index.ts` | The scenes, for both apps (`scenes.foret`), and their types (generated) |
 | `packages/generator/sources/<id>/` | Original images and the composition guide |
 | `packages/shared/assets/scenes/<id>/` | Converted images, for both apps |
 | `apps/web/scenes.ts`, `apps/mobile/src/scenes.ts` | Each app's list of the images (generated): Next and Metro each need every import spelled out |
