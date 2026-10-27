@@ -89,6 +89,6 @@ export const sceneText = {
   foldText: "Replier le texte",
   unfoldText: "Afficher le texte",
   // When the screen is not turned like the scene.
-  turnLandscape: "Tourne ton écran à l'horizontale",
-  turnPortrait: "Tourne ton écran à la verticale",
+  turnLandscape: "Tourner l'écran à l'horizontale",
+  turnPortrait: "Tourner l'écran à la verticale",
 };
