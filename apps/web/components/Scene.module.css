@@ -231,9 +231,8 @@
 }
 
 /* Opening a scene: its title in the middle, on black, then its intro fading in
-   under it; once it has been read, the button to enter fades in, in the
-   bottom right corner of the frame. Pressed, everything
-   fades out to show the scene. The durations are set by the scene (INTRO in
+   under it; once it has been read, the button to enter fades in under it.
+   Pressed, everything fades out to show the scene. The durations are set by the scene (INTRO in
    packages/shared). It cannot be skipped. */
 .intro {
   position: absolute;
@@ -274,20 +273,24 @@
   animation: introText var(--intro-text-fade) ease-out var(--intro-text-delay) forwards;
 }
 
+/* In the flow, under the intro: its place is kept from the start, so the title
+   and the intro do not move when it shows. A thin outline, filled when it is
+   pointed at, focused or pressed. */
 .enter {
-  position: absolute;
-  right: max(1.5rem, env(safe-area-inset-right));
-  bottom: max(1.5rem, env(safe-area-inset-bottom));
+  margin-top: 3rem;
   padding: 0.6rem 1.75rem;
-  border: 0;
+  border: 1px solid rgb(245 245 244 / 0.4);
   border-radius: 999px;
-  background: #fff;
-  color: #000;
+  background: transparent;
+  color: #f5f5f4;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   opacity: 0;
   visibility: hidden;
-  transition: background 150ms;
+  transition:
+    background 150ms,
+    border-color 150ms,
+    color 150ms;
 }
 
 /* The system's sans serif, against the title's serif (over .root button's). */
@@ -302,13 +305,26 @@
   animation: introText var(--intro-button-fade) ease-out forwards;
 }
 
-.enter:hover {
-  background: #e7e5e4;
+.enter:hover,
+.enter:focus-visible,
+.enter:active {
+  border-color: #fff;
+  background: #fff;
+  color: #000;
 }
 
 .enter:focus-visible {
   outline: 2px solid #fcd34d;
   outline-offset: 2px;
+}
+
+.enter span {
+  display: inline-block;
+  transition: transform 150ms;
+}
+
+.enter:hover span {
+  transform: translateX(3px);
 }
 
 @keyframes intro {
@@ -366,8 +382,13 @@
 @media (prefers-reduced-motion: reduce) {
   .hotspot,
   .tip,
-  .enter {
+  .enter,
+  .enter span {
     transition: none;
+  }
+
+  .enter:hover span {
+    transform: none;
   }
 
   /* The intro is shown at once, and still held to be read. */

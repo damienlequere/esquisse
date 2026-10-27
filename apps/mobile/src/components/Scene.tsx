@@ -24,7 +24,14 @@ import {
   Text,
   View,
 } from "react-native";
-import Animated, { FadeIn, FadeInDown, FadeOut } from "react-native-reanimated";
+import Animated, {
+  FadeIn,
+  FadeInDown,
+  FadeOut,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { SceneImages } from "../scenes.ts";
 import { Drawer } from "./Drawer.tsx";
@@ -343,29 +350,50 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
             >
               {scene.intro}
             </Animated.Text>
+            <EnterButton ready={introReady} onPress={() => setIntro(false)} />
           </View>
-          {/* The button to enter, in the bottom right corner. */}
-          {introReady && (
-            <Animated.View
-              entering={FadeIn.duration(INTRO.buttonFade)}
-              className="absolute"
-              style={{ right: Math.max(24, insets.right), bottom: Math.max(24, insets.bottom) }}
-            >
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={sceneText.enter}
-                onPress={() => setIntro(false)}
-                className="rounded-full bg-white px-7 py-2.5 active:bg-stone-200"
-              >
-                <Text className="text-sm font-semibold uppercase tracking-widest text-black">
-                  {sceneText.enter} →
-                </Text>
-              </Pressable>
-            </Animated.View>
-          )}
         </Animated.View>
       )}
     </View>
+  );
+};
+
+// The button to enter, under the intro. Its place is kept from the start, so the
+// title and the intro do not move when it fades in (the web's Scene.module.css
+// has the same): a thin outline, filled while it is pressed.
+const EnterButton = ({ ready, onPress }: { ready: boolean; onPress(): void }) => {
+  const opacity = useSharedValue(0);
+  useEffect(() => {
+    if (ready) opacity.value = withTiming(1, { duration: INTRO.buttonFade });
+  }, [ready, opacity]);
+  const style = useAnimatedStyle(() => ({ opacity: opacity.value }));
+
+  return (
+    <Animated.View
+      className="mt-12"
+      style={style}
+      pointerEvents={ready ? "auto" : "none"}
+      accessibilityElementsHidden={!ready}
+      importantForAccessibility={ready ? "auto" : "no-hide-descendants"}
+    >
+      <Pressable accessibilityRole="button" accessibilityLabel={sceneText.enter} onPress={onPress}>
+        {({ pressed }) => (
+          <View
+            className={`rounded-full border px-7 py-2.5 ${
+              pressed ? "border-white bg-white" : "border-stone-100/40"
+            }`}
+          >
+            <Text
+              className={`text-sm font-semibold uppercase tracking-widest ${
+                pressed ? "text-black" : "text-stone-100"
+              }`}
+            >
+              {sceneText.enter} →
+            </Text>
+          </View>
+        )}
+      </Pressable>
+    </Animated.View>
   );
 };
 
