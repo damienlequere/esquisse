@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { type GestureResponderEvent, Pressable, Text } from "react-native";
+import { type GestureResponderEvent, Pressable, Text, View } from "react-native";
 import Animated, {
   SlideInDown,
   SlideInRight,
@@ -12,6 +12,10 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 // Between the buttons and the open panel.
 const GAP = 8;
+
+// The buttons' strip slides, with an animated style that NativeWind breaks on
+// the Animated.View it styles (see Scene's cssInterop): this one it does not know.
+const Strip = Animated.createAnimatedComponent(View);
 
 // A touch on the drawer stops there, its parent never folds it.
 const keepTouch = (event: GestureResponderEvent) => event.stopPropagation();
@@ -88,14 +92,26 @@ export const Drawer = <Id extends string>({
       {/* The round buttons, toward the bottom right corner: in a row at the
           bottom; in a column on the right. Their strip lets touches through between them.
           The open content's is lighter. */}
-      <Animated.View
+      <Strip
         pointerEvents="box-none"
         onTouchStart={keepTouch}
-        className={`absolute justify-end gap-2 ${right ? "bottom-0 top-0 flex-col" : "left-0 right-0 flex-row"}`}
         style={[
+          { position: "absolute", justifyContent: "flex-end", gap: 8 },
           right
-            ? { right: beside, paddingBottom: Math.max(16, insets.bottom) }
-            : { bottom: beside, paddingRight: Math.max(16, insets.right) },
+            ? {
+                top: 0,
+                bottom: 0,
+                right: beside,
+                flexDirection: "column",
+                paddingBottom: Math.max(16, insets.bottom),
+              }
+            : {
+                left: 0,
+                right: 0,
+                bottom: beside,
+                flexDirection: "row",
+                paddingRight: Math.max(16, insets.right),
+              },
           slide,
         ]}
       >
@@ -114,7 +130,7 @@ export const Drawer = <Id extends string>({
             </Pressable>
           );
         })}
-      </Animated.View>
+      </Strip>
     </>
   );
 };
