@@ -10,8 +10,16 @@ export type SceneImages = {
 };
 
 export const sceneImages = {
+  chateau: {
+    background: require("@esquisse/shared/assets/scenes/chateau/fond.webp"),
+    characters: {},
+  },
   foret: {
     background: require("@esquisse/shared/assets/scenes/foret/fond.webp"),
+    characters: {},
+  },
+  tristram: {
+    background: require("@esquisse/shared/assets/scenes/tristram/fond.webp"),
     characters: {},
   },
 } satisfies Record<string, SceneImages>;

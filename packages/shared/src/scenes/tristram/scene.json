@@ -1,0 +1,33 @@
+{
+  "brief": "une vue générale du village de tristram, insipirée de diablo",
+  "title": "Tristram, à la tombée du soir",
+  "intro": "Tu entres dans le village de Tristram alors que le jour s'éteint : les volets sont clos, la boue colle aux bottes, et sur la colline, la vieille cathédrale semble respirer une lueur rouge. Personne ne parle fort ici, comme si quelque chose, sous la terre, pouvait entendre.",
+  "imageRatio": "9:16",
+  "safe": {
+    "x0": 0.09,
+    "y0": 0.14,
+    "x1": 0.91,
+    "y1": 0.71
+  },
+  "style": "Matte painting numérique de cinéma, réaliste et très détaillé, dans l'esprit d'un décor de film de dark fantasy médiévale. Proportions, perspective et anatomie justes, visages naturels et marqués par la fatigue. Les matières sont tangibles et usées : colombages de chêne noircis et fendus, torchis écaillé, chaume pourri et affaissé, pierre de taille rongée de lichen, fer forgé piqué de rouille, boue grasse et pavés disjoints, tissus de laine rêche et de cuir craquelé. Palette sombre et désaturée de bruns terreux, de gris froids et de bleus d'ardoise, ponctuée de l'orangé chaud des torches et des fenêtres, et d'un rougeoiement infernal lointain. Clair-obscur dense, brume basse qui rampe entre les maisons, fumées de cheminées, atmosphère lourde de menace et de deuil. Aucun texte, lettre, chiffre, signature ni logo ; pas de style cartoon, bande dessinée, anime ni caricature, pas de contours encrés ni d'aplats ; pas de photographie ni de rendu 3D lisse ; pas de cadre ni de bordure.",
+  "light": "Crépuscule froid bleu-gris venant du ciel couvert, en haut à gauche ; lueurs orangées des torches et des fenêtres au niveau des maisons ; rougeoiement sourd venant de la cathédrale au fond, au centre, qui teinte la brume par en dessous.",
+  "background": {
+    "prompt": "Vue générale de face, à hauteur d'homme, de la place centrale d'un village médiéval ténébreux à la tombée du soir, entièrement vide de toute personne et de tout animal. Au premier plan, le tiers inférieur de l'image est un sol dégagé de terre boueuse et de vieux pavés disjoints, creusé d'ornières et de flaques sombres qui reflètent le ciel, sans aucun objet posé. De part et d'autre, des maisons à colombages de chêne noirci, au torchis écaillé et aux toits de chaume affaissé et pourri, aux volets de bois clos et fendus ; à gauche, une bâtisse plus large à étage, aux fenêtres à petits carreaux éclairées d'un orangé chaud, avec une enseigne de fer vide qui pend à une potence rouillée ; à droite, un appentis de pierre au toit de bardeaux, dont la cheminée crache une fumée grise. Le long des murs, une torche fichée dans un anneau de fer, des tonneaux éventrés serrés contre les façades, une palissade de pieux penchés et un arbre mort aux branches tordues. Au fond, au centre, au sommet d'une colline rocailleuse sur laquelle monte un chemin creux, se dresse une cathédrale gothique en ruine, à la flèche brisée et aux vitraux crevés, d'où filtre une lueur rouge sourde qui teinte la brume. Ciel lourd et couvert, gris ardoise, traversé de nuées sombres ; brume basse qui rampe entre les maisons ; quelques tombes de guingois et une croix de pierre penchée dans un petit cimetière à flanc de colline, à mi-distance."
+  },
+  "objects": [
+    {
+      "id": "cheminee-froide",
+      "zone": {
+        "x0": 0.79,
+        "y0": 0.2,
+        "x1": 0.91,
+        "y1": 0.37
+      },
+      "paint": "Le haut de la cheminée de pierre de la maison de droite, éteinte et froide, sans la moindre fumée : ses moellons gris rongés de lichen, sa bouche noircie de vieille suie coiffée d'une ardoise fendue posée de travers, se découpent nettement sur le ciel gris ardoise derrière les branches tordues de l'arbre mort ; le ciel autour reste clair de toute fumée, et l'élément ne descend pas vers le sol.",
+      "detect": "the cold stone chimney",
+      "label": "Examiner la cheminée éteinte",
+      "text": "La cheminée ne fume plus, et pourtant la pierre est encore tiède sous ta main, comme si le feu venait à peine de mourir. Quelqu'un a glissé une ardoise sur le conduit pour l'étouffer, de l'extérieur, en grimpant sur le toit. Collée à la suie, tu remarques une mèche de cheveux blancs, nouée d'un fil rouge."
+    }
+  ],
+  "characters": []
+}
