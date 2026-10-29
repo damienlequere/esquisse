@@ -5,6 +5,7 @@ import {
   ENTER_ARROW,
   INTRO,
   INTRO_HOLD,
+  INVENTORY_SLOTS,
   initialSceneState,
   type ObjectAction,
   objectActions,
@@ -17,6 +18,7 @@ import {
   sceneLayout,
   sceneText,
 } from "@esquisse/shared";
+import satchel from "@esquisse/shared/assets/ui/besace.webp";
 import {
   type CSSProperties,
   type MouseEvent,
@@ -32,7 +34,7 @@ import { Drawer } from "./Drawer.tsx";
 import { Effects } from "./Effects.tsx";
 import styles from "./Scene.module.css";
 
-type DrawerTabId = "narration" | "two" | "three";
+type DrawerTabId = "inventory" | "two";
 
 // Clickable scene: the background covers the frame, each object is one action,
 // each character opens a dialogue. Everything is placed in % of the image (see
@@ -60,9 +62,9 @@ const useNotTurned = (landscape: boolean) =>
 export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }) => {
   const { scene } = data;
   const layout = sceneLayout(data);
-  const [{ narration, conversation }, dispatch] = useReducer(playScene, data, initialSceneState);
+  const [{ conversation }, dispatch] = useReducer(playScene, data, initialSceneState);
 
-  // The drawer shows the text, or another content (2 and 3, to come); it can be
+  // The drawer shows the text, or another content (2, to come); it can be
   // folded to see the whole image. Only its tabs open it: a new text does not.
   // It starts folded: the scene's intro waits for its button.
   const [drawerTab, setDrawerTab] = useState<DrawerTabId | undefined>(undefined);
@@ -199,17 +201,17 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
         onOpen={setDrawerTab}
         tabs={[
           {
-            id: "narration",
-            icon: "1",
-            label: drawerTab === "narration" ? sceneText.foldText : sceneText.unfoldText,
+            id: "inventory",
+            image: satchel.src,
+            label: sceneText.inventory,
             content: (
-              <section
-                key={narration.key}
-                className={`${styles.narration} ${styles.appear}`}
-                aria-live="polite"
-              >
-                <h2>{narration.title}</h2>
-                <p>{narration.text}</p>
+              <section className={`${styles.inventory} ${styles.appear}`}>
+                <h2>{sceneText.inventory}</h2>
+                <ul>
+                  {INVENTORY_SLOTS.map((slot) => (
+                    <li key={slot} aria-label={sceneText.emptySlot} />
+                  ))}
+                </ul>
               </section>
             ),
           },
@@ -220,16 +222,6 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
             content: (
               <section className={`${styles.narration} ${styles.appear}`}>
                 <p>2</p>
-              </section>
-            ),
-          },
-          {
-            id: "three",
-            icon: "3",
-            label: "3",
-            content: (
-              <section className={`${styles.narration} ${styles.appear}`}>
-                <p>3</p>
               </section>
             ),
           },

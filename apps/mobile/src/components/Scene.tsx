@@ -3,6 +3,8 @@ import {
   ENTER_ARROW,
   INTRO,
   INTRO_HOLD,
+  INVENTORY_COLUMNS,
+  INVENTORY_SLOTS,
   initialSceneState,
   type ObjectAction,
   objectActions,
@@ -56,7 +58,12 @@ import { Effects } from "./Effects.tsx";
 // whole image.
 const BAND = 0.22;
 
-type DrawerTabId = "narration" | "two" | "three";
+// Between the inventory's slots, and what the band keeps for its padding and
+// the title.
+const SLOT_GAP = 8;
+const SLOTS_ROOM = 64;
+
+type DrawerTabId = "inventory" | "two";
 
 const panelWidth = (screenWidth: number) => Math.min(256, screenWidth * 0.3);
 
@@ -101,7 +108,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
     height: Math.max(screen.height, screen.width / layout.ratio),
   };
 
-  const [{ narration, conversation }, dispatch] = useReducer(playScene, data, initialSceneState);
+  const [{ conversation }, dispatch] = useReducer(playScene, data, initialSceneState);
 
   // ── Dialogue: an open conversation, until it is left ─────────────────────────
 
@@ -135,7 +142,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
   const panel = screen ? panelWidth(screen.width) : 0;
   const band = screen ? screen.height * BAND : 0;
 
-  // The drawer shows the text, or another content (2 and 3, to come); it can be
+  // The drawer shows the text, or another content (2, to come); it can be
   // folded to see the whole image. Only its tabs open it: a new text does not.
   // It starts folded: the scene's intro waits for its button.
   const [drawerTab, setDrawerTab] = useState<DrawerTabId | undefined>(undefined);
@@ -159,20 +166,44 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
     paddingLeft: 20,
   };
 
-  const narrationText = (
+  // The inventory: its title, then its slots, rounded squares, empty for now
+  // (see INVENTORY_COLUMNS): in the band, two rows, as wide as the band allows
+  // and no taller than it (SLOTS_ROOM is what the band keeps for its padding and
+  // the title); on the right, three columns (the web's Scene.module.css has the same).
+  const columns = layout.landscape ? INVENTORY_COLUMNS.right : INVENTORY_COLUMNS.bottom;
+  const [slotsWidth, setSlotsWidth] = useState(0);
+  const slotWidth = Math.max(
+    0,
+    Math.min(
+      (slotsWidth - SLOT_GAP * (columns - 1)) / columns,
+      layout.landscape ? Number.POSITIVE_INFINITY : (band - SLOTS_ROOM - SLOT_GAP) / 2,
+    ),
+  );
+  const inventory = (
     <ScrollView
-      key={narration.key}
-      accessibilityLiveRegion="polite"
       contentContainerClassName={layout.landscape ? undefined : "px-5 pt-4"}
       contentContainerStyle={
         layout.landscape ? panelPadding : { paddingBottom: Math.max(16, insets.bottom) }
       }
     >
       <Animated.View entering={FadeInDown.duration(400)}>
-        <Text className="mb-1 font-serif text-xs uppercase tracking-widest text-amber-300">
-          {narration.title}
+        <Text className="mb-2.5 font-serif text-xs uppercase tracking-widest text-stone-300">
+          {sceneText.inventory}
         </Text>
-        <Text className="font-serif text-base leading-6 text-stone-100">{narration.text}</Text>
+        <View
+          className="flex-row flex-wrap"
+          style={{ gap: SLOT_GAP }}
+          onLayout={(event) => setSlotsWidth(event.nativeEvent.layout.width)}
+        >
+          {INVENTORY_SLOTS.map((slot) => (
+            <View
+              key={slot}
+              accessibilityLabel={sceneText.emptySlot}
+              className="aspect-square rounded-[10px] border border-white/10 bg-white/5"
+              style={{ width: slotWidth }}
+            />
+          ))}
+        </View>
       </Animated.View>
     </ScrollView>
   );
@@ -295,13 +326,12 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
         onOpen={setDrawerTab}
         tabs={[
           {
-            id: "narration",
-            icon: "1",
-            label: drawerTab === "narration" ? sceneText.foldText : sceneText.unfoldText,
-            content: narrationText,
+            id: "inventory",
+            image: require("@esquisse/shared/assets/ui/besace.webp"),
+            label: sceneText.inventory,
+            content: inventory,
           },
           { id: "two", icon: "2", label: "2", content: placeholder("2") },
-          { id: "three", icon: "3", label: "3", content: placeholder("3") },
         ]}
       />
 

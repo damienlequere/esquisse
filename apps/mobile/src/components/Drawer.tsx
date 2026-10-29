@@ -1,5 +1,12 @@
 import type { ReactNode } from "react";
-import { type GestureResponderEvent, Pressable, Text, View } from "react-native";
+import {
+  type GestureResponderEvent,
+  Image,
+  type ImageSourcePropType,
+  Pressable,
+  Text,
+  View,
+} from "react-native";
 import Animated, {
   SlideInDown,
   SlideInRight,
@@ -13,6 +20,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 // Between the buttons and the open panel.
 const GAP = 8;
 
+// An image as a button (see DrawerTab), 4.5rem wide as on the web.
+const IMAGE_SIZE = 72;
+
 // The buttons' strip slides, with an animated style that NativeWind breaks on
 // the Animated.View it styles (see Scene's cssInterop): this one it does not know.
 const Strip = Animated.createAnimatedComponent(View);
@@ -20,10 +30,13 @@ const Strip = Animated.createAnimatedComponent(View);
 // A touch on the drawer stops there, its parent never folds it.
 const keepTouch = (event: GestureResponderEvent) => event.stopPropagation();
 
-// One of the drawer's contents: its round button shows `icon`, named `label`.
+// One of the drawer's contents: its round button shows `icon`, named `label`;
+// with `image`, its button is that image alone, which sinks a little when pressed
+// (the web's has the same).
 export type DrawerTab<Id extends string> = {
   id: Id;
-  icon: string;
+  icon?: string;
+  image?: ImageSourcePropType;
   label: string;
   content: ReactNode;
 };
@@ -96,7 +109,7 @@ export const Drawer = <Id extends string>({
         pointerEvents="box-none"
         onTouchStart={keepTouch}
         style={[
-          { position: "absolute", justifyContent: "flex-end", gap: 8 },
+          { position: "absolute", justifyContent: "flex-end", alignItems: "flex-end", gap: 8 },
           right
             ? {
                 top: 0,
@@ -117,6 +130,29 @@ export const Drawer = <Id extends string>({
       >
         {tabs.map((tab) => {
           const active = tab.id === open;
+          if (tab.image) {
+            return (
+              <Pressable
+                key={tab.id}
+                accessibilityRole="button"
+                accessibilityLabel={tab.label}
+                accessibilityState={{ expanded: active }}
+                onPress={() => onOpen(active ? undefined : tab.id)}
+              >
+                {({ pressed }) => (
+                  <Image
+                    source={tab.image}
+                    resizeMode="contain"
+                    style={{
+                      width: IMAGE_SIZE,
+                      height: IMAGE_SIZE,
+                      transform: [{ scale: pressed ? 0.9 : 1 }],
+                    }}
+                  />
+                )}
+              </Pressable>
+            );
+          }
           return (
             <Pressable
               key={tab.id}

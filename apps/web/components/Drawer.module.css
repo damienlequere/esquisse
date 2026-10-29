@@ -80,6 +80,12 @@
   translate: none;
 }
 
+/* The buttons stand on the same line, against the edge: a bigger image rises
+   above them, or stands out to the left of them. */
+.buttons {
+  align-items: flex-end;
+}
+
 .buttons button {
   width: 2.75rem;
   height: 2.75rem;
@@ -103,6 +109,35 @@
 
 .buttons button[aria-expanded="true"] {
   border-color: rgb(252 211 77 / 0.8);
+}
+
+/* An image as a button (see DrawerTab): the image alone, no disc nor border,
+   lifted off the scene by its shadow; pressed, it sinks a little. */
+.buttons button.image {
+  width: 4.5rem;
+  height: auto;
+  border: 0;
+  border-radius: 0.5rem;
+  background: none;
+  transition: scale 120ms ease-out;
+}
+
+.buttons button.image:hover,
+.buttons button.image[aria-expanded="true"] {
+  background: none;
+}
+
+.buttons button.image:active {
+  scale: 0.9;
+}
+
+.buttons button.image img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 0.3rem 0.5rem rgb(0 0 0 / 0.7));
+  pointer-events: none;
+  user-select: none;
 }
 
 .buttons button:focus-visible {

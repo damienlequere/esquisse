@@ -106,6 +106,11 @@ export const objectMenuPlace = (
   };
 };
 
+// The inventory's slots, by number, empty for now, the same in both apps: two
+// rows of six in the band at the bottom, three columns in the panel on the right.
+export const INVENTORY_SLOTS = Array.from({ length: 12 }, (_, i) => i + 1);
+export const INVENTORY_COLUMNS = { bottom: 6, right: 3 };
+
 // The topics not asked yet in a conversation.
 export const remainingTopics = ({ character, asked }: Conversation) =>
   character.dialogue.topics.filter((topic) => !asked.includes(topic.ask));
@@ -117,9 +122,9 @@ export const sceneText = {
   goodbye: "Au revoir.",
   // An object's menu of actions, for screen readers.
   actionsOf: (name: string) => `Actions : ${name}`,
-  // The text panel, in landscape.
-  foldText: "Replier le texte",
-  unfoldText: "Afficher le texte",
+  // The drawer's first button, the satchel, and its panel.
+  inventory: "Inventaire",
+  emptySlot: "Emplacement vide",
   // When the screen is not turned like the scene.
   turnLandscape: "Tourner l'écran à l'horizontale",
   turnPortrait: "Tourner l'écran à la verticale",

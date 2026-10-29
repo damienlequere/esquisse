@@ -1,10 +1,12 @@
 import { type CSSProperties, type ReactNode, useEffect, useRef, useState } from "react";
 import styles from "./Drawer.module.css";
 
-// One of the drawer's contents: its round button shows `icon`, named `label`.
+// One of the drawer's contents: its round button shows `icon`, named `label`;
+// with `image`, its button is that image alone, which sinks a little when pressed.
 export type DrawerTab<Id extends string> = {
   id: Id;
-  icon: ReactNode;
+  icon?: ReactNode;
+  image?: string;
   label: string;
   content: ReactNode;
 };
@@ -69,9 +71,10 @@ export const Drawer = <Id extends string>({
             aria-controls={id}
             aria-expanded={tab.id === open}
             aria-label={tab.label}
+            className={tab.image ? styles.image : undefined}
             onClick={() => onOpen(tab.id === open ? undefined : tab.id)}
           >
-            {tab.icon}
+            {tab.image ? <img src={tab.image} alt="" draggable={false} /> : tab.icon}
           </button>
         ))}
       </div>
