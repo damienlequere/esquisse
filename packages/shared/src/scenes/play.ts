@@ -113,24 +113,37 @@ export const INVENTORY_COLUMNS = { bottom: 6, right: 3 };
 
 // The ring menu, in the bottom right corner of a scene: a circle which, held,
 // spreads its items in a quarter of a circle around it, from its left to above
-// it, clockwise; the one under the finger when it is let go is chosen. The same
-// in px on both apps: the circle's and an item's diameters, the distance from
-// the circle's center to an item's, and how far from its center an item is still
-// under the finger (two neighbours' never meet).
+// it, clockwise; the one under the finger when it is let go is chosen. Its first
+// item is the inventory's satchel, then these, to come. The same in px on both
+// apps: the circle's and an item's diameters, the least distance from the
+// circle's center to an item's, the least room between two items, and how far
+// from its center an item is still under the finger.
 export const RING_ITEMS = ["1", "2", "3"];
-export const RING = { size: 56, item: 44, radius: 88, hit: 32 };
+export const RING = { size: 56, item: 44, radius: 88, space: 16, hit: 32 };
+
+// The angle between two items, and the distance from the circle's center to
+// theirs: further with more items, to keep RING.space between them.
+const ringStep = (count: number) => (count > 1 ? Math.PI / 2 / (count - 1) : 0);
+const ringRadius = (count: number) =>
+  count > 1
+    ? Math.max(RING.radius, (RING.item + RING.space) / (2 * Math.sin(ringStep(count) / 2)))
+    : RING.radius;
 
 // Where an item's center is, in px from the circle's center (y down).
 export const ringItemOffset = (index: number, count: number) => {
-  const angle = Math.PI - (count > 1 ? (index * Math.PI) / 2 / (count - 1) : Math.PI / 4);
-  return { x: Math.cos(angle) * RING.radius, y: -Math.sin(angle) * RING.radius };
+  const angle = Math.PI - (count > 1 ? index * ringStep(count) : Math.PI / 4);
+  const radius = ringRadius(count);
+  return { x: Math.cos(angle) * radius, y: -Math.sin(angle) * radius };
 };
 
-// The item under a point, in px from the circle's center, if any.
+// The item under a point, in px from the circle's center, if any. Two
+// neighbours' never meet.
 export const ringItemAt = (point: { x: number; y: number }, count: number) => {
+  const hit =
+    count > 1 ? Math.min(RING.hit, ringRadius(count) * Math.sin(ringStep(count) / 2)) : RING.hit;
   for (let i = 0; i < count; i++) {
     const { x, y } = ringItemOffset(i, count);
-    if (Math.hypot(point.x - x, point.y - y) <= RING.hit) return i;
+    if (Math.hypot(point.x - x, point.y - y) <= hit) return i;
   }
   return undefined;
 };
@@ -146,7 +159,7 @@ export const sceneText = {
   goodbye: "Au revoir.",
   // An object's menu of actions, for screen readers.
   actionsOf: (name: string) => `Actions : ${name}`,
-  // The drawer's first button, the satchel, and its panel.
+  // The ring menu's satchel, and the drawer's panel it opens.
   inventory: "Inventaire",
   emptySlot: "Emplacement vide",
   // The ring menu's circle, for screen readers.

@@ -1,6 +1,12 @@
 import { RING, ringItemAt, ringItemOffset, sceneText } from "@esquisse/shared";
 import { useEffect, useRef, useState } from "react";
-import { type GestureResponderEvent, Text, View } from "react-native";
+import {
+  type GestureResponderEvent,
+  Image,
+  type ImageSourcePropType,
+  Text,
+  View,
+} from "react-native";
 import Animated, { useAnimatedStyle, withDelay, withTiming } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -11,18 +17,33 @@ const CHOSEN = 220;
 // Animated.View it styles (see Scene's cssInterop): this one it does not know.
 const Spread = Animated.createAnimatedComponent(View);
 
+// One of its items: a circle showing `label`; with `image`, that image alone
+// (the web's has the same).
+export type RingItem<Id extends string> = {
+  id: Id;
+  label: string;
+  image?: ImageSourcePropType;
+};
+
+// An image as an item, larger than a circle, as on the web.
+const IMAGE_SCALE = 1.4;
+
+// Behind an image item under the finger, or chosen: a white glow, fading towards its edges.
+const glow = (strength: number) =>
+  `radial-gradient(closest-side, rgba(255,255,255,${strength}), rgba(255,255,255,0))`;
+
 // A circle in the bottom right corner of the screen: held, it spreads `items`
 // in a quarter of a circle around it, from its left to above it, and the one
 // under the finger when it is let go is chosen (ringItemAt in packages/shared);
 // let go anywhere else, it folds. A screen reader offers its items as actions.
-// Its touches never reach its parent, which would fold the drawer. The web has
+// Touching it folds the drawer, as any touch out of it (see Drawer). The web has
 // the same (apps/web/components/RingMenu.tsx).
-export const RingMenu = ({
+export const RingMenu = <Id extends string>({
   items,
   onChoose,
 }: {
-  items: string[];
-  onChoose(item: string): void;
+  items: RingItem<Id>[];
+  onChoose(item: Id): void;
 }) => {
   const insets = useSafeAreaInsets();
   const [open, setOpen] = useState(false);
@@ -41,7 +62,8 @@ export const RingMenu = ({
     );
   const choose = (index: number) => {
     setChosen(index);
-    onChoose(items[index] as string);
+    const item = items[index];
+    if (item) onChoose(item.id);
   };
 
   // The chosen item stays a moment, then the menu folds.
@@ -68,8 +90,8 @@ export const RingMenu = ({
     >
       {items.map((item, i) => (
         <Item
-          key={item}
-          label={item}
+          key={item.id}
+          item={item}
           index={i}
           count={items.length}
           open={open}
@@ -81,12 +103,11 @@ export const RingMenu = ({
         accessible
         accessibilityRole="button"
         accessibilityLabel={sceneText.ringMenu}
-        accessibilityActions={items.map((item) => ({ name: item, label: item }))}
+        accessibilityActions={items.map((item) => ({ name: item.id, label: item.label }))}
         onAccessibilityAction={(event) => {
-          const index = items.indexOf(event.nativeEvent.actionName);
-          if (index >= 0) onChoose(items[index] as string);
+          const item = items.find(({ id }) => id === event.nativeEvent.actionName);
+          if (item) onChoose(item.id);
         }}
-        onTouchStart={(event) => event.stopPropagation()}
         onStartShouldSetResponder={() => chosen === undefined}
         // Held, it keeps the finger, even out of it.
         onResponderTerminationRequest={() => false}
@@ -128,16 +149,17 @@ export const RingMenu = ({
 
 // An item: centered on the circle, folded into it; open, it goes to its place
 // (ringItemOffset), a little after the one before. Neutral, as the arrow to
-// enter: under the finger, larger, white and glowing; chosen, lit white (the web's RingMenu.module.css has the same).
-const Item = ({
-  label,
+// enter: under the finger, larger, white and glowing; chosen, lit white. An
+// image alone glows behind it (the web's RingMenu.module.css has the same).
+const Item = <Id extends string>({
+  item,
   index,
   count,
   open,
   hovered,
   chosen,
 }: {
-  label: string;
+  item: RingItem<Id>;
   index: number;
   count: number;
   open: boolean;
@@ -160,6 +182,34 @@ const Item = ({
       ],
     };
   });
+  const place = {
+    position: "absolute" as const,
+    left: (RING.size - RING.item) / 2,
+    top: (RING.size - RING.item) / 2,
+    width: RING.item,
+    height: RING.item,
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
+  };
+  if (item.image) {
+    const size = RING.item * IMAGE_SCALE;
+    return (
+      <Spread
+        pointerEvents="none"
+        importantForAccessibility="no-hide-descendants"
+        accessibilityElementsHidden
+        style={[place, spread]}
+      >
+        {(hovered || chosen) && (
+          <View
+            className="absolute"
+            style={{ width: size, height: size, backgroundImage: glow(chosen ? 0.6 : 0.35) }}
+          />
+        )}
+        <Image source={item.image} resizeMode="contain" style={{ width: size, height: size }} />
+      </Spread>
+    );
+  }
   return (
     <Spread
       pointerEvents="none"
@@ -194,7 +244,7 @@ const Item = ({
       <Text
         className={`font-serif text-lg ${chosen ? "text-stone-950" : hovered ? "text-white" : "text-stone-100/70"}`}
       >
-        {label}
+        {item.label}
       </Text>
     </Spread>
   );

@@ -36,7 +36,7 @@ import { Effects } from "./Effects.tsx";
 import { RingMenu } from "./RingMenu.tsx";
 import styles from "./Scene.module.css";
 
-type DrawerTabId = "inventory" | "two";
+type DrawerTabId = "inventory";
 
 // Clickable scene: the background covers the frame, each object is one action,
 // each character opens a dialogue. Everything is placed in % of the image (see
@@ -66,9 +66,8 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
   const layout = sceneLayout(data);
   const [{ conversation }, dispatch] = useReducer(playScene, data, initialSceneState);
 
-  // The drawer shows the text, or another content (2, to come); it can be
-  // folded to see the whole image. Only its tabs open it: a new text does not.
-  // It starts folded: the scene's intro waits for its button.
+  // The drawer shows the inventory, opened by the ring menu's satchel; it can be
+  // folded to see the whole image. It starts folded.
   const [drawerTab, setDrawerTab] = useState<DrawerTabId | undefined>(undefined);
 
   // The title on black, then the intro under it, then the button to enter,
@@ -219,21 +218,21 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
               </section>
             ),
           },
-          {
-            id: "two",
-            icon: "2",
-            label: "2",
-            content: (
-              <section className={`${styles.narration} ${styles.appear}`}>
-                <p>2</p>
-              </section>
-            ),
-          },
         ]}
       />
 
-      {/* The ring menu, in the bottom right corner: what its items do is to come. */}
-      <RingMenu items={RING_ITEMS} onChoose={() => {}} />
+      {/* The ring menu, in the bottom right corner: pressing it folds the
+          drawer, its satchel opens the inventory; what its other items do is
+          to come. */}
+      <RingMenu
+        items={[
+          { id: "inventory", label: sceneText.inventory, image: satchel.src },
+          ...RING_ITEMS.map((item) => ({ id: item, label: item })),
+        ]}
+        onChoose={(item) => {
+          if (item === "inventory") setDrawerTab("inventory");
+        }}
+      />
 
       {menu && (
         <ObjectMenu

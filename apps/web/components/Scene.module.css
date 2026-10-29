@@ -143,35 +143,17 @@
   opacity: 1;
 }
 
-/* Narration: a drawer (see Drawer.tsx) over the image, the bottom band, 22% of
-   the height; in landscape, a panel on the right, 16rem wide but never more
+/* The inventory: a drawer (see Drawer.tsx) over the image, the bottom band, 22%
+   of the height; in landscape, a panel on the right, 16rem wide but never more
    than 30% of the frame, the whole height. The safe zones of the scenes leave
-   it free (see packages/generator). It can be folded, to see the whole image,
-   until the next text, which appears in it. The conversation takes its place. */
+   it free (see packages/generator). The ring menu's satchel opens and folds it.
+   The conversation takes its place. */
 .root {
   --band: 22cqh;
 }
 
 .root[data-orientation="landscape"] {
   --panel: min(16rem, 30cqw);
-}
-
-.narration {
-  line-height: 1.45;
-}
-
-.narration h2 {
-  margin: 0 0 0.3rem;
-  font-size: 0.8rem;
-  font-weight: normal;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #fcd34d;
-}
-
-.narration p {
-  margin: 0;
-  font-size: 0.98rem;
 }
 
 /* The inventory: its title, then its slots, rounded squares, empty for now

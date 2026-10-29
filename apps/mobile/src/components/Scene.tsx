@@ -65,7 +65,7 @@ const BAND = 0.22;
 const SLOT_GAP = 8;
 const SLOTS_ROOM = 64;
 
-type DrawerTabId = "inventory" | "two";
+type DrawerTabId = "inventory";
 
 const panelWidth = (screenWidth: number) => Math.min(256, screenWidth * 0.3);
 
@@ -144,9 +144,8 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
   const panel = screen ? panelWidth(screen.width) : 0;
   const band = screen ? screen.height * BAND : 0;
 
-  // The drawer shows the text, or another content (2, to come); it can be
-  // folded to see the whole image. Only its tabs open it: a new text does not.
-  // It starts folded: the scene's intro waits for its button.
+  // The drawer shows the inventory, opened by the ring menu's satchel; it can be
+  // folded to see the whole image. It starts folded.
   const [drawerTab, setDrawerTab] = useState<DrawerTabId | undefined>(undefined);
 
   // Opening the scene: its title on black, then its intro fading in under it;
@@ -206,21 +205,6 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
             />
           ))}
         </View>
-      </Animated.View>
-    </ScrollView>
-  );
-
-  // The drawer's other contents, to come.
-  const placeholder = (text: string) => (
-    <ScrollView
-      key={text}
-      contentContainerClassName={layout.landscape ? undefined : "px-5 pt-4"}
-      contentContainerStyle={
-        layout.landscape ? panelPadding : { paddingBottom: Math.max(16, insets.bottom) }
-      }
-    >
-      <Animated.View entering={FadeInDown.duration(400)}>
-        <Text className="font-serif text-base leading-6 text-stone-100">{text}</Text>
       </Animated.View>
     </ScrollView>
   );
@@ -319,8 +303,8 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
         </View>
       )}
 
-      {/* Narration: the bottom band, over the image; in landscape, the panel on
-          the right, the whole height (see BAND and panelWidth). */}
+      {/* The inventory: the bottom band, over the image; in landscape, the panel
+          on the right, the whole height (see BAND and panelWidth). */}
       <Drawer<DrawerTabId>
         side={layout.landscape ? "right" : "bottom"}
         size={layout.landscape ? panel : band}
@@ -328,19 +312,25 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
         hideButtons
         open={drawerTab}
         onOpen={setDrawerTab}
-        tabs={[
-          {
-            id: "inventory",
-            image: require("@esquisse/shared/assets/ui/besace.webp"),
-            label: sceneText.inventory,
-            content: inventory,
-          },
-          { id: "two", icon: "2", label: "2", content: placeholder("2") },
-        ]}
+        tabs={[{ id: "inventory", label: sceneText.inventory, content: inventory }]}
       />
 
-      {/* The ring menu, in the bottom right corner: what its items do is to come. */}
-      <RingMenu items={RING_ITEMS} onChoose={() => {}} />
+      {/* The ring menu, in the bottom right corner: pressing it folds the
+          drawer, its satchel opens the inventory; what its other items do is
+          to come. */}
+      <RingMenu
+        items={[
+          {
+            id: "inventory",
+            label: sceneText.inventory,
+            image: require("@esquisse/shared/assets/ui/besace.webp"),
+          },
+          ...RING_ITEMS.map((item) => ({ id: item, label: item })),
+        ]}
+        onChoose={(item) => {
+          if (item === "inventory") setDrawerTab("inventory");
+        }}
+      />
 
       {menu && screen && (
         <ObjectMenu
