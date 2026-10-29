@@ -1,8 +1,9 @@
-// Another sky behind the scene (see SKY in packages/shared/src/scenes/effects.ts).
+// What stands in front of a scene's other sky (see SKY in
+// packages/shared/src/scenes/effects.ts), found again after a retouch.
 //
-// The sky's matte: for each pixel of
-// the background, at its full size, how much of it is sky (white) rather than
-// what stands in front of it (black): the spires, the roofs, the branches.
+// The sky's matte: for each pixel of the background, at its full size, how
+// much of it is sky (white) rather than what stands in front of it (black): the
+// spires, the roofs, the branches.
 //
 // First where the sky is, roughly: what can be reached from the top of the
 // image, searched small, through smooth, cold, not too dark pixels, without
@@ -343,52 +344,6 @@ export const skyMatte = async (jpg: Buffer) => {
 };
 
 // ── The new sky ──────────────────────────────────────────────────────────────
-
-// The painted sky's last part fades into its first, over this fraction of its
-// width, then is cut: it loops.
-const LOOP = 0.2;
-
-// The clouds are brought nearer the sky around them, keeping this much of their
-// contrast with it: the sky around is the painted one blurred this much, in
-// pixels, so that its light towards the mist stays.
-const CONTRAST = 0.6;
-const AROUND_CLOUDS = 160;
-
-// The painted sky, its clouds softened, looped, at the proportions the apps
-// draw it with.
-export const loopSky = async (jpg: Buffer) => {
-  const { data: painted, info } = await sharp(jpg)
-    .removeAlpha()
-    .raw()
-    .toBuffer({ resolveWithObject: true });
-  const around = await sharp(jpg)
-    .removeAlpha()
-    .blur(AROUND_CLOUDS / 2)
-    .raw()
-    .toBuffer();
-  const data = painted.map((v, i) =>
-    Math.round((around[i] as number) + CONTRAST * (v - (around[i] as number))),
-  );
-  const W = info.width;
-  const H = info.height;
-  const overlap = Math.round(W * LOOP);
-  const length = W - overlap;
-  const out = Buffer.alloc(length * H * 3);
-  for (let y = 0; y < H; y++) {
-    for (let x = 0; x < length; x++) {
-      const t = x < overlap ? smoothstep(0, 1, x / overlap) : 1;
-      for (let c = 0; c < 3; c++) {
-        const own = data[(y * W + x) * 3 + c] as number;
-        const end = x < overlap ? (data[(y * W + length + x) * 3 + c] as number) : own;
-        out[(y * length + x) * 3 + c] = Math.round(end * (1 - t) + own * t);
-      }
-    }
-  }
-  return sharp(out, { raw: { width: length, height: H, channels: 3 } })
-    .resize(Math.round(H * SKY_ASPECT), H, { fit: "fill" })
-    .png()
-    .toBuffer();
-};
 
 // The background as it is still: its front over the new sky, as the apps draw
 // it when it starts (see SKY in packages/shared/src/scenes/effects.ts).
