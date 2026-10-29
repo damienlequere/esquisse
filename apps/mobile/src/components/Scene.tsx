@@ -360,7 +360,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
             </Text>
             <Animated.Text
               entering={FadeIn.duration(INTRO.textFade).delay(INTRO.textDelay)}
-              className="mt-7 max-w-md text-center font-serif text-lg italic leading-relaxed text-stone-300"
+              className="mt-10 max-w-md text-center font-serif text-lg italic leading-relaxed text-stone-300"
             >
               {scene.intro}
             </Animated.Text>
