@@ -12,6 +12,23 @@ body {
   }
 }
 
+/* A scene's stage appears once its images are loaded (see components/Stage.tsx),
+   at once if motion is to be reduced. */
+#stage {
+  opacity: 0;
+}
+
+#stage[data-ready] {
+  opacity: 1;
+  transition: opacity 400ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #stage[data-ready] {
+    transition: none;
+  }
+}
+
 /* Device frame (see app/scene/[id]/layout.tsx), only on a large enough screen
    with a mouse: a phone or a touch tablet, even in landscape, uses the whole screen.
    The frame takes the full available height, with the device's proportions
