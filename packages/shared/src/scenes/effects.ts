@@ -94,7 +94,7 @@ half4 main(float2 xy) {
 // white where the red is taken out.
 const GLOW_EVERY = 30;
 const GLOW_RISE = 4;
-const GLOW_STAY = 1;
+const GLOW_STAY = 2;
 const GLOW_FOR = 2 * GLOW_RISE + GLOW_STAY;
 
 const GLOW = `${HEADER}
