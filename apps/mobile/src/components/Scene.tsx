@@ -191,8 +191,9 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
         <Text className="mb-2.5 font-serif text-xs uppercase tracking-widest text-stone-300">
           {sceneText.inventory}
         </Text>
+        {/* Each slot as high as it is wide, set, not stretched by its row. */}
         <View
-          className="flex-row flex-wrap"
+          className="flex-row flex-wrap items-start"
           style={{ gap: SLOT_GAP }}
           onLayout={(event) => setSlotsWidth(event.nativeEvent.layout.width)}
         >
@@ -200,8 +201,8 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
             <View
               key={slot}
               accessibilityLabel={sceneText.emptySlot}
-              className="aspect-square rounded-[10px] border border-white/10 bg-white/5"
-              style={{ width: slotWidth }}
+              className="rounded-[10px] border border-white/10 bg-white/5"
+              style={{ width: slotWidth, height: slotWidth }}
             />
           ))}
         </View>
