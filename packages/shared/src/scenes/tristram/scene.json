@@ -27,6 +27,19 @@
       "detect": "the cold stone chimney",
       "label": "Examiner la cheminée éteinte",
       "text": "La cheminée ne fume plus, et pourtant la pierre est encore tiède sous ta main, comme si le feu venait à peine de mourir. Quelqu'un a glissé une ardoise sur le conduit pour l'étouffer, de l'extérieur, en grimpant sur le toit. Collée à la suie, tu remarques une mèche de cheveux blancs, nouée d'un fil rouge."
+    },
+    {
+      "id": "anneau-vide",
+      "zone": {
+        "x0": 0.22,
+        "y0": 0.57,
+        "x1": 0.36,
+        "y1": 0.71
+      },
+      "paint": "À l'emplacement exact de l'ancienne torche, contre l'angle de la maison de gauche près de la porte, il n'y a plus ni torche, ni perche, ni flamme, ni lueur : seulement un anneau de fer forgé rouillé, vide et légèrement tordu, scellé dans le colombage de chêne noirci, au-dessus d'une longue traînée de suie sur le bois et le torchis écaillé, avec à son pied un petit tas de cendres froides et un bout de bois carbonisé à demi enfoncé dans la boue, la façade autour plongée dans la pénombre bleu-gris du crépuscule.",
+      "detect": "the empty iron torch ring",
+      "label": "Examiner l'anneau vide",
+      "text": "L'anneau de fer est vide, encore chaud au toucher, et la suie qui le couronne est fraîche : la torche brûlait ici il y a peu. Quelqu'un l'a arrachée d'un coup sec, assez fort pour tordre le métal. Dans la boue, sous les cendres, des gouttes de poix noire s'éloignent en pointillés vers le chemin de la colline, droit vers la cathédrale."
     }
   ],
   "characters": []
