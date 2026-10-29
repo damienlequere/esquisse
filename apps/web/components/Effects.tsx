@@ -72,67 +72,73 @@ export const Effects = ({
         }
       });
 
-      // The image shaders, fitted to the canvas's size: made again when it changes.
-      const fit = (i: SkImage, w: number, h: number) =>
+      // The shaders' images, fitted once to the background's own size: the
+      // effects are drawn at that size, scaled to the canvas's.
+      const W = image.naturalWidth;
+      const H = image.naturalHeight;
+      const fit = (i: SkImage) =>
         i.makeShaderOptions(
           CK.TileMode.Clamp,
           CK.TileMode.Clamp,
           CK.FilterMode.Linear,
           CK.MipmapMode.None,
-          CK.Matrix.scaled(w / i.width(), h / i.height()),
+          CK.Matrix.scaled(W / i.width(), H / i.height()),
         );
-      type Shader = ReturnType<typeof fit>;
-      let surface: ReturnType<CanvasKit["MakeWebGLCanvasSurface"]> = null;
       // Each layer's: the background, then the effect's own images.
-      let children: Shader[][] = [];
-      const deleteChildren = () => {
-        for (const c of children.flat()) c.delete();
-      };
-      const resize = () => {
-        const dpr = Math.min(window.devicePixelRatio, MAX_DPR);
-        element.width = Math.min(Math.round(element.clientWidth * dpr), image.naturalWidth);
-        element.height = Math.min(Math.round(element.clientHeight * dpr), image.naturalHeight);
+      const children = layers.map((l) => [skImage, ...l.images].map(fit));
+
+      // One WebGL context for the scene's whole life: only its surface is made
+      // again when the canvas's size changes. Without WebGL (turned off, or no
+      // graphics card), drawn by the processor.
+      const gl = CK.GetWebGLContext(element);
+      const gpu = gl ? CK.MakeWebGLContext(gl) : null;
+      let surface: ReturnType<CanvasKit["MakeSWCanvasSurface"]> = null;
+      const resize = (w: number, h: number) => {
+        element.width = w;
+        element.height = h;
         surface?.delete();
-        // Without WebGL (turned off, or no graphics card), drawn by the processor.
-        surface = CK.MakeWebGLCanvasSurface(element) ?? CK.MakeSWCanvasSurface(element);
-        deleteChildren();
-        children = layers.map((l) =>
-          [skImage, ...l.images].map((i) => fit(i, element.width, element.height)),
-        );
+        surface = gpu
+          ? CK.MakeOnScreenGLSurface(gpu, w, h, CK.ColorSpace.SRGB)
+          : CK.MakeSWCanvasSurface(element);
       };
-      resize();
-      const observer = new ResizeObserver(resize);
-      observer.observe(element);
 
       const paint = new CK.Paint();
       const start = performance.now();
       let frame = 0;
+      // Each frame, the canvas takes its size on screen (the screen's pixels,
+      // but never more than the image's) then is drawn at once: resizing the
+      // window never shows it empty.
       const draw = () => {
         frame = requestAnimationFrame(draw);
+        const dpr = Math.min(window.devicePixelRatio, MAX_DPR);
+        const w = Math.max(1, Math.min(Math.round(element.clientWidth * dpr), W));
+        const h = Math.max(1, Math.min(Math.round(element.clientHeight * dpr), H));
+        if (w !== element.width || h !== element.height || surface === null) resize(w, h);
         if (surface === null) return;
-        const w = element.width;
-        const h = element.height;
         const time = (performance.now() - start) / 1000;
         const canvas = surface.getCanvas();
         canvas.clear(CK.TRANSPARENT);
+        canvas.save();
+        canvas.scale(w / W, h / H);
         layers.forEach((l, k) => {
           const c = children[k];
           if (c === undefined) return;
-          const shader = l.runtime.makeShaderWithChildren([w, h, time], c);
+          const shader = l.runtime.makeShaderWithChildren([W, H, time], c);
           paint.setShader(shader);
-          canvas.drawRect(CK.LTRBRect(0, 0, w, h), paint);
+          canvas.drawRect(CK.LTRBRect(0, 0, W, H), paint);
           shader.delete();
         });
+        canvas.restore();
         surface.flush();
       };
       draw();
       element.dataset.ready = "";
       cleanups.push(() => {
         cancelAnimationFrame(frame);
-        observer.disconnect();
         paint.delete();
-        deleteChildren();
+        for (const c of children.flat()) c.delete();
         surface?.delete();
+        gpu?.delete();
       });
     })().catch((error: unknown) => console.warn("Effects:", error));
 
