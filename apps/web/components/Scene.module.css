@@ -82,25 +82,35 @@
   background: radial-gradient(rgb(0 0 0 / 0.55), transparent 70%);
 }
 
-.hotspot {
-  border-radius: 0.75rem;
-  transition:
-    box-shadow 200ms,
-    background 200ms;
+/* Pointed at or focused, an object is slightly overexposed, without an
+   outline: the image under it is brightened, less and less towards its edges
+   (on a layer of its own, so that the mask leaves its label alone). */
+.hotspot::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  backdrop-filter: brightness(1);
+  mask-image: radial-gradient(closest-side, #000 55%, transparent);
+  transition: backdrop-filter 200ms;
 }
 
-.character:focus-visible,
 .hotspot:focus-visible {
+  outline: none;
+}
+
+.hotspot:focus-visible::before,
+.hotspot[data-open]::before {
+  backdrop-filter: brightness(1.6);
+}
+
+.character:focus-visible {
   outline: 2px solid #fcd34d;
   outline-offset: 2px;
 }
 
 @media (hover: hover) {
-  .hotspot:hover {
-    background: rgb(252 211 77 / 0.12);
-    box-shadow:
-      0 0 0 2px rgb(252 211 77 / 0.7),
-      0 0 24px rgb(252 211 77 / 0.5);
+  .hotspot:hover::before {
+    backdrop-filter: brightness(1.6);
   }
 
   .character:hover img {
@@ -108,7 +118,7 @@
   }
 }
 
-/* The action's label, on hover or focus. */
+/* A character's action, on hover or focus. */
 .tip {
   position: absolute;
   left: 50%;
@@ -125,8 +135,6 @@
   transition: opacity 150ms;
 }
 
-.hotspot:hover .tip,
-.hotspot:focus-visible .tip,
 .character:hover .tip,
 .character:focus-visible .tip {
   opacity: 1;
@@ -244,6 +252,44 @@
 
 .choices button:hover {
   background: rgb(252 211 77 / 0.15);
+}
+
+/* An object's menu, where it was clicked (see ObjectMenu): its actions, one per
+   line. Over the whole frame, its backdrop catches the click that closes it. */
+.menuBackdrop {
+  position: absolute;
+  inset: 0;
+}
+
+.menu {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  min-width: 10rem;
+  max-width: calc(100% - 1rem);
+  padding: 0.3rem;
+  border: 1px solid rgb(252 211 77 / 0.3);
+  border-radius: 0.75rem;
+  background: rgb(12 10 9 / 0.92);
+  box-shadow: 0 0.75rem 2rem rgb(0 0 0 / 0.6);
+  animation: appear 150ms ease-out;
+}
+
+.menu button {
+  padding: 0.5rem 0.75rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: none;
+  color: #fff;
+  font: inherit;
+  font-size: 0.95rem;
+  text-align: left;
+}
+
+.menu button:hover,
+.menu button:focus-visible {
+  outline: none;
+  background: rgb(255 255 255 / 0.12);
 }
 
 /* Opening a scene: its title in the middle, on black, then its intro fading in
@@ -400,7 +446,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hotspot,
+  .hotspot::before,
+  .menu,
   .tip,
   .enter,
   .enter svg {

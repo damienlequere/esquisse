@@ -75,7 +75,7 @@ const object = z.object({
   paint: z.string(),
   detect: z.string(),
   label: z.string(),
-  text: z.string(),
+  actions: z.array(z.object({ label: z.string(), text: z.string() })),
 });
 
 const character = z.object({
@@ -108,7 +108,7 @@ export type LineKind = "greeting" | "topic" | "farewell";
 export type Line = { text: string } | Topic;
 
 const system = (format: Format) =>
-  `Tu crées des scènes cliquables pour Esquisse : une image peinte au format ${format.words}, où chaque objet du décor est une action cliquable qui affiche un court texte, et où chaque personnage ouvre un dialogue. Les images sont générées par un modèle d'image à partir de tes descriptions, puis les objets sont repérés par un modèle de vision.
+  `Tu crées des scènes cliquables pour Esquisse : une image peinte au format ${format.words}, où chaque objet du décor, cliquable, propose quelques actions qui affichent chacune un court texte, et où chaque personnage ouvre un dialogue. Les images sont générées par un modèle d'image à partir de tes descriptions, puis les objets sont repérés par un modèle de vision.
 
 La scène se construit pas à pas, avec son auteur : d'abord le fond, qu'il valide ; puis, s'il le veut, des détails de réalisme retouchés dans le fond ; puis, un par un, les éléments qu'il demande, chacun validé sur le rendu ; puis, pour chaque personnage, son dialogue, une réplique à la fois.
 
@@ -156,8 +156,10 @@ Ensuite, on t'envoie le rendu actuel (le fond avec les éléments déjà validé
   - zone : où il doit apparaître dans l'image.
   - paint : sa description pour le modèle d'image, précise et visuelle, en une phrase : sa forme, sa matière, son état, un détail qui l'individualise ; s'il est au mur ou en hauteur, dis qu'il ne descend pas vers le sol.
   - detect : sa description pour le modèle de vision, en anglais, un groupe nominal court (« the spiral staircase »).
-  - label : l'action proposée au joueur, à l'infinitif, 2 à 5 mots (« Lire le journal de bord »).
-  - text : ce que le joueur découvre, 2 à 4 phrases à la deuxième personne, au présent, avec un détail qui relance le mystère.
+  - label : son nom, un groupe nominal court (« Le journal de bord »).
+  - actions : ce que le joueur peut en faire, proposé dans un menu quand il clique dessus, une à trois actions :
+    - label : un verbe seul à l'infinitif (« Lire », « Ouvrir », « Entrer »), ou à défaut l'expression la plus courte possible ;
+    - text : ce que le joueur découvre, 2 à 4 phrases à la deuxième personne, au présent, avec un détail qui relance le mystère.
 - Un personnage (kind « character ») est quelqu'un à qui parler, généré comme un calque à part et posé sur le fond.
   - id : comme pour un objet.
   - name : « Prénom, rôle » (« Maïwenn, la gardienne »).

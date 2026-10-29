@@ -25,8 +25,13 @@
       },
       "paint": "La porte de chêne noirci de la bâtisse à étage de gauche, sous l'enseigne de fer vide : l'entrée de l'auberge du village, étroite et basse, ses planches fendues cerclées de fer, un anneau de fer en guise de poignée, entre les colombages, au-dessus d'une marche usée.",
       "detect": "the dark wooden door of the inn, in the tall half-timbered house on the left",
-      "label": "Frapper à la porte de l'auberge",
-      "text": "La porte de l'auberge est fermée, mais derrière le bois tu entends le crépitement d'un feu et le raclement d'un banc qu'on tire. Les voix se taisent d'un coup quand tu frappes. Un long silence, puis un verrou qu'on tire lentement, et par l'entrebâillement, un œil méfiant qui te détaille de la tête aux bottes avant qu'une voix rauque ne grogne : « On ne sert plus après la nuit tombée. Sauf ceux qui ont des nouvelles de la cathédrale. »"
+      "label": "La porte de l'auberge",
+      "actions": [
+        {
+          "label": "Entrer",
+          "text": "La porte de l'auberge est fermée, mais derrière le bois tu entends le crépitement d'un feu et le raclement d'un banc qu'on tire. Les voix se taisent d'un coup quand tu frappes. Un long silence, puis un verrou qu'on tire lentement, et par l'entrebâillement, un œil méfiant qui te détaille de la tête aux bottes avant qu'une voix rauque ne grogne : « On ne sert plus après la nuit tombée. Sauf ceux qui ont des nouvelles de la cathédrale. »"
+        }
+      ]
     }
   ],
   "characters": [],

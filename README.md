@@ -54,8 +54,11 @@ The scripts are not named `deploy`: `pnpm deploy` is a built-in pnpm command.
 
 Each scene, at `/scene/<id>` on the web site (`/scene/foret` for now), and in the mobile app, is a
 clickable scene, ported from protagonist's `prototypes/scene-cliquable`: the
-place's image fills the frame, each action is a clickable part of the image, and
-the characters, clickable too, open a dialogue. On the web, the frame adapts to the screen, like any page under
+place's image fills the frame, each object is a clickable part of the image,
+slightly overexposed when pointed at or pressed, which opens a menu of its
+actions where it was clicked (`actions` in `scene.json`; without them, its
+`label` and `text` are its only action), and the characters, clickable too, open
+a dialogue. An action's text goes to the text panel, which it does not open. On the web, the frame adapts to the screen, like any page under
 `app/scene/`; in the mobile app, the scene takes the whole screen. A scene opens
 on its title, in the middle, on black; its intro fades in under it, and once it
 has had time to be read (35 ms per character), an arrow to enter fades in, in
@@ -71,8 +74,8 @@ waits, and starts over if the screen is turned away before its end.
   (`imageRatio` in `scene.json`), in `cover`. In portrait, a phone crops its
   sides (9% each), a tablet its top and bottom (12.5% each), and the text is a
   band at the bottom, 22% of the height. In both orientations, the text has a
-  border, and a tab on it folds the text, to see the whole image, until the
-  next text. It starts folded: the scene's intro waits for the tab. In landscape, the screen is turned: a phone crops the top and bottom (9% each), a tablet the sides (12.5% each), and
+  border, and a tab on it folds the text, to see the whole image; only the tabs
+  open it again. It starts folded: the scene's intro waits for the tab. In landscape, the screen is turned: a phone crops the top and bottom (9% each), a tablet the sides (12.5% each), and
   the text is a panel on the right, 16rem wide but never more than 30% of the
   screen, the whole height; a conversation opens in it too. What stays
   visible everywhere, minus a margin at the top and the text, is the **safe zone**

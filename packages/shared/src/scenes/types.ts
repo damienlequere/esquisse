@@ -5,14 +5,21 @@ export type Box = { x0: number; y0: number; x1: number; y1: number };
 
 export type Topic = { ask: string; answer: string };
 
+// What can be done with an object, offered in its menu: the action's label, and
+// what the player then finds out.
+export type ObjectAction = { label: string; text: string };
+
 export type SceneObject = {
   id: string;
   // Where the composition must put it; the real box is detected after generation.
   zone: Box;
   paint: string;
   detect: string;
+  // With actions, the object's name (for screen readers); without, its only
+  // action, as the generator writes it, with its text.
   label: string;
-  text: string;
+  text?: string;
+  actions?: ObjectAction[];
 };
 
 // A detail for realism, retouched into the background, never clickable.

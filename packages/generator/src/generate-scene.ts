@@ -345,7 +345,11 @@ const withCharacter = async (state: State, c: Character): Promise<Candidate> => 
 
 const summary = (e: Element) =>
   e.kind === "object"
-    ? `Objet « ${e.object.id} », ${where(e.object.zone)}\n  ${e.object.paint}\n  ${e.object.label} : ${e.object.text}`
+    ? `Objet « ${e.object.id} » (${e.object.label}), ${where(e.object.zone)}\n  ${e.object.paint}${(
+        e.object.actions ?? []
+      )
+        .map((a) => `\n  ${a.label} : ${a.text}`)
+        .join("")}`
     : `Personnage « ${e.character.name} » (${e.character.id})\n  ${e.character.paint}`;
 
 // Returns the new state if the element is validated, the same one otherwise.

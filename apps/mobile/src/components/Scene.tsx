@@ -4,10 +4,14 @@ import {
   INTRO,
   INTRO_HOLD,
   initialSceneState,
+  type ObjectAction,
+  objectActions,
+  objectMenuPlace,
   placeStyle,
   playScene,
   remainingTopics,
   type SceneData,
+  type SceneObject,
   sceneLayout,
   sceneText,
 } from "@esquisse/shared";
@@ -58,6 +62,10 @@ const panelWidth = (screenWidth: number) => Math.min(256, screenWidth * 0.3);
 
 const place = (box: Box) => ({ position: "absolute" as const, ...placeStyle(box) });
 
+// A pressed object: a slight overexposure of the image, no outline (the web's
+// Scene.module.css has the same).
+const OVEREXPOSED = "radial-gradient(closest-side, rgba(255,255,255,0.18), rgba(255,255,255,0))";
+
 // NativeWind styles only the components it knows.
 cssInterop(Animated.View, { className: "style" });
 cssInterop(Animated.Text, { className: "style" });
@@ -100,6 +108,19 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
   const lines = useRef<ScrollViewInstance>(null);
   const close = () => dispatch({ type: "leave" });
 
+  // An object's menu: its actions, where it was pressed. Android's back button
+  // closes it.
+  const [menu, setMenu] = useState<{ object: SceneObject; x: number; y: number }>();
+  const menuOpen = menu !== undefined;
+  useEffect(() => {
+    if (!menuOpen || Platform.OS !== "android") return;
+    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+      setMenu(undefined);
+      return true;
+    });
+    return () => sub.remove();
+  }, [menuOpen]);
+
   // Android's back button leaves the conversation, not the scene.
   const inConversation = conversation !== undefined;
   useEffect(() => {
@@ -115,13 +136,9 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
   const band = screen ? screen.height * BAND : 0;
 
   // The drawer shows the text, or another content (2 and 3, to come); it can be
-  // folded to see the whole image. A new text opens it again, on the text. It
-  // starts folded: the scene's intro waits for its button.
-  const [choice, setChoice] = useState<{ tab: DrawerTabId | undefined; at: number }>({
-    tab: undefined,
-    at: narration.key,
-  });
-  const drawerTab = choice.at === narration.key ? choice.tab : "narration";
+  // folded to see the whole image. Only its tabs open it: a new text does not.
+  // It starts folded: the scene's intro waits for its button.
+  const [drawerTab, setDrawerTab] = useState<DrawerTabId | undefined>(undefined);
 
   // Opening the scene: its title on black, then its intro fading in under it;
   // shortly after it has appeared, the arrow to enter fades in, in the bottom
@@ -181,7 +198,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
       onLayout={(event) => setScreen(event.nativeEvent.layout)}
       // A touch out of the drawer folds it (see Drawer).
       onTouchStart={() => {
-        if (drawerTab !== undefined) setChoice({ tab: undefined, at: narration.key });
+        if (drawerTab !== undefined) setDrawerTab(undefined);
       }}
     >
       <StatusBar style="light" />
@@ -213,19 +230,23 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
               key={object.id}
               accessibilityRole="button"
               accessibilityLabel={object.label}
-              onPress={() => dispatch({ type: "look", title: object.label, text: object.text })}
+              onPress={(event) =>
+                setMenu({ object, x: event.nativeEvent.pageX, y: event.nativeEvent.pageY })
+              }
               style={place(box)}
             >
               {({ pressed }) => (
                 <>
-                  {pressed && (
+                  {/* Pressed, or its menu open, a slight overexposure, fading
+                      towards its edges. */}
+                  {(pressed || menu?.object === object) && (
                     <Animated.View
                       entering={FadeIn.duration(200)}
                       exiting={FadeOut.duration(300)}
-                      className="absolute inset-0 rounded-xl border-2 border-amber-300/80 bg-amber-300/15"
+                      className="absolute inset-0"
+                      style={{ backgroundImage: OVEREXPOSED }}
                     />
                   )}
-                  {pressed && <Tip label={object.label} />}
                 </>
               )}
             </Pressable>
@@ -267,11 +288,11 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
 
       {/* Narration: the bottom band, over the image; in landscape, the panel on
           the right, the whole height (see BAND and panelWidth). */}
-      <Drawer
+      <Drawer<DrawerTabId>
         side={layout.landscape ? "right" : "bottom"}
         size={layout.landscape ? panel : band}
         open={drawerTab}
-        onOpen={(tab) => setChoice({ tab, at: narration.key })}
+        onOpen={setDrawerTab}
         tabs={[
           {
             id: "narration",
@@ -283,6 +304,20 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
           { id: "three", icon: "3", label: "3", content: placeholder("3") },
         ]}
       />
+
+      {menu && screen && (
+        <ObjectMenu
+          object={menu.object}
+          x={menu.x}
+          y={menu.y}
+          screen={screen}
+          onClose={() => setMenu(undefined)}
+          onAction={(action) => {
+            dispatch({ type: "look", title: action.label, text: action.text });
+            setMenu(undefined);
+          }}
+        />
+      )}
 
       {/* Dialogue: an open conversation takes the scene, the background waits. */}
       {conversation && (
@@ -424,6 +459,49 @@ const EnterButton = ({
         )}
       </Pressable>
     </Fading>
+  );
+};
+
+// An object's actions, in a menu to the right of where it was pressed, or to
+// its left (see objectMenuPlace; the web's ObjectMenu has the same). A touch out of it closes it.
+const ObjectMenu = ({
+  object,
+  x,
+  y,
+  screen,
+  onClose,
+  onAction,
+}: {
+  object: SceneObject;
+  x: number;
+  y: number;
+  screen: LayoutRectangle;
+  onClose(): void;
+  onAction(action: ObjectAction): void;
+}) => {
+  const [size, setSize] = useState<{ width: number; height: number }>();
+  return (
+    <View className="absolute inset-0">
+      <Pressable className="absolute inset-0" onPress={onClose} accessible={false} />
+      <Animated.View
+        entering={FadeIn.duration(150)}
+        accessibilityLabel={sceneText.actionsOf(object.label)}
+        onLayout={(event) => setSize(event.nativeEvent.layout)}
+        className="absolute min-w-40 rounded-xl border border-amber-300/30 bg-stone-950/90 p-1"
+        style={size ? objectMenuPlace({ x, y }, size, screen) : { left: x, top: y, opacity: 0 }}
+      >
+        {objectActions(object).map((action) => (
+          <Pressable
+            key={action.label}
+            accessibilityRole="menuitem"
+            onPress={() => onAction(action)}
+            className="rounded-lg px-3 py-2.5 active:bg-white/10"
+          >
+            <Text className="font-serif text-base text-white">{action.label}</Text>
+          </Pressable>
+        ))}
+      </Animated.View>
+    </View>
   );
 };
 

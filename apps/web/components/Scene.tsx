@@ -6,16 +6,22 @@ import {
   INTRO,
   INTRO_HOLD,
   initialSceneState,
+  type ObjectAction,
+  objectActions,
+  objectMenuPlace,
   placeStyle,
   playScene,
   remainingTopics,
   type SceneData,
+  type SceneObject,
   sceneLayout,
   sceneText,
 } from "@esquisse/shared";
 import {
   type CSSProperties,
+  type MouseEvent,
   useEffect,
+  useLayoutEffect,
   useReducer,
   useRef,
   useState,
@@ -57,13 +63,9 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
   const [{ narration, conversation }, dispatch] = useReducer(playScene, data, initialSceneState);
 
   // The drawer shows the text, or another content (2 and 3, to come); it can be
-  // folded to see the whole image. A new text opens it again, on the text. It
-  // starts folded: the scene's intro waits for its button.
-  const [choice, setChoice] = useState<{ tab: DrawerTabId | undefined; at: number }>({
-    tab: undefined,
-    at: narration.key,
-  });
-  const drawerTab = choice.at === narration.key ? choice.tab : "narration";
+  // folded to see the whole image. Only its tabs open it: a new text does not.
+  // It starts folded: the scene's intro waits for its button.
+  const [drawerTab, setDrawerTab] = useState<DrawerTabId | undefined>(undefined);
 
   // The title on black, then the intro under it, then the button to enter,
   // until it is pressed and they have faded out (see Intro). It waits for the
@@ -71,6 +73,43 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
   // before the end: it is never missed.
   const [intro, setIntro] = useState(true);
   const notTurned = useNotTurned(layout.landscape);
+
+  // ── An object's menu: its actions, where it was clicked ──────────────────────
+
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [menu, setMenu] = useState<{ object: SceneObject; x: number; y: number }>();
+  const menuFrom = useRef<HTMLButtonElement>(null);
+
+  const openMenu = (object: SceneObject, event: MouseEvent<HTMLButtonElement>) => {
+    const root = rootRef.current?.getBoundingClientRect();
+    if (root === undefined) return;
+    // From the keyboard, there is no pointer: the middle of the object.
+    const from = event.currentTarget.getBoundingClientRect();
+    const keyboard = event.detail === 0;
+    menuFrom.current = event.currentTarget;
+    setMenu({
+      object,
+      x: (keyboard ? from.left + from.width / 2 : event.clientX) - root.left,
+      y: (keyboard ? from.top + from.height / 2 : event.clientY) - root.top,
+    });
+  };
+  const closeMenu = () => {
+    setMenu(undefined);
+    menuFrom.current?.focus();
+  };
+
+  // Escape closes the menu.
+  const menuOpen = menu !== undefined;
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setMenu(undefined);
+      menuFrom.current?.focus();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [menuOpen]);
 
   // ── Dialogue: an open conversation, until it is left ─────────────────────────
 
@@ -107,7 +146,11 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
   }, [inConversation]);
 
   return (
-    <div className={styles.root} data-orientation={layout.landscape ? "landscape" : "portrait"}>
+    <div
+      ref={rootRef}
+      className={styles.root}
+      data-orientation={layout.landscape ? "landscape" : "portrait"}
+    >
       <div className={styles.scene} style={{ "--image-ratio": layout.ratio } as CSSProperties}>
         <img className={styles.background} src={images.background.src} alt="" />
         {scene.effects && (
@@ -120,11 +163,12 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
               type="button"
               className={styles.hotspot}
               aria-label={object.label}
+              aria-haspopup="menu"
+              aria-expanded={menu?.object === object}
+              data-open={menu?.object === object || undefined}
               style={placeStyle(box)}
-              onClick={() => dispatch({ type: "look", title: object.label, text: object.text })}
-            >
-              <span className={styles.tip}>{object.label}</span>
-            </button>
+              onClick={(event) => openMenu(object, event)}
+            />
           ))}
 
           {/* Characters: layers placed by their feet. */}
@@ -147,12 +191,12 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
         </div>
       </div>
 
-      <Drawer
+      <Drawer<DrawerTabId>
         id="drawer"
         side={layout.landscape ? "right" : "bottom"}
         size={layout.landscape ? "var(--panel)" : "var(--band)"}
         open={drawerTab}
-        onOpen={(tab) => setChoice({ tab, at: narration.key })}
+        onOpen={setDrawerTab}
         tabs={[
           {
             id: "narration",
@@ -191,6 +235,19 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
           },
         ]}
       />
+
+      {menu && (
+        <ObjectMenu
+          object={menu.object}
+          x={menu.x}
+          y={menu.y}
+          onClose={closeMenu}
+          onAction={(action) => {
+            dispatch({ type: "look", title: action.label, text: action.text });
+            closeMenu();
+          }}
+        />
+      )}
 
       {intro && !notTurned && <Intro scene={scene} onEnd={() => setIntro(false)} />}
 
@@ -241,6 +298,65 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
           </div>
         </div>
       )}
+    </div>
+  );
+};
+
+// An object's actions, in a menu to the right of where it was clicked, or to
+// its left (see objectMenuPlace).
+// A click out of it, or Escape, closes it.
+const ObjectMenu = ({
+  object,
+  x,
+  y,
+  onClose,
+  onAction,
+}: {
+  object: SceneObject;
+  x: number;
+  y: number;
+  onClose(): void;
+  onAction(action: ObjectAction): void;
+}) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const [place, setPlace] = useState<{ left: number; top: number }>();
+
+  useLayoutEffect(() => {
+    const menu = ref.current;
+    const frame = menu?.parentElement;
+    if (!menu || !frame) return;
+    setPlace(
+      objectMenuPlace(
+        { x, y },
+        { width: menu.offsetWidth, height: menu.offsetHeight },
+        { width: frame.clientWidth, height: frame.clientHeight },
+      ),
+    );
+  }, [x, y]);
+  // Once placed (hidden until then, it could not take the focus).
+  useEffect(() => {
+    if (place) ref.current?.querySelector("button")?.focus();
+  }, [place]);
+
+  return (
+    // biome-ignore lint/a11y/useKeyWithClickEvents lint/a11y/noStaticElementInteractions: Escape closes it too
+    <div
+      className={styles.menuBackdrop}
+      onClick={(event) => event.target === event.currentTarget && onClose()}
+    >
+      <div
+        ref={ref}
+        role="menu"
+        aria-label={sceneText.actionsOf(object.label)}
+        className={styles.menu}
+        style={place ?? { left: x, top: y, visibility: "hidden" }}
+      >
+        {objectActions(object).map((action) => (
+          <button key={action.label} type="button" role="menuitem" onClick={() => onAction(action)}>
+            {action.label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 };

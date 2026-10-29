@@ -1,4 +1,4 @@
-import type { Character, SceneData, Topic } from "./types.ts";
+import type { Character, ObjectAction, SceneData, SceneObject, Topic } from "./types.ts";
 
 // What a scene shows as it is played, the same in both apps: the narration
 // band, and the open conversation if any. The apps only draw it, and turn their
@@ -79,6 +79,30 @@ export const playScene = (state: SceneState, action: SceneAction): SceneState =>
   }
 };
 
+// The actions an object's menu offers: its own, or its label and its text.
+export const objectActions = (object: SceneObject): ObjectAction[] =>
+  object.actions ?? [{ label: object.label, text: object.text ?? "" }];
+
+// Where an object's menu goes, in px from the frame's top left corner: to the
+// right of the point where the object was clicked, or to its left if there is
+// not room enough, centered on it vertically, always inside the frame.
+const MENU_GAP = 16;
+export const objectMenuPlace = (
+  point: { x: number; y: number },
+  menu: { width: number; height: number },
+  frame: { width: number; height: number },
+) => {
+  const clamp = (v: number, own: number, room: number) =>
+    Math.min(Math.max(MENU_GAP, v), Math.max(MENU_GAP, room - own - MENU_GAP));
+  const right = point.x + MENU_GAP;
+  const left =
+    right + menu.width + MENU_GAP <= frame.width ? right : point.x - MENU_GAP - menu.width;
+  return {
+    left: clamp(left, menu.width, frame.width),
+    top: clamp(point.y - menu.height / 2, menu.height, frame.height),
+  };
+};
+
 // The topics not asked yet in a conversation.
 export const remainingTopics = ({ character, asked }: Conversation) =>
   character.dialogue.topics.filter((topic) => !asked.includes(topic.ask));
@@ -88,6 +112,8 @@ export const sceneText = {
   enter: "Entrer",
   talkTo: (name: string) => `Parler à ${name}`,
   goodbye: "Au revoir.",
+  // An object's menu of actions, for screen readers.
+  actionsOf: (name: string) => `Actions : ${name}`,
   // The text panel, in landscape.
   foldText: "Replier le texte",
   unfoldText: "Afficher le texte",
