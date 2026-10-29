@@ -111,6 +111,30 @@ export const objectMenuPlace = (
 export const INVENTORY_SLOTS = Array.from({ length: 12 }, (_, i) => i + 1);
 export const INVENTORY_COLUMNS = { bottom: 6, right: 3 };
 
+// The ring menu, in the bottom right corner of a scene: a circle which, held,
+// spreads its items in a quarter of a circle around it, from its left to above
+// it, clockwise; the one under the finger when it is let go is chosen. The same
+// in px on both apps: the circle's and an item's diameters, the distance from
+// the circle's center to an item's, and how far from its center an item is still
+// under the finger (two neighbours' never meet).
+export const RING_ITEMS = ["1", "2", "3"];
+export const RING = { size: 56, item: 44, radius: 88, hit: 32 };
+
+// Where an item's center is, in px from the circle's center (y down).
+export const ringItemOffset = (index: number, count: number) => {
+  const angle = Math.PI - (count > 1 ? (index * Math.PI) / 2 / (count - 1) : Math.PI / 4);
+  return { x: Math.cos(angle) * RING.radius, y: -Math.sin(angle) * RING.radius };
+};
+
+// The item under a point, in px from the circle's center, if any.
+export const ringItemAt = (point: { x: number; y: number }, count: number) => {
+  for (let i = 0; i < count; i++) {
+    const { x, y } = ringItemOffset(i, count);
+    if (Math.hypot(point.x - x, point.y - y) <= RING.hit) return i;
+  }
+  return undefined;
+};
+
 // The topics not asked yet in a conversation.
 export const remainingTopics = ({ character, asked }: Conversation) =>
   character.dialogue.topics.filter((topic) => !asked.includes(topic.ask));
@@ -125,6 +149,8 @@ export const sceneText = {
   // The drawer's first button, the satchel, and its panel.
   inventory: "Inventaire",
   emptySlot: "Emplacement vide",
+  // The ring menu's circle, for screen readers.
+  ringMenu: "Menu",
   // When the screen is not turned like the scene.
   turnLandscape: "Tourner l'écran à l'horizontale",
   turnPortrait: "Tourner l'écran à la verticale",

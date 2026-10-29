@@ -1,0 +1,142 @@
+/* The ring menu, in the bottom right corner of the frame (see RingMenu.tsx):
+   the circle, and its items stacked under it, which spread around it, one
+   after the other, when it is held. Neutral, as the intro's arrow to enter: a
+   pale grey, white and glowing when pointed at, focused or held. */
+.ring {
+  position: absolute;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  width: var(--ring-size);
+  height: var(--ring-size);
+}
+
+.circle {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border: 1px solid rgb(245 245 244 / 0.3);
+  border-radius: 50%;
+  background: rgb(12 10 9 / 0.85);
+  box-shadow: 0 0.3rem 0.8rem rgb(0 0 0 / 0.6);
+  cursor: pointer;
+  /* Held and dragged, it neither scrolls nor selects. */
+  touch-action: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  transition:
+    scale 150ms ease-out,
+    border-color 150ms,
+    box-shadow 150ms;
+}
+
+/* A smaller circle in it. */
+.circle::after {
+  content: "";
+  position: absolute;
+  inset: 32%;
+  border: 1px solid rgb(245 245 244 / 0.6);
+  border-radius: 50%;
+  transition: border-color 150ms;
+}
+
+.circle:hover,
+.circle:focus-visible,
+.ring[data-open] .circle {
+  border-color: rgb(255 255 255 / 0.8);
+  box-shadow:
+    0 0.3rem 0.8rem rgb(0 0 0 / 0.6),
+    0 0 10px rgb(255 255 255 / 0.35);
+  outline: none;
+}
+
+.circle:hover::after,
+.circle:focus-visible::after,
+.ring[data-open] .circle::after {
+  border-color: #fff;
+}
+
+.ring[data-open] .circle {
+  scale: 0.9;
+}
+
+/* The items: centered on the circle, folded into it; open, each goes to its
+   place (--x, --y, from ringItemOffset), a little after the one before. The
+   pointer's moves are the circle's (it holds them), never theirs. */
+.items {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.item {
+  position: absolute;
+  left: calc(50% - var(--ring-item) / 2);
+  top: calc(50% - var(--ring-item) / 2);
+  width: var(--ring-item);
+  height: var(--ring-item);
+  padding: 0;
+  border: 1px solid rgb(245 245 244 / 0.3);
+  border-radius: 50%;
+  background: rgb(12 10 9 / 0.85);
+  color: rgb(245 245 244 / 0.7);
+  font: inherit;
+  font-size: 1.05rem;
+  line-height: 1;
+  opacity: 0;
+  scale: 0.4;
+  visibility: hidden;
+  transition:
+    translate 180ms ease-in,
+    scale 180ms ease-in,
+    opacity 150ms ease-in,
+    background 120ms,
+    border-color 120ms,
+    color 120ms,
+    box-shadow 120ms,
+    visibility 0s 180ms;
+}
+
+.ring[data-open] .item {
+  translate: var(--x) var(--y);
+  opacity: 1;
+  scale: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition:
+    translate 220ms cubic-bezier(0.3, 1.4, 0.5, 1) calc(var(--i) * 30ms),
+    scale 220ms cubic-bezier(0.3, 1.4, 0.5, 1) calc(var(--i) * 30ms),
+    opacity 150ms ease-out calc(var(--i) * 30ms),
+    background 120ms,
+    border-color 120ms,
+    color 120ms,
+    box-shadow 120ms,
+    visibility 0s;
+}
+
+/* Under the pointer, or focused: larger, white, glowing. Chosen: lit, white. */
+.ring[data-open] .item[data-hovered],
+.ring[data-open] .item:focus-visible {
+  scale: 1.15;
+  border-color: rgb(255 255 255 / 0.8);
+  color: #fff;
+  box-shadow: 0 0 10px rgb(255 255 255 / 0.35);
+  outline: none;
+}
+
+.ring[data-open] .item[data-chosen] {
+  scale: 1.2;
+  background: #f5f5f4;
+  border-color: #fff;
+  color: #0c0a09;
+  box-shadow:
+    0 0 3px #fff,
+    0 0 14px rgb(255 255 255 / 0.6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .circle,
+  .item,
+  .ring[data-open] .item {
+    transition: none;
+  }
+}

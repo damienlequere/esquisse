@@ -11,6 +11,7 @@ import {
   objectMenuPlace,
   placeStyle,
   playScene,
+  RING_ITEMS,
   remainingTopics,
   type SceneData,
   type SceneObject,
@@ -44,6 +45,7 @@ import Svg, { Path } from "react-native-svg";
 import type { SceneImages } from "../scenes.ts";
 import { Drawer } from "./Drawer.tsx";
 import { Effects } from "./Effects.tsx";
+import { RingMenu } from "./RingMenu.tsx";
 
 // Same scene as the web one (apps/web/components/Scene.tsx): the background
 // covers the screen, each object is one action, each character opens a dialogue.
@@ -322,6 +324,8 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
       <Drawer<DrawerTabId>
         side={layout.landscape ? "right" : "bottom"}
         size={layout.landscape ? panel : band}
+        // The ring menu takes their place (see below).
+        hideButtons
         open={drawerTab}
         onOpen={setDrawerTab}
         tabs={[
@@ -334,6 +338,9 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
           { id: "two", icon: "2", label: "2", content: placeholder("2") },
         ]}
       />
+
+      {/* The ring menu, in the bottom right corner: what its items do is to come. */}
+      <RingMenu items={RING_ITEMS} onChoose={() => {}} />
 
       {menu && screen && (
         <ObjectMenu

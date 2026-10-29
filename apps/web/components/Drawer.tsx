@@ -19,12 +19,14 @@ export type DrawerTab<Id extends string> = {
 // does a click anywhere else, which still reaches what it is on.
 // Its parent is positioned; `size` is any CSS length, its height at the bottom
 // or its width on the right (in cqh or cqw when the parent is a size container).
+// With `hideButtons`, its buttons are not shown: it is opened only by `open`.
 // The mobile app has the same (apps/mobile/src/components/Drawer.tsx).
 export const Drawer = <Id extends string>({
   id,
   side,
   size,
   tabs,
+  hideButtons,
   open,
   onOpen,
 }: {
@@ -32,6 +34,7 @@ export const Drawer = <Id extends string>({
   side: "bottom" | "right";
   size: string;
   tabs: DrawerTab<Id>[];
+  hideButtons?: boolean;
   // The open content, none when folded.
   open: Id | undefined;
   onOpen(tab: Id | undefined): void;
@@ -63,7 +66,7 @@ export const Drawer = <Id extends string>({
       <div ref={panel} id={id} className={styles.panel} style={style} {...state}>
         {shown?.content}
       </div>
-      <div ref={buttons} className={styles.buttons} style={style} {...state}>
+      <div ref={buttons} className={styles.buttons} style={style} hidden={hideButtons} {...state}>
         {tabs.map((tab) => (
           <button
             key={tab.id}

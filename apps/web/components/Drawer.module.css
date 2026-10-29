@@ -80,6 +80,10 @@
   translate: none;
 }
 
+.buttons[hidden] {
+  display: none;
+}
+
 /* The buttons stand on the same line, against the edge: a bigger image rises
    above them, or stands out to the left of them. */
 .buttons {

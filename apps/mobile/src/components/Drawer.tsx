@@ -48,18 +48,21 @@ export type DrawerTab<Id extends string> = {
 // The open content's button folds it away, to see what is under it, and so
 // does a touch anywhere else, which still reaches what it is on: its parent
 // folds it in its onTouchStart, which the drawer's own touches never reach.
-// `size` is its height at the bottom, or its width on the right. The web has
-// the same (apps/web/components/Drawer.tsx).
+// `size` is its height at the bottom, or its width on the right. With
+// `hideButtons`, its buttons are not shown: it is opened only by `open`. The web
+// has the same (apps/web/components/Drawer.tsx).
 export const Drawer = <Id extends string>({
   side,
   size,
   tabs,
+  hideButtons,
   open,
   onOpen,
 }: {
   side: "bottom" | "right";
   size: number;
   tabs: DrawerTab<Id>[];
+  hideButtons?: boolean;
   // The open content, none when folded.
   open: Id | undefined;
   onOpen(tab: Id | undefined): void;
@@ -106,7 +109,7 @@ export const Drawer = <Id extends string>({
           bottom; in a column on the right. Their strip lets touches through between them.
           The open content's is lighter. */}
       <Strip
-        pointerEvents="box-none"
+        pointerEvents={hideButtons ? "none" : "box-none"}
         onTouchStart={keepTouch}
         style={[
           { position: "absolute", justifyContent: "flex-end", alignItems: "flex-end", gap: 8 },
@@ -126,6 +129,7 @@ export const Drawer = <Id extends string>({
                 paddingRight: Math.max(16, insets.right),
               },
           slide,
+          hideButtons && { display: "none" },
         ]}
       >
         {tabs.map((tab) => {
