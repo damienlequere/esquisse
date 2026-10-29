@@ -85,18 +85,21 @@ export const objectActions = (object: SceneObject): ObjectAction[] =>
 
 // Where an object's menu goes, in px from the frame's top left corner: to the
 // right of the point where the object was clicked, or to its left if there is
-// not room enough, centered on it vertically, always inside the frame.
-const MENU_GAP = 16;
+// not room enough, centered on it vertically, always inside the frame. The
+// same in px on both apps: from the point (GAP), and from the frame's edges
+// (EDGE).
+const MENU_GAP = 32;
+const MENU_EDGE = 16;
 export const objectMenuPlace = (
   point: { x: number; y: number },
   menu: { width: number; height: number },
   frame: { width: number; height: number },
 ) => {
   const clamp = (v: number, own: number, room: number) =>
-    Math.min(Math.max(MENU_GAP, v), Math.max(MENU_GAP, room - own - MENU_GAP));
+    Math.min(Math.max(MENU_EDGE, v), Math.max(MENU_EDGE, room - own - MENU_EDGE));
   const right = point.x + MENU_GAP;
   const left =
-    right + menu.width + MENU_GAP <= frame.width ? right : point.x - MENU_GAP - menu.width;
+    right + menu.width + MENU_EDGE <= frame.width ? right : point.x - MENU_GAP - menu.width;
   return {
     left: clamp(left, menu.width, frame.width),
     top: clamp(point.y - menu.height / 2, menu.height, frame.height),

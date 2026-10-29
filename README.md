@@ -55,8 +55,8 @@ The scripts are not named `deploy`: `pnpm deploy` is a built-in pnpm command.
 Each scene, at `/scene/<id>` on the web site (`/scene/foret` for now), and in the mobile app, is a
 clickable scene, ported from protagonist's `prototypes/scene-cliquable`: the
 place's image fills the frame, each object is a clickable part of the image,
-slightly overexposed when pointed at or pressed, which opens a menu of its
-actions where it was clicked (`actions` in `scene.json`; without them, its
+which opens a menu of its actions next to where it was clicked, and is slightly
+overexposed while it is open (not when pointed at) (`actions` in `scene.json`; without them, its
 `label` and `text` are its only action), and the characters, clickable too, open
 a dialogue. An action's text goes to the text panel, which it does not open. On the web, the frame adapts to the screen, like any page under
 `app/scene/`; in the mobile app, the scene takes the whole screen. A scene opens

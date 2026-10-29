@@ -82,9 +82,15 @@
   background: radial-gradient(rgb(0 0 0 / 0.55), transparent 70%);
 }
 
-/* Pointed at or focused, an object is slightly overexposed, without an
-   outline: the image under it is brightened, less and less towards its edges
-   (on a layer of its own, so that the mask leaves its label alone). */
+/* Nothing gives an object away when it is pointed at, not even the cursor
+   (.root button would make it a hand). */
+.root .hotspot {
+  cursor: default;
+}
+
+/* Clicked, while its menu is open, or focused from the keyboard, an object is
+   slightly overexposed, without an outline: the image under it is brightened,
+   less and less towards its edges. Pointing at it does not. */
 .hotspot::before {
   content: "";
   position: absolute;
@@ -98,6 +104,7 @@
   outline: none;
 }
 
+.hotspot:active::before,
 .hotspot:focus-visible::before,
 .hotspot[data-open]::before {
   backdrop-filter: brightness(1.6);
@@ -109,10 +116,6 @@
 }
 
 @media (hover: hover) {
-  .hotspot:hover::before {
-    backdrop-filter: brightness(1.6);
-  }
-
   .character:hover img {
     filter: drop-shadow(0 0 0.8cqh rgb(252 211 77 / 0.9));
   }
