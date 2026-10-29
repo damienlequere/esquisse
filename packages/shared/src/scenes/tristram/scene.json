@@ -16,30 +16,17 @@
   },
   "objects": [
     {
-      "id": "cheminee-froide",
+      "id": "porte-auberge",
       "zone": {
-        "x0": 0.79,
-        "y0": 0.2,
-        "x1": 0.91,
-        "y1": 0.37
-      },
-      "paint": "Le haut de la cheminée de pierre de la maison de droite, éteinte et froide, sans la moindre fumée : ses moellons gris rongés de lichen, sa bouche noircie de vieille suie coiffée d'une ardoise fendue posée de travers, se découpent nettement sur le ciel gris ardoise derrière les branches tordues de l'arbre mort ; le ciel autour reste clair de toute fumée, et l'élément ne descend pas vers le sol.",
-      "detect": "the cold stone chimney",
-      "label": "Examiner la cheminée éteinte",
-      "text": "La cheminée ne fume plus, et pourtant la pierre est encore tiède sous ta main, comme si le feu venait à peine de mourir. Quelqu'un a glissé une ardoise sur le conduit pour l'étouffer, de l'extérieur, en grimpant sur le toit. Collée à la suie, tu remarques une mèche de cheveux blancs, nouée d'un fil rouge."
-    },
-    {
-      "id": "anneau-vide",
-      "zone": {
-        "x0": 0.22,
-        "y0": 0.57,
-        "x1": 0.36,
+        "x0": 0.13,
+        "y0": 0.59,
+        "x1": 0.21,
         "y1": 0.71
       },
-      "paint": "À l'emplacement exact de l'ancienne torche, contre l'angle de la maison de gauche près de la porte, il n'y a plus ni torche, ni perche, ni flamme, ni lueur : seulement un anneau de fer forgé rouillé, vide et légèrement tordu, scellé dans le colombage de chêne noirci, au-dessus d'une longue traînée de suie sur le bois et le torchis écaillé, avec à son pied un petit tas de cendres froides et un bout de bois carbonisé à demi enfoncé dans la boue, la façade autour plongée dans la pénombre bleu-gris du crépuscule.",
-      "detect": "the empty iron torch ring",
-      "label": "Examiner l'anneau vide",
-      "text": "L'anneau de fer est vide, encore chaud au toucher, et la suie qui le couronne est fraîche : la torche brûlait ici il y a peu. Quelqu'un l'a arrachée d'un coup sec, assez fort pour tordre le métal. Dans la boue, sous les cendres, des gouttes de poix noire s'éloignent en pointillés vers le chemin de la colline, droit vers la cathédrale."
+      "paint": "La porte de chêne noirci de la bâtisse à étage de gauche, sous l'enseigne de fer vide : l'entrée de l'auberge du village, étroite et basse, ses planches fendues cerclées de fer, un anneau de fer en guise de poignée, entre les colombages, au-dessus d'une marche usée.",
+      "detect": "the dark wooden door of the inn, in the tall half-timbered house on the left",
+      "label": "Frapper à la porte de l'auberge",
+      "text": "La porte de l'auberge est fermée, mais derrière le bois tu entends le crépitement d'un feu et le raclement d'un banc qu'on tire. Les voix se taisent d'un coup quand tu frappes. Un long silence, puis un verrou qu'on tire lentement, et par l'entrebâillement, un œil méfiant qui te détaille de la tête aux bottes avant qu'une voix rauque ne grogne : « On ne sert plus après la nuit tombée. Sauf ceux qui ont des nouvelles de la cathédrale. »"
     }
   ],
   "characters": [],

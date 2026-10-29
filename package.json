@@ -12,6 +12,7 @@
     "dev:all": "turbo run dev",
     "generate": "pnpm --filter @esquisse/generator generate",
     "remove-scene": "pnpm --filter @esquisse/generator remove-scene",
+    "show-scene": "pnpm --filter @esquisse/generator show-scene",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
     "lint": "biome check .",

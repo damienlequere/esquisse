@@ -34,6 +34,7 @@ pnpm typecheck
 pnpm lint            # pnpm format to fix
 pnpm generate <id> portrait|landscape "brief"  # a new scene, built step by step (see Generating a scene)
 pnpm remove-scene <id> # removes a scene, its texts and its images
+pnpm show-scene <id> # the scene's background with what is clickable outlined, in the image viewer
 pnpm loc             # lines of code per app and package (source / tests)
 pnpm deploy:preview  # lint, typecheck, then deploy the web site to a Vercel preview URL
 pnpm deploy:prod     # same, to production
