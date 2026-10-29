@@ -42,5 +42,21 @@
       "text": "L'anneau de fer est vide, encore chaud au toucher, et la suie qui le couronne est fraîche : la torche brûlait ici il y a peu. Quelqu'un l'a arrachée d'un coup sec, assez fort pour tordre le métal. Dans la boue, sous les cendres, des gouttes de poix noire s'éloignent en pointillés vers le chemin de la colline, droit vers la cathédrale."
     }
   ],
-  "characters": []
+  "characters": [],
+  "effects": [
+    {
+      "id": "ciel",
+      "kind": "sky"
+    },
+    {
+      "id": "lueur",
+      "kind": "glow",
+      "detect": "the ruined gothic cathedral on the hill, with the red glow around it"
+    },
+    {
+      "id": "feu",
+      "kind": "firelight",
+      "detect": "each window glowing with warm orange firelight in the houses of the village (not the cathedral)"
+    }
+  ]
 }

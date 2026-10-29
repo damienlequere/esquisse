@@ -33,6 +33,22 @@
   height: 100%;
 }
 
+/* The background's animations, over it (see Effects.tsx): they fade in once
+   CanvasKit has drawn them, so the lights do not jump. */
+.effects {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1.5s ease-out;
+}
+
+.effects[data-ready] {
+  opacity: 1;
+}
+
 .layer {
   position: absolute;
   inset: 0;

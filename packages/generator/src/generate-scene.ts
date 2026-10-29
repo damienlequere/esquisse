@@ -15,8 +15,13 @@
 // validated background, a character as a layer), and the author validates it
 // on the new render, has it redone, changes it, or drops it. A character's
 // dialogue is then written one line at a time, each validated the same way:
-// its greeting, the questions the author wants, its farewell. Each render opens
-// in the image viewer.
+// its greeting, the questions the author wants, its farewell. The background can
+// be animated too: lights lit by a fire (windows, a lantern), and a red glow
+// that comes back from time to time, which Gemini finds from what the author
+// describes, and the author validates their zone; and the
+// sky, replaced by another one that Gemini paints and that drifts behind the
+// rest, once the author has validated what stands in front of it and the new
+// sky. Each render opens in the image viewer.
 //
 // What is validated is saved at once, so the session can stop at any time: the
 // scene and the positions in packages/shared/src/scenes/<id>, the converted
@@ -28,22 +33,37 @@
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { createInterface } from "node:readline/promises";
-import type { Character, Detail, Scene, SceneData, SceneObject } from "@esquisse/shared";
+import type {
+  Character,
+  Detail,
+  Effect,
+  EffectKind,
+  Scene,
+  SceneData,
+  SceneObject,
+} from "@esquisse/shared";
 import { isLandscape } from "@esquisse/shared/layout";
 import sharp from "sharp";
 import { inside } from "./check-scene.ts";
 import { apiKey } from "./env.ts";
+import { glowMask, lightsMask } from "./lights.ts";
 import {
   addDetails,
   addObject,
+  detectEvery,
   detectObjects,
   paintBackground,
   paintCharacter,
+  paintSky,
   render,
+  renderFront,
+  renderMask,
+  renderStill,
   show,
   where,
 } from "./paint.ts";
 import { writeRegistries } from "./registry.ts";
+import { loopSky, skyMatte, stillWithSky } from "./sky.ts";
 import {
   type Base,
   baseWriter,
@@ -110,20 +130,85 @@ type State = { data: SceneData; background: Buffer; layers: Record<string, Buffe
 type Candidate = State & {
   backgroundChanged: boolean;
   character?: { id: string; jpg: Buffer; layer: Buffer };
+  // The animations' images, by file (see effectFiles), as they were validated.
+  files?: Record<string, Buffer>;
 };
 
 const json = (value: unknown) => `${JSON.stringify(value, null, 2)}\n`;
 
-const save = async ({ data, background, backgroundChanged, character }: Candidate) => {
+// What each kind of animation finds in the background, by file (see
+// effectFiles): the lights' mask; what stands in front of the sky (the painted
+// sky is not found: it stays).
+const FOUND: Record<
+  EffectKind,
+  (background: Buffer, e: Effect) => Promise<Record<string, Buffer>>
+> = {
+  firelight: async (background, e) => {
+    console.log("Detecting the lights…");
+    const boxes = await detectEvery(geminiKey, background, e.detect ?? "");
+    if (boxes.length === 0) console.log("⚠ No light found in the image");
+    return { [e.id]: await lightsMask(background, boxes) };
+  },
+  glow: async (background, e) => {
+    console.log("Detecting the glow…");
+    const boxes = await detectEvery(geminiKey, background, e.detect ?? "");
+    if (boxes.length === 0) console.log("⚠ No glow found in the image");
+    return { [e.id]: await glowMask(background, boxes) };
+  },
+  sky: async (background, e) => {
+    console.log("Finding the sky…");
+    return { [`${e.id}-devant`]: (await skyMatte(background)).front };
+  },
+};
+const find = (e: Effect, background: Buffer) => {
+  if (!Object.hasOwn(FOUND, e.kind)) throw new Error(`Unknown kind of effect: ${e.kind}`);
+  return FOUND[e.kind as EffectKind](background, e);
+};
+
+// The size the apps get the background at, and its animations' images but the
+// painted sky: 1440 × 2560 or 2560 × 1440.
+const appSize = (scene: Scene) => (isLandscape(scene) ? { width: 2560 } : { width: 1440 });
+
+const save = async ({ data, background, backgroundChanged, character, files }: Candidate) => {
+  const { scene } = data;
   for (const dir of [DIR, SOURCES, MEDIA]) mkdirSync(dir, { recursive: true });
-  writeFileSync(SCENE, json(data.scene));
+  writeFileSync(SCENE, json(scene));
   writeFileSync(join(DIR, "objects.json"), json(data.objects));
   writeFileSync(join(DIR, "characters.json"), json(data.aspects));
+  if (backgroundChanged) writeFileSync(join(SOURCES, "fond.jpg"), background);
+
+  // A retouch may move what the animations move: it is found again.
+  const changed: Record<string, Buffer> = { ...files };
   if (backgroundChanged) {
-    writeFileSync(join(SOURCES, "fond.jpg"), background);
-    await sharp(background)
-      // 1440 × 2560 or 2560 × 1440.
-      .resize(isLandscape(data.scene) ? { width: 2560 } : { width: 1440 })
+    for (const e of scene.effects ?? []) {
+      for (const [file, image] of Object.entries(await find(e, background))) {
+        changed[file] ??= image;
+      }
+    }
+  }
+  const skies = new Set((scene.effects ?? []).filter((e) => e.kind === "sky").map((e) => e.id));
+  for (const [file, image] of Object.entries(changed)) {
+    await (skies.has(file) ? sharp(image) : sharp(image).resize(appSize(scene)))
+      .webp({ quality: 90, alphaQuality: 90 })
+      .toFile(join(MEDIA, `${file}.webp`));
+  }
+
+  // The background as the apps show it still: with its new sky, if it has one.
+  const sky = [...skies][0];
+  if (backgroundChanged || Object.keys(changed).length > 0) {
+    const media = (file: string) => changed[file] ?? readFileSync(join(MEDIA, `${file}.webp`));
+    const still =
+      sky === undefined
+        ? background
+        : await stillWithSky(
+            await sharp(media(`${sky}-devant`))
+              .resize(appSize(scene))
+              .png()
+              .toBuffer(),
+            media(sky),
+          );
+    await sharp(still)
+      .resize(appSize(scene))
       .webp({ quality: 90 })
       .toFile(join(MEDIA, "fond.webp"));
   }
@@ -407,6 +492,103 @@ const pickCharacter = async (state: State) => {
   return characters[Number(answer) - 1]?.id;
 };
 
+// ── The animations ───────────────────────────────────────────────────────────
+
+// An id not taken yet in the scene: base, then base-2, base-3…
+const freeId = (scene: Scene, base: string) => {
+  const taken = new Set((scene.effects ?? []).map((e) => e.id));
+  for (let n = 1; ; n++) {
+    const candidate = n === 1 ? base : `${base}-${n}`;
+    if (!taken.has(candidate)) return candidate;
+  }
+};
+
+// What the author describes for Gemini to find, and the effect's id.
+const DESCRIBED = {
+  firelight: {
+    question:
+      "Quelles lumières ? (ce que Gemini doit trouver, par exemple « les fenêtres éclairées de la maison de gauche », ou Entrée pour revenir)",
+    id: "feu",
+  },
+  glow: {
+    question:
+      "Quelle lueur rouge ? (ce que Gemini doit trouver, avec la lueur autour, par exemple « la cathédrale en ruine sur la colline, avec la lueur rouge autour », ou Entrée pour revenir)",
+    id: "lueur",
+  },
+};
+
+// Lights lit by a fire, or a red glow. Returns the new state if their zone is
+// validated, the same one otherwise.
+const animateDescribed = async (state: State, kind: keyof typeof DESCRIBED): Promise<State> => {
+  const { scene } = state.data;
+  const detect = (await rl.question(`${DESCRIBED[kind].question}\n> `)).trim();
+  if (detect === "") return state;
+  const effect: Effect = { id: freeId(scene, DESCRIBED[kind].id), kind, detect };
+  for (;;) {
+    const found = await find(effect, state.background);
+    const mask = found[effect.id] as Buffer;
+    show(id, await renderMask(state.background, mask));
+    const answer = await choose("Ce qui est animé (en rouge) :", {
+      v: "valider",
+      r: "refaire",
+      a: "abandonner",
+    });
+    if (answer === "a") return state;
+    if (answer === "r") continue;
+    const candidate: Candidate = {
+      ...state,
+      data: { ...state.data, scene: { ...scene, effects: [...(scene.effects ?? []), effect] } },
+      backgroundChanged: false,
+      files: found,
+    };
+    await save(candidate);
+    return candidate;
+  }
+};
+
+// Another sky, drifting behind the rest: what stands in front of it is found
+// and validated, then Gemini paints the sky, validated on the scene. Returns
+// the new state if both are, the same one otherwise.
+const animateSky = async (state: State): Promise<State> => {
+  const { scene } = state.data;
+  if (scene.effects?.some((e) => e.kind === "sky")) {
+    console.log("Le ciel est déjà animé.");
+    return state;
+  }
+  const effect: Effect = { id: freeId(scene, "ciel"), kind: "sky" };
+  console.log("Finding the sky…");
+  const { front } = await skyMatte(state.background);
+  show(id, await renderFront(front));
+  const kept = await choose("Ce qui reste devant le ciel (sur le vert) :", {
+    v: "valider",
+    a: "abandonner",
+  });
+  if (kept === "a") return state;
+  for (;;) {
+    console.log("Painting the sky…");
+    const painted = await paintSky(geminiKey, scene, state.background);
+    const sky = await loopSky(painted);
+    show(id, await renderStill(await stillWithSky(front, sky)));
+    const answer = await choose("Le nouveau ciel :", {
+      v: "valider",
+      r: "repeindre",
+      a: "abandonner",
+    });
+    if (answer === "a") return state;
+    if (answer === "r") continue;
+    // Under the other animations: they are drawn over it.
+    const candidate: Candidate = {
+      ...state,
+      data: { ...state.data, scene: { ...scene, effects: [effect, ...(scene.effects ?? [])] } },
+      backgroundChanged: false,
+      files: { [effect.id]: sky, [`${effect.id}-devant`]: front },
+    };
+    await save(candidate);
+    writeFileSync(join(SOURCES, `${effect.id}.jpg`), painted);
+    return candidate;
+  }
+};
+
 // ── The details ──────────────────────────────────────────────────────────────
 
 // Returns the new state if the details are validated, the same one otherwise.
@@ -488,12 +670,20 @@ for (;;) {
   }
   const answer = (
     await rl.question(
-      "\nQue veux-tu ajouter ? (une description, un numéro d'idée, d pour des détails de réalisme, p pour le dialogue d'un personnage, ou Entrée pour finir)\n> ",
+      "\nQue veux-tu ajouter ? (une description, un numéro d'idée, d pour des détails de réalisme, p pour le dialogue d'un personnage, f pour animer des lumières de feu, l pour une lueur rouge qui revient de temps en temps, c pour animer le ciel, ou Entrée pour finir)\n> ",
     )
   ).trim();
   if (answer === "") break;
   if (answer.toLowerCase() === "d") {
     state = await addRealism(state);
+    continue;
+  }
+  if (answer.toLowerCase() === "f" || answer.toLowerCase() === "l") {
+    state = await animateDescribed(state, answer.toLowerCase() === "f" ? "firelight" : "glow");
+    continue;
+  }
+  if (answer.toLowerCase() === "c") {
+    state = await animateSky(state);
     continue;
   }
   if (answer.toLowerCase() === "p") {

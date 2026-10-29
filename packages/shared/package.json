@@ -5,6 +5,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./layout": "./src/scenes/layout.ts",
+    "./effects": "./src/scenes/effects.ts",
     "./assets/*": "./assets/*"
   },
   "scripts": {

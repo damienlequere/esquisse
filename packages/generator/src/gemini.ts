@@ -102,13 +102,14 @@ type ContentResponse = {
   candidates?: { content?: { parts?: { text?: string }[] } }[];
 };
 
-// Gemini returns the boxes as [ymin, xmin, ymax, xmax], from 0 to 1000.
+// Gemini returns the boxes as [ymin, xmin, ymax, xmax], from 0 to 1000; an
+// element seen several times (lit windows) has as many boxes.
 const detectCall = async (
   apiKey: string,
   model: string,
   jpg: Buffer,
   elements: { id: string; detect: string }[],
-): Promise<Record<string, Box>> => {
+): Promise<{ id: string; box: Box }[]> => {
   const prompt = [
     "Detect these elements in the image and return their bounding boxes as JSON:",
     ...elements.map((e) => `- id "${e.id}": ${e.detect}`),
@@ -151,12 +152,10 @@ const detectCall = async (
   const text = body?.candidates?.[0]?.content?.parts?.find((p) => p.text)?.text;
   if (text === undefined) throw new Error("Gemini: no text in the response");
   const found: { id: string; box_2d: [number, number, number, number] }[] = JSON.parse(text);
-  return Object.fromEntries(
-    found.map(({ id, box_2d: [y0, x0, y1, x1] }) => [
-      id,
-      { x0: x0 / 1000, y0: y0 / 1000, x1: x1 / 1000, y1: y1 / 1000 },
-    ]),
-  );
+  return found.map(({ id, box_2d: [y0, x0, y1, x1] }) => ({
+    id,
+    box: { x0: x0 / 1000, y0: y0 / 1000, x1: x1 / 1000, y1: y1 / 1000 },
+  }));
 };
 
 export const detectBoxes = (
@@ -165,4 +164,19 @@ export const detectBoxes = (
   jpg: Buffer,
   elements: { id: string; detect: string }[],
   log: (line: string) => void = console.log,
-) => withRetries(() => detectCall(apiKey, model, jpg, elements), log);
+) =>
+  withRetries(() => detectCall(apiKey, model, jpg, elements), log).then(
+    (found): Record<string, Box> => Object.fromEntries(found.map(({ id, box }) => [id, box])),
+  );
+
+// Every box of what is described, however many times it is seen.
+export const detectAll = (
+  apiKey: string,
+  model: string,
+  jpg: Buffer,
+  detect: string,
+  log: (line: string) => void = console.log,
+) =>
+  withRetries(() => detectCall(apiKey, model, jpg, [{ id: "all", detect }]), log).then((found) =>
+    found.map(({ box }) => box),
+  );

@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@esquisse/shared": "workspace:*",
+    "canvaskit-wasm": "0.42.0",
     "next": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:"

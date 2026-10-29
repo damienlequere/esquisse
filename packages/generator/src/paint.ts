@@ -11,7 +11,7 @@ import type { Box, Character, Detail, Scene, SceneData, SceneObject } from "@esq
 import { characterBox, isLandscape, sceneRatio } from "@esquisse/shared/layout";
 import sharp from "sharp";
 import { pct } from "./check-scene.ts";
-import { detectBoxes, generateImage } from "./gemini.ts";
+import { detectAll, detectBoxes, generateImage } from "./gemini.ts";
 
 const IMAGE_MODEL = "gemini-nano-banana-2.1";
 const VISION_MODEL = "gemini-3.8-flash";
@@ -74,6 +74,28 @@ export const detectObjects = (key: string, background: Buffer, objects: SceneObj
   objects.length === 0
     ? Promise.resolve<Record<string, Box>>({})
     : detectBoxes(key, VISION_MODEL, background, objects);
+
+// Every box of what is described, to animate it (see lights.ts).
+export const detectEvery = (key: string, background: Buffer, detect: string) =>
+  detectAll(key, VISION_MODEL, background, detect);
+
+// A stormy sky alone, behind the background, in its style, to loop and drift
+// behind it (see sky.ts): lit evenly, so that it loops and the background's own
+// glows stay where they are.
+export const paintSky = async (key: string, scene: Scene, background: Buffer) =>
+  paint(
+    key,
+    "21:9",
+    [
+      scene.style,
+      "Peins uniquement un ciel d'orage, seul, sans aucun sol, bâtiment, arbre, relief, personnage ni oiseau : le ciel qui se tiendrait derrière le lieu de l'image jointe, avec la même technique de peinture, la même touche et les mêmes tons.",
+      "De lourdes nuées, en grandes masses bien distinctes aux bords déchirés et effilochés, séparées par des trouées plus claires ; des écharpes de nuages plus sombres passent devant les plus claires, ce qui donne de la profondeur.",
+      "L'éclairage est égal sur toute la largeur de l'image : aucune source de lumière, aucune lueur localisée, aucun soleil ni lune, pour que ce ciel puisse se répéter en continu de gauche à droite.",
+      "Le bas de l'image s'éclaircit peu à peu en une brume pâle, comme l'horizon de l'image jointe.",
+      "Format panoramique très large.",
+    ].join("\n"),
+    [await sharp(background).resize({ width: 768 }).jpeg({ quality: 85 }).toBuffer()],
+  );
 
 const characterPrompt = (scene: Scene, c: Character) =>
   [
@@ -165,6 +187,50 @@ export const render = async (
     .jpeg({ quality: 85 })
     .toBuffer();
 };
+
+// An animation's mask over the background, tinted red where it moves.
+export const renderMask = async (background: Buffer, mask: Buffer) => {
+  const { width = 0, height = 0 } = await sharp(background).metadata();
+  const alpha = await sharp(mask)
+    .resize(width, height)
+    .linear(0.6, 0)
+    .extractChannel(0)
+    .raw()
+    .toBuffer();
+  const red = await sharp({ create: { width, height, channels: 3, background: "#ff0040" } })
+    .joinChannel(alpha, { raw: { width, height, channels: 1 } })
+    .png()
+    .toBuffer();
+  const tinted = await sharp(background)
+    .composite([{ input: red }])
+    .png()
+    .toBuffer();
+  return sharp(tinted)
+    .resize({ width: LENGTH / 2 })
+    .jpeg({ quality: 85 })
+    .toBuffer();
+};
+
+// What stands in front of the sky, over flat green: what the new sky will show
+// through.
+export const renderFront = async (front: Buffer) => {
+  const { width = 0, height = 0 } = await sharp(front).metadata();
+  const green = await sharp({ create: { width, height, channels: 3, background: "#2fbf4a" } })
+    .composite([{ input: front }])
+    .png()
+    .toBuffer();
+  return sharp(green)
+    .resize({ width: LENGTH / 2 })
+    .jpeg({ quality: 85 })
+    .toBuffer();
+};
+
+// The background as the apps show it still, with its new sky.
+export const renderStill = (still: Buffer) =>
+  sharp(still)
+    .resize({ width: LENGTH / 2 })
+    .jpeg({ quality: 85 })
+    .toBuffer();
 
 const OPEN = { darwin: "open", win32: "explorer" } as Partial<Record<NodeJS.Platform, string>>;
 

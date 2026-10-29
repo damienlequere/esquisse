@@ -37,6 +37,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
 import type { SceneImages } from "../scenes.ts";
 import { Drawer } from "./Drawer.tsx";
+import { Effects } from "./Effects.tsx";
 
 // Same scene as the web one (apps/web/components/Scene.tsx): the background
 // covers the screen, each object is one action, each character opens a dialogue.
@@ -198,6 +199,14 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
           }}
         >
           <Image source={images.background} style={{ width: "100%", height: "100%" }} />
+          {scene.effects && Platform.OS !== "web" && (
+            <Effects
+              effects={scene.effects}
+              background={images.background}
+              files={images.effects}
+              size={image}
+            />
+          )}
 
           {layout.objects.map(({ object, box }) => (
             <Pressable

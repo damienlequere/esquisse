@@ -14,6 +14,7 @@
   "dependencies": {
     "@esquisse/shared": "workspace:*",
     "@expo/metro-runtime": "~58.0.15",
+    "@shopify/react-native-skia": "2.14.0",
     "expo": "~58.0.19",
     "expo-constants": "~58.0.13",
     "expo-linking": "~58.0.14",

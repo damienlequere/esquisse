@@ -23,6 +23,7 @@ import {
 } from "react";
 import type { SceneImages } from "../scenes.ts";
 import { Drawer } from "./Drawer.tsx";
+import { Effects } from "./Effects.tsx";
 import styles from "./Scene.module.css";
 
 type DrawerTabId = "narration" | "two" | "three";
@@ -109,6 +110,9 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
     <div className={styles.root} data-orientation={layout.landscape ? "landscape" : "portrait"}>
       <div className={styles.scene} style={{ "--image-ratio": layout.ratio } as CSSProperties}>
         <img className={styles.background} src={images.background.src} alt="" />
+        {scene.effects && (
+          <Effects effects={scene.effects} background={images.background} files={images.effects} />
+        )}
         <div className={styles.layer}>
           {layout.objects.map(({ object, box }) => (
             <button

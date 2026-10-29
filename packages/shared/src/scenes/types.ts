@@ -32,6 +32,13 @@ export type Character = {
   dialogue: { greeting: string; topics: Topic[]; farewell: string };
 };
 
+// An animation of the background: the shader of its kind is in effects.ts, its
+// images are assets/scenes/<scene>/<file>.webp (see effectFiles there). Its
+// kind is one of EffectKind, but read from scene.json it is only a string.
+// Firelight and glow are found by the generator from what detect describes.
+export type EffectKind = "firelight" | "sky" | "glow";
+export type Effect = { id: string; kind: string; detect?: string };
+
 export type Scene = {
   // What the scene was written from, by the generator (packages/generator).
   brief?: string;
@@ -46,6 +53,7 @@ export type Scene = {
   background: { prompt: string; details?: Detail[] };
   objects: SceneObject[];
   characters: Character[];
+  effects?: Effect[];
 };
 
 // Written by the generator: the detected boxes of the objects, by id, and the

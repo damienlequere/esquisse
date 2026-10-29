@@ -7,20 +7,31 @@ import type { ImageSourcePropType } from "react-native";
 export type SceneImages = {
   background: ImageSourcePropType;
   characters: Record<string, ImageSourcePropType>;
+  effects: Record<string, ImageSourcePropType[]>;
 };
 
 export const sceneImages = {
   chateau: {
     background: require("@esquisse/shared/assets/scenes/chateau/fond.webp"),
     characters: {},
+    effects: {},
   },
   foret: {
     background: require("@esquisse/shared/assets/scenes/foret/fond.webp"),
     characters: {},
+    effects: {},
   },
   tristram: {
     background: require("@esquisse/shared/assets/scenes/tristram/fond.webp"),
     characters: {},
+    effects: {
+      ciel: [
+        require("@esquisse/shared/assets/scenes/tristram/ciel.webp"),
+        require("@esquisse/shared/assets/scenes/tristram/ciel-devant.webp"),
+      ],
+      lueur: [require("@esquisse/shared/assets/scenes/tristram/lueur.webp")],
+      feu: [require("@esquisse/shared/assets/scenes/tristram/feu.webp")],
+    },
   },
 } satisfies Record<string, SceneImages>;
 
