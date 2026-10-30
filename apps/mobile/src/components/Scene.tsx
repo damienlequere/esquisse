@@ -73,6 +73,14 @@ const SLOT_LOOK = "rounded-[10px] border border-stone-100/15 bg-black/25";
 // translucent ground (the web's Scene.module.css has the same).
 const BOX_LOOK = "border-stone-100/30 bg-stone-950/85";
 
+// The same, as a style: NativeWind drops a className's border when the view
+// also gets a style, as an object's menu, placed where it was pressed.
+const BOX_STYLE = {
+  borderWidth: 1,
+  borderColor: "rgba(245,245,244,0.3)",
+  backgroundColor: "rgba(12,10,9,0.85)",
+};
+
 // The items' images, by id (see ITEMS in packages/shared).
 const ITEM_IMAGES: Record<string, ImageSourcePropType> = {
   pelle: require("@esquisse/shared/assets/items/pelle.webp"),
@@ -665,8 +673,11 @@ const ObjectMenu = ({
         entering={FadeIn.duration(150)}
         accessibilityLabel={sceneText.actionsOf(object.label)}
         onLayout={(event) => setSize(event.nativeEvent.layout)}
-        className={`absolute min-w-40 gap-1 rounded-3xl border p-1.5 ${BOX_LOOK}`}
-        style={size ? objectMenuPlace({ x, y }, size, screen) : { left: x, top: y, opacity: 0 }}
+        style={[
+          { position: "absolute", minWidth: 160, gap: 4, padding: 6, borderRadius: 24 },
+          BOX_STYLE,
+          size ? objectMenuPlace({ x, y }, size, screen) : { left: x, top: y, opacity: 0 },
+        ]}
       >
         {objectActions(object).map((action) => (
           <Choice
@@ -682,7 +693,9 @@ const ObjectMenu = ({
 };
 
 // A choice, as the ring menu's items: a pill, its stroke and its text half
-// seen; pressed, lit white (the web's Scene.module.css has the same).
+// seen; pressed, lit white (the web's Scene.module.css has the same). Its look
+// is a plain style, from its own pressed state: NativeWind's Pressable drops a
+// style given as a function.
 const Choice = ({
   label,
   role = "button",
@@ -691,24 +704,27 @@ const Choice = ({
   label: string;
   role?: "button" | "menuitem";
   onPress(): void;
-}) => (
-  <Pressable
-    accessibilityRole={role}
-    onPress={onPress}
-    style={({ pressed }) => ({
-      borderRadius: 999,
-      borderWidth: 1,
-      paddingHorizontal: 16,
-      paddingVertical: 10,
-      backgroundColor: pressed ? "#f5f5f4" : "transparent",
-      borderColor: pressed ? "#fff" : "rgba(245,245,244,0.3)",
-      boxShadow: pressed ? "0 0 14px rgba(255,255,255,0.6)" : undefined,
-    })}
-  >
-    {({ pressed }) => (
+}) => {
+  const [pressed, setPressed] = useState(false);
+  return (
+    <Pressable
+      accessibilityRole={role}
+      onPress={onPress}
+      onPressIn={() => setPressed(true)}
+      onPressOut={() => setPressed(false)}
+      style={{
+        borderRadius: 999,
+        borderWidth: 1,
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        backgroundColor: pressed ? "#f5f5f4" : "transparent",
+        borderColor: pressed ? "#fff" : "rgba(245,245,244,0.3)",
+        boxShadow: pressed ? "0 0 14px rgba(255,255,255,0.6)" : undefined,
+      }}
+    >
       <Text className={`font-serif text-base ${pressed ? "text-stone-950" : "text-stone-100/70"}`}>
         {label}
       </Text>
-    )}
-  </Pressable>
-);
+    </Pressable>
+  );
+};
