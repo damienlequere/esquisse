@@ -30,34 +30,7 @@ export type SceneAction =
   | { type: "leave" }
   | { type: "search"; object: SceneObject }
   | { type: "take"; item: string }
-  | { type: "stopSearching" }
-  | { type: "restore"; saved: unknown }
-  | { type: "saved" };
-
-// What a saved game keeps of a scene, on the device (see saveKey): the items
-// carried and what each object still holds.
-export type SavedGame = Pick<SceneState, "inventory" | "contents">;
-
-// Where each app keeps a scene's saved game: localStorage on the web,
-// AsyncStorage on mobile, as JSON.
-export const saveKey = (sceneId: string) => `esquisse:partie:${sceneId}`;
-
-export const savedGame = ({ inventory, contents }: SceneState): SavedGame => ({
-  inventory,
-  contents,
-});
-
-// A saved game as read back, if it holds what a SavedGame does.
-const strings = (value: unknown): value is string[] =>
-  Array.isArray(value) && value.every((v) => typeof v === "string");
-const readSaved = (saved: unknown): SavedGame | undefined => {
-  if (typeof saved !== "object" || saved === null) return undefined;
-  const { inventory, contents } = saved as Record<string, unknown>;
-  if (!strings(inventory) || typeof contents !== "object" || contents === null) return undefined;
-  const held = Object.entries(contents);
-  if (!held.every(([, items]) => strings(items))) return undefined;
-  return { inventory, contents: Object.fromEntries(held) as Record<string, string[]> };
-};
+  | { type: "stopSearching" };
 
 // Opening a scene, in ms: its title alone, then its intro fading in under it
 // (textFade); shortly after it has fully appeared (buttonDelay), whatever its
@@ -153,19 +126,6 @@ export const playScene = (state: SceneState, action: SceneAction): SceneState =>
     }
     case "stopSearching":
       return { ...state, searching: undefined };
-    case "restore": {
-      // Over what the scene starts with: an object it no longer has is left out.
-      const saved = readSaved(action.saved);
-      if (saved === undefined) return state;
-      const contents = { ...state.contents };
-      for (const id of Object.keys(contents)) {
-        const held = saved.contents[id];
-        if (held !== undefined) contents[id] = held;
-      }
-      return { ...state, inventory: saved.inventory.slice(0, INVENTORY_SLOTS.length), contents };
-    }
-    case "saved":
-      return { ...state, toast: toastOf(state, sceneText.saved) };
   }
 };
 
@@ -266,11 +226,10 @@ export const sceneText = {
   inventory: "Inventaire",
   // The ring menu's logbook.
   logbook: "Journal de bord",
-  // The ring menu's cogwheel, and the window it opens: save the game, or leave
-  // the scene for the home screen.
+  // The ring menu's cogwheel, and the window it opens: save the game (to come),
+  // or leave the scene for the home screen.
   gameMenu: "Menu général",
   save: "Sauvegarder la partie",
-  saved: "Partie sauvegardée",
   quit: "Quitter",
   emptySlot: "Emplacement vide",
   // An item in what an object holds, which goes to the inventory when pressed.

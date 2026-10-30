@@ -20,8 +20,6 @@ import {
   remainingTopics,
   type SceneData,
   type SceneObject,
-  savedGame,
-  saveKey,
   sceneLayout,
   sceneText,
 } from "@esquisse/shared";
@@ -74,39 +72,15 @@ const useNotTurned = (landscape: boolean) =>
     () => false,
   );
 
-export const Scene = ({
-  id,
-  data,
-  images,
-}: {
-  id: string;
-  data: SceneData;
-  images: SceneImages;
-}) => {
+export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }) => {
   const { scene } = data;
   const layout = sceneLayout(data);
-  const [state, dispatch] = useReducer(playScene, data, initialSceneState);
-  const { conversation, inventory, contents, searching, toast } = state;
-
-  // ── The game: saved on the device, resumed where it was ──────────────────────
-
+  const [{ conversation, inventory, contents, searching, toast }, dispatch] = useReducer(
+    playScene,
+    data,
+    initialSceneState,
+  );
   const router = useRouter();
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(saveKey(id));
-      if (saved !== null) dispatch({ type: "restore", saved: JSON.parse(saved) });
-    } catch {
-      // Nothing saved that can be read: the scene starts as it is.
-    }
-  }, [id]);
-  const save = () => {
-    try {
-      localStorage.setItem(saveKey(id), JSON.stringify(savedGame(state)));
-      dispatch({ type: "saved" });
-    } catch {
-      // Storage blocked or full: no toast, as nothing was saved.
-    }
-  };
 
   // The general menu's window, opened by the ring menu's cogwheel.
   const [gameMenuOpen, setGameMenuOpen] = useState(false);
@@ -298,19 +272,11 @@ export const Scene = ({
       )}
 
       {/* The general menu, opened by the ring menu's cogwheel: save the game
-          (it closes, a toast says so), or leave the scene for the home page. */}
+          (to come: it does nothing yet), or leave the scene for the home page. */}
       {gameMenuOpen && (
         <Window label={sceneText.gameMenu} onClose={() => setGameMenuOpen(false)}>
           <div className={`${styles.choices} ${styles.gameMenu}`}>
-            <button
-              type="button"
-              onClick={() => {
-                save();
-                setGameMenuOpen(false);
-              }}
-            >
-              {sceneText.save}
-            </button>
+            <button type="button">{sceneText.save}</button>
             <button type="button" onClick={() => router.push("/")}>
               {sceneText.quit}
             </button>

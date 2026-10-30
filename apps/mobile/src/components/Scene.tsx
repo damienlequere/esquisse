@@ -18,12 +18,9 @@ import {
   remainingTopics,
   type SceneData,
   type SceneObject,
-  savedGame,
-  saveKey,
   sceneLayout,
   sceneText,
 } from "@esquisse/shared";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { cssInterop } from "nativewind";
@@ -114,15 +111,7 @@ const Tip = ({ label }: { label: string }) => (
   </View>
 );
 
-export const Scene = ({
-  id,
-  data,
-  images,
-}: {
-  id: string;
-  data: SceneData;
-  images: SceneImages;
-}) => {
+export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }) => {
   const { scene } = data;
   const layout = sceneLayout(data);
   const insets = useSafeAreaInsets();
@@ -135,24 +124,14 @@ export const Scene = ({
     height: Math.max(screen.height, screen.width / layout.ratio),
   };
 
-  const [state, dispatch] = useReducer(playScene, data, initialSceneState);
-  const { conversation, inventory, contents, searching, toast } = state;
+  const [{ conversation, inventory, contents, searching, toast }, dispatch] = useReducer(
+    playScene,
+    data,
+    initialSceneState,
+  );
 
-  // The game: saved on the device, resumed where it was (the web has the same).
+  // Leaving the scene, from the general menu, for the home screen.
   const router = useRouter();
-  useEffect(() => {
-    AsyncStorage.getItem(saveKey(id))
-      .then((saved) => {
-        if (saved !== null) dispatch({ type: "restore", saved: JSON.parse(saved) });
-      })
-      // Nothing saved that can be read: the scene starts as it is.
-      .catch(() => {});
-  }, [id]);
-  const save = () =>
-    AsyncStorage.setItem(saveKey(id), JSON.stringify(savedGame(state)))
-      .then(() => dispatch({ type: "saved" }))
-      // Nothing saved: no toast.
-      .catch(() => {});
   const quit = () => (router.canGoBack() ? router.back() : router.replace("/"));
 
   // ── Dialogue: an open conversation, until it is left ─────────────────────────
@@ -369,17 +348,11 @@ export const Scene = ({
       )}
 
       {/* The general menu, opened by the ring menu's cogwheel: save the game
-          (it closes, a toast says so), or leave the scene for the home screen. */}
+          (to come: it does nothing yet), or leave the scene for the home screen. */}
       {gameMenuOpen && (
         <Window label={sceneText.gameMenu} onClose={() => setGameMenuOpen(false)}>
           <View className="min-w-56 gap-1.5">
-            <Choice
-              label={sceneText.save}
-              onPress={() => {
-                save();
-                setGameMenuOpen(false);
-              }}
-            />
+            <Choice label={sceneText.save} onPress={() => {}} />
             <Choice label={sceneText.quit} onPress={quit} />
           </View>
         </Window>

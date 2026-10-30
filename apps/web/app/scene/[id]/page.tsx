@@ -17,5 +17,5 @@ export async function generateMetadata({ params }: PageProps<"/scene/[id]">): Pr
 export default async function ScenePage({ params }: PageProps<"/scene/[id]">) {
   const { id } = await params;
   if (!isSceneId(id)) notFound();
-  return <Scene id={id} data={scenes[id]} images={sceneImages[id]} />;
+  return <Scene data={scenes[id]} images={sceneImages[id]} />;
 }
