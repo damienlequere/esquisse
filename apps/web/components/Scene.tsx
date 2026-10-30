@@ -39,6 +39,7 @@ import { Drawer } from "./Drawer.tsx";
 import { Effects } from "./Effects.tsx";
 import { RingMenu } from "./RingMenu.tsx";
 import styles from "./Scene.module.css";
+import { Toast } from "./Toast.tsx";
 
 type DrawerTabId = "inventory";
 
@@ -71,7 +72,7 @@ const useNotTurned = (landscape: boolean) =>
 export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }) => {
   const { scene } = data;
   const layout = sceneLayout(data);
-  const [{ conversation, inventory, contents, searching }, dispatch] = useReducer(
+  const [{ conversation, inventory, contents, searching, toast }, dispatch] = useReducer(
     playScene,
     data,
     initialSceneState,
@@ -380,6 +381,9 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
           </div>
         </div>
       )}
+
+      {/* What was just done, as taking an item: over the rest. */}
+      <Toast message={toast} />
     </div>
   );
 };

@@ -51,6 +51,7 @@ import type { SceneImages } from "../scenes.ts";
 import { Drawer } from "./Drawer.tsx";
 import { Effects } from "./Effects.tsx";
 import { RingMenu } from "./RingMenu.tsx";
+import { Toast } from "./Toast.tsx";
 
 // Same scene as the web one (apps/web/components/Scene.tsx): the background
 // covers the screen, each object is one action, each character opens a dialogue.
@@ -132,7 +133,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
     height: Math.max(screen.height, screen.width / layout.ratio),
   };
 
-  const [{ conversation, inventory, contents, searching }, dispatch] = useReducer(
+  const [{ conversation, inventory, contents, searching, toast }, dispatch] = useReducer(
     playScene,
     data,
     initialSceneState,
@@ -505,6 +506,9 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
           </Animated.View>
         </Animated.View>
       )}
+
+      {/* What was just done, as taking an item: over the rest. */}
+      <Toast message={toast} />
 
       {intro && (
         <Animated.View

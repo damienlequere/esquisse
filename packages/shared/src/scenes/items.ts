@@ -3,11 +3,16 @@
 // assets/items/<id>.webp, painted on green and keyed out like the satchel
 // (packages/generator/sources/items/<id>.jpg), listed by each app.
 
-export type Item = { name: string };
+// feminine: its name takes the feminine (« Pelle ajoutée »).
+export type Item = { name: string; feminine?: boolean };
 
 export const ITEMS: Record<string, Item> = {
-  pelle: { name: "Pelle" },
+  pelle: { name: "Pelle", feminine: true },
 };
 
 // An item's name, or its id if it is not listed.
 export const itemName = (id: string) => ITEMS[id]?.name ?? id;
+
+// What a toast says when an item is taken.
+export const itemAdded = (id: string) =>
+  `${itemName(id)} ${ITEMS[id]?.feminine ? "ajoutée" : "ajouté"} à l'inventaire`;

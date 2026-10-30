@@ -1,8 +1,9 @@
+import { itemAdded } from "./items.ts";
 import type { Character, ObjectAction, SceneData, SceneObject, Topic } from "./types.ts";
 
 // What a scene shows as it is played, the same in both apps: the narration
 // band, the open conversation if any, what the player carries, and what an
-// object being searched holds. The apps only draw it, and turn their
+// object being searched holds, and the last toast. The apps only draw it, and turn their
 // own inputs (Escape, Android's back button…) into actions.
 
 export type Line = { text: string; player?: boolean };
@@ -18,6 +19,8 @@ export type SceneState = {
   contents: Record<string, string[]>;
   // The object whose contents are shown, if any.
   searching?: SceneObject;
+  // What the last toast says; key changes with each one, so it shows again.
+  toast?: { text: string; key: number };
 };
 
 export type SceneAction =
@@ -41,6 +44,10 @@ export const INTRO = {
   buttonFade: 800,
   fade: 1200,
 };
+
+// A toast, in ms: it slides in at the top of the frame, stays, and fades out,
+// all in duration; fade is its entrance and its exit. Each app draws it.
+export const TOAST = { duration: 2500, fade: 250 };
 
 // The arrow which enters the scene, pointing right: a stroke in a 24 × 24 viewBox.
 export const ENTER_ARROW = "M4,12 H20 M13,5 L20,12 L13,19";
@@ -109,6 +116,7 @@ export const playScene = (state: SceneState, action: SceneAction): SceneState =>
         ...state,
         inventory: [...state.inventory, action.item],
         contents: { ...state.contents, [object.id]: held.filter((_, i) => i !== at) },
+        toast: { text: itemAdded(action.item), key: (state.toast?.key ?? 0) + 1 },
       };
     }
     case "stopSearching":
