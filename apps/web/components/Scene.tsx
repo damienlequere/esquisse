@@ -17,7 +17,6 @@ import {
   objectMenuPlace,
   placeStyle,
   playScene,
-  RING_ITEMS,
   remainingTopics,
   type SceneData,
   type SceneObject,
@@ -208,12 +207,10 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
       </div>
 
       {/* The ring menu, in the bottom right corner: its satchel opens the
-          inventory; what its other items, the logbook among them, do is to
-          come. */}
+          inventory; what its logbook does is to come. */}
       <RingMenu
         items={[
           { id: "inventory", label: sceneText.inventory, image: satchel.src },
-          ...RING_ITEMS.map((item) => ({ id: item, label: item })),
           { id: "logbook", label: sceneText.logbook, image: logbook.src },
         ]}
         onChoose={(item) => {

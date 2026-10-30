@@ -15,7 +15,6 @@ import {
   objectMenuPlace,
   placeStyle,
   playScene,
-  RING_ITEMS,
   remainingTopics,
   type SceneData,
   type SceneObject,
@@ -277,8 +276,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
       )}
 
       {/* The ring menu, in the bottom right corner: its satchel opens the
-          inventory; what its other items, the logbook among them, do is to
-          come. */}
+          inventory; what its logbook does is to come. */}
       <RingMenu
         items={[
           {
@@ -286,7 +284,6 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
             label: sceneText.inventory,
             image: require("@esquisse/shared/assets/ui/besace.webp"),
           },
-          ...RING_ITEMS.map((item) => ({ id: item, label: item })),
           {
             id: "logbook",
             label: sceneText.logbook,

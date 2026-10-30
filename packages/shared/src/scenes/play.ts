@@ -171,13 +171,11 @@ export const CONTAINER_COLUMNS = 3;
 
 // The ring menu, in the bottom right corner of a scene: a circle which, held,
 // spreads its items in a quarter of a circle around it, from its left to above
-// it, clockwise; the one under the finger when it is let go is chosen. Its first
-// item is the inventory's satchel, then these, to come, then the logbook (what
-// it opens is to come too). The same in px on both
-// apps: the circle's and an item's diameters, the least distance from the
+// it, clockwise; the one under the finger when it is let go is chosen: the
+// inventory's satchel, then the logbook (what it opens is to come). The same in
+// px on both apps: the circle's and an item's diameters, the least distance from the
 // circle's center to an item's, the least room between two items, and how far
 // from its center an item is still under the finger.
-export const RING_ITEMS = ["1"];
 export const RING = { size: 56, item: 44, radius: 88, space: 16, hit: 32 };
 
 // The angle between two items, and the distance from the circle's center to
