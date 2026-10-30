@@ -156,8 +156,8 @@
   --panel: min(16rem, 30cqw);
 }
 
-/* The inventory: its title, then its slots, rounded squares, empty for now
-   (INVENTORY_COLUMNS in packages/shared). In the band, two rows of six, as wide
+/* The inventory: its title, then its slots, rounded squares, holding the items
+   carried (INVENTORY_COLUMNS in packages/shared). In the band, two rows of six, as wide
    as the band allows and no taller than it; on the right, three columns. */
 .inventory h2 {
   margin: 0 0 0.6rem;
@@ -185,12 +185,55 @@
   grid-template-columns: repeat(3, 1fr);
 }
 
-.inventory li {
+.inventory li,
+.contents li {
   aspect-ratio: 1;
   border: 1px solid rgb(255 255 255 / 0.1);
   border-radius: 0.6rem;
   background: rgb(255 255 255 / 0.04);
   box-shadow: inset 0 0.15rem 0.4rem rgb(0 0 0 / 0.5);
+}
+
+/* An item in a slot, the whole slot. */
+.inventory img,
+.contents img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 12%;
+  object-fit: contain;
+  filter: drop-shadow(0 0.15rem 0.3rem rgb(0 0 0 / 0.6));
+}
+
+/* What an object searched holds (see the dialogue's panel below): three rows
+   of three slots (CONTAINER_COLUMNS in packages/shared), like the inventory's;
+   an item pressed goes to the inventory, it glows white under the pointer. */
+.slots {
+  display: grid;
+  grid-template-columns: repeat(3, 4.5rem);
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.take {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: inherit;
+  background: none;
+}
+
+.take:hover img,
+.take:focus-visible img {
+  filter: drop-shadow(0 0 0.5rem rgb(255 255 255 / 0.7));
+}
+
+.take:focus-visible {
+  outline: none;
 }
 
 .appear {

@@ -1,12 +1,16 @@
 import {
   type Box,
+  CONTAINER_COLUMNS,
+  CONTAINER_SLOTS,
   ENTER_ARROW,
   INTRO,
   INTRO_HOLD,
   INVENTORY_COLUMNS,
   INVENTORY_SLOTS,
   initialSceneState,
+  itemName,
   type ObjectAction,
+  objectAction,
   objectActions,
   objectMenuPlace,
   placeStyle,
@@ -24,6 +28,7 @@ import { useEffect, useReducer, useRef, useState } from "react";
 import {
   BackHandler,
   Image,
+  type ImageSourcePropType,
   type LayoutRectangle,
   Platform,
   Pressable,
@@ -65,7 +70,24 @@ const BAND = 0.22;
 const SLOT_GAP = 8;
 const SLOTS_ROOM = 64;
 
+// A slot of what an object searched holds (the web's Scene.module.css has the same).
+const CONTAINER_SLOT = 72;
+
 type DrawerTabId = "inventory";
+
+// The items' images, by id (see ITEMS in packages/shared).
+const ITEM_IMAGES: Record<string, ImageSourcePropType> = {
+  pelle: require("@esquisse/shared/assets/items/pelle.webp"),
+};
+
+// An item in a slot, the whole slot (the web's Scene.module.css has the same).
+const ItemImage = ({ item }: { item: string }) => (
+  <Image
+    source={ITEM_IMAGES[item]}
+    resizeMode="contain"
+    style={{ width: "76%", height: "76%", margin: "12%" }}
+  />
+);
 
 const panelWidth = (screenWidth: number) => Math.min(256, screenWidth * 0.3);
 
@@ -110,7 +132,11 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
     height: Math.max(screen.height, screen.width / layout.ratio),
   };
 
-  const [{ conversation }, dispatch] = useReducer(playScene, data, initialSceneState);
+  const [{ conversation, inventory, contents, searching }, dispatch] = useReducer(
+    playScene,
+    data,
+    initialSceneState,
+  );
 
   // ── Dialogue: an open conversation, until it is left ─────────────────────────
 
@@ -141,6 +167,19 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
     return () => sub.remove();
   }, [inConversation]);
 
+  // What an object searched holds, until it is closed: Android's back button
+  // closes it too.
+  const isSearching = searching !== undefined;
+  const stopSearching = () => dispatch({ type: "stopSearching" });
+  useEffect(() => {
+    if (!isSearching || Platform.OS !== "android") return;
+    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+      dispatch({ type: "stopSearching" });
+      return true;
+    });
+    return () => sub.remove();
+  }, [isSearching]);
+
   const panel = screen ? panelWidth(screen.width) : 0;
   const band = screen ? screen.height * BAND : 0;
 
@@ -167,8 +206,8 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
     paddingLeft: 20,
   };
 
-  // The inventory: its title, then its slots, rounded squares, empty for now
-  // (see INVENTORY_COLUMNS): in the band, two rows, as wide as the band allows
+  // The inventory: its title, then its slots, rounded squares, holding the
+  // items carried (see INVENTORY_COLUMNS): in the band, two rows, as wide as the band allows
   // and no taller than it (SLOTS_ROOM is what the band keeps for its padding and
   // the title); on the right, three columns (the web's Scene.module.css has the same).
   const columns = layout.landscape ? INVENTORY_COLUMNS.right : INVENTORY_COLUMNS.bottom;
@@ -180,7 +219,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
       layout.landscape ? Number.POSITIVE_INFINITY : (band - SLOTS_ROOM - SLOT_GAP) / 2,
     ),
   );
-  const inventory = (
+  const inventoryPanel = (
     <ScrollView
       contentContainerClassName={layout.landscape ? undefined : "px-5 pt-4"}
       contentContainerStyle={
@@ -197,14 +236,20 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
           style={{ gap: SLOT_GAP }}
           onLayout={(event) => setSlotsWidth(event.nativeEvent.layout.width)}
         >
-          {INVENTORY_SLOTS.map((slot) => (
-            <View
-              key={slot}
-              accessibilityLabel={sceneText.emptySlot}
-              className="rounded-[10px] border border-white/10 bg-white/5"
-              style={{ width: slotWidth, height: slotWidth }}
-            />
-          ))}
+          {INVENTORY_SLOTS.map((slot, i) => {
+            const item = inventory[i];
+            return (
+              <View
+                key={slot}
+                accessible
+                accessibilityLabel={item === undefined ? sceneText.emptySlot : itemName(item)}
+                className="rounded-[10px] border border-white/10 bg-white/5"
+                style={{ width: slotWidth, height: slotWidth }}
+              >
+                {item !== undefined && <ItemImage item={item} />}
+              </View>
+            );
+          })}
         </View>
       </Animated.View>
     </ScrollView>
@@ -223,8 +268,8 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
 
       {screen && image && (
         <View
-          importantForAccessibility={inConversation ? "no-hide-descendants" : "auto"}
-          accessibilityElementsHidden={inConversation}
+          importantForAccessibility={inConversation || isSearching ? "no-hide-descendants" : "auto"}
+          accessibilityElementsHidden={inConversation || isSearching}
           style={{
             position: "absolute",
             width: image.width,
@@ -313,7 +358,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
         hideButtons
         open={drawerTab}
         onOpen={setDrawerTab}
-        tabs={[{ id: "inventory", label: sceneText.inventory, content: inventory }]}
+        tabs={[{ id: "inventory", label: sceneText.inventory, content: inventoryPanel }]}
       />
 
       {/* The ring menu, in the bottom right corner: pressing it folds the
@@ -341,10 +386,79 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
           screen={screen}
           onClose={() => setMenu(undefined)}
           onAction={(action) => {
-            dispatch({ type: "look", title: action.label, text: action.text });
+            dispatch(objectAction(menu.object, action));
             setMenu(undefined);
           }}
         />
+      )}
+
+      {/* What the object searched holds: a press on an item puts it in the
+          inventory. Like a conversation, it takes the scene. */}
+      {searching && (
+        <Animated.View
+          entering={FadeIn.duration(200)}
+          className={`absolute inset-0 justify-end bg-black/35 ${layout.landscape ? "flex-row" : ""}`}
+        >
+          <Pressable
+            className="absolute inset-0"
+            accessibilityLabel={sceneText.close}
+            accessibilityRole="button"
+            onPress={stopSearching}
+          />
+          <Animated.View
+            entering={FadeInDown.duration(250)}
+            accessibilityViewIsModal
+            className={layout.landscape ? "bg-stone-900" : "rounded-t-3xl bg-stone-900 p-5"}
+            style={
+              layout.landscape
+                ? { width: panel, ...panelPadding }
+                : { paddingBottom: Math.max(20, insets.bottom) }
+            }
+          >
+            <Text
+              accessibilityRole="header"
+              className="mb-3 font-serif text-sm uppercase tracking-widest text-amber-300"
+            >
+              {searching.label}
+            </Text>
+            <View
+              className="flex-row flex-wrap"
+              style={{
+                gap: SLOT_GAP,
+                width: CONTAINER_COLUMNS * CONTAINER_SLOT + (CONTAINER_COLUMNS - 1) * SLOT_GAP,
+              }}
+            >
+              {CONTAINER_SLOTS.map((slot, i) => {
+                const item = contents[searching.id]?.[i];
+                const box = { width: CONTAINER_SLOT, height: CONTAINER_SLOT };
+                const look = "rounded-[10px] border border-white/10 bg-white/5";
+                return item === undefined ? (
+                  <View
+                    key={slot}
+                    accessible
+                    accessibilityLabel={sceneText.emptySlot}
+                    className={look}
+                    style={box}
+                  />
+                ) : (
+                  <Pressable
+                    key={slot}
+                    accessibilityRole="button"
+                    accessibilityLabel={sceneText.take(itemName(item))}
+                    onPress={() => dispatch({ type: "take", item })}
+                    className={`${look} active:bg-white/15`}
+                    style={box}
+                  >
+                    <ItemImage item={item} />
+                  </Pressable>
+                );
+              })}
+            </View>
+            <View className="mt-3">
+              <Choice label={sceneText.close} onPress={stopSearching} />
+            </View>
+          </Animated.View>
+        </Animated.View>
       )}
 
       {/* Dialogue: an open conversation takes the scene, the background waits. */}

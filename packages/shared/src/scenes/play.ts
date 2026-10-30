@@ -1,7 +1,8 @@
 import type { Character, ObjectAction, SceneData, SceneObject, Topic } from "./types.ts";
 
 // What a scene shows as it is played, the same in both apps: the narration
-// band, and the open conversation if any. The apps only draw it, and turn their
+// band, the open conversation if any, what the player carries, and what an
+// object being searched holds. The apps only draw it, and turn their
 // own inputs (Escape, Android's back button…) into actions.
 
 export type Line = { text: string; player?: boolean };
@@ -11,13 +12,22 @@ export type SceneState = {
   // key changes with each narration, so the band plays its entrance again.
   narration: { title: string; text: string; key: number };
   conversation?: Conversation;
+  // The items carried, in the order taken, one per inventory slot.
+  inventory: string[];
+  // What each object still holds, by its id.
+  contents: Record<string, string[]>;
+  // The object whose contents are shown, if any.
+  searching?: SceneObject;
 };
 
 export type SceneAction =
   | { type: "look"; title: string; text: string }
   | { type: "talk"; character: Character }
   | { type: "ask"; topic: Topic }
-  | { type: "leave" };
+  | { type: "leave" }
+  | { type: "search"; object: SceneObject }
+  | { type: "take"; item: string }
+  | { type: "stopSearching" };
 
 // Opening a scene, in ms: its title alone, then its intro fading in under it
 // (textFade); shortly after it has fully appeared (buttonDelay), whatever its
@@ -40,6 +50,12 @@ export const INTRO_HOLD = INTRO.textDelay + INTRO.textFade + INTRO.buttonDelay;
 
 export const initialSceneState = ({ scene }: SceneData): SceneState => ({
   narration: { title: scene.title, text: scene.intro, key: 0 },
+  inventory: [],
+  contents: Object.fromEntries(
+    scene.objects.flatMap(({ id, contents }) =>
+      contents ? [[id, contents.slice(0, CONTAINER_SLOTS.length)]] : [],
+    ),
+  ),
 });
 
 const narrate = (state: SceneState, title: string, text: string) => ({
@@ -75,9 +91,36 @@ export const playScene = (state: SceneState, action: SceneAction): SceneState =>
     case "leave":
       // The character's farewell stays in the narration band.
       if (c === undefined) return state;
-      return { narration: narrate(state, c.character.name, c.character.dialogue.farewell) };
+      return {
+        ...state,
+        conversation: undefined,
+        narration: narrate(state, c.character.name, c.character.dialogue.farewell),
+      };
+    case "search":
+      return { ...state, searching: action.object };
+    case "take": {
+      // From the object searched, while the inventory has room.
+      const object = state.searching;
+      const held = object && state.contents[object.id];
+      const at = held?.indexOf(action.item) ?? -1;
+      if (object === undefined || held === undefined || at < 0) return state;
+      if (state.inventory.length >= INVENTORY_SLOTS.length) return state;
+      return {
+        ...state,
+        inventory: [...state.inventory, action.item],
+        contents: { ...state.contents, [object.id]: held.filter((_, i) => i !== at) },
+      };
+    }
+    case "stopSearching":
+      return { ...state, searching: undefined };
   }
 };
+
+// What an object's action does: shows what it holds, or tells its text.
+export const objectAction = (object: SceneObject, action: ObjectAction): SceneAction =>
+  action.search
+    ? { type: "search", object }
+    : { type: "look", title: action.label, text: action.text ?? "" };
 
 // The actions an object's menu offers: its own, or its label and its text.
 export const objectActions = (object: SceneObject): ObjectAction[] =>
@@ -106,10 +149,16 @@ export const objectMenuPlace = (
   };
 };
 
-// The inventory's slots, by number, empty for now, the same in both apps: two
-// rows of six in the band at the bottom, three columns in the panel on the right.
+// The inventory's slots, by number, the same in both apps: two rows of six in
+// the band at the bottom, three columns in the panel on the right. The items
+// carried fill them in the order taken.
 export const INVENTORY_SLOTS = Array.from({ length: 12 }, (_, i) => i + 1);
 export const INVENTORY_COLUMNS = { bottom: 6, right: 3 };
+
+// What an object holds, shown when it is searched: three rows of three slots,
+// the same in both apps. An item pressed goes to the inventory.
+export const CONTAINER_SLOTS = Array.from({ length: 9 }, (_, i) => i + 1);
+export const CONTAINER_COLUMNS = 3;
 
 // The ring menu, in the bottom right corner of a scene: a circle which, held,
 // spreads its items in a quarter of a circle around it, from its left to above
@@ -162,6 +211,9 @@ export const sceneText = {
   // The ring menu's satchel, and the drawer's panel it opens.
   inventory: "Inventaire",
   emptySlot: "Emplacement vide",
+  // An item in what an object holds, which goes to the inventory when pressed.
+  take: (name: string) => `Prendre : ${name}`,
+  close: "Fermer",
   // The ring menu's circle, for screen readers.
   ringMenu: "Menu",
   // When the screen is not turned like the scene.

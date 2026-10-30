@@ -57,7 +57,9 @@ clickable scene, ported from protagonist's `prototypes/scene-cliquable`: the
 place's image fills the frame, each object is a clickable part of the image,
 which opens a menu of its actions next to where it was clicked, and is slightly
 overexposed while it is open (not when pointed at) (`actions` in `scene.json`; without them, its
-`label` and `text` are its only action), and the characters, clickable too, open
+`label` and `text` are its only action; an action with `search` shows
+instead what the object holds, `contents`, up to nine items listed in `ITEMS`
+in packages/shared, each of which goes to the inventory when pressed), and the characters, clickable too, open
 a dialogue. An action's text goes to the text panel, which it does not open. On the web, the frame adapts to the screen, like any page under
 `app/scene/`; in the mobile app, the scene takes the whole screen. A scene opens
 on its title, in the middle, on black; its intro fades in under it, and once it

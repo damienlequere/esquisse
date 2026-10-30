@@ -32,6 +32,25 @@
           "text": "La porte de l'auberge est fermée, mais derrière le bois tu entends le crépitement d'un feu et le raclement d'un banc qu'on tire. Les voix se taisent d'un coup quand tu frappes. Un long silence, puis un verrou qu'on tire lentement, et par l'entrebâillement, un œil méfiant qui te détaille de la tête aux bottes avant qu'une voix rauque ne grogne : « On ne sert plus après la nuit tombée. Sauf ceux qui ont des nouvelles de la cathédrale. »"
         }
       ]
+    },
+    {
+      "id": "tonneau",
+      "zone": {
+        "x0": 0.0,
+        "y0": 0.71,
+        "x1": 0.1,
+        "y1": 0.78
+      },
+      "paint": "Le tonneau debout au premier plan à gauche, devant l'auberge : un vieux tonneau de chêne noirci, cerclé de fer rouillé, aux douves fendues.",
+      "detect": "the upright wooden barrel in the bottom left corner, in front of the inn (the leftmost barrel)",
+      "label": "Le tonneau",
+      "actions": [
+        {
+          "label": "Fouiller",
+          "search": true
+        }
+      ],
+      "contents": ["pelle"]
     }
   ],
   "characters": [],

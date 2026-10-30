@@ -6,8 +6,9 @@ export type Box = { x0: number; y0: number; x1: number; y1: number };
 export type Topic = { ask: string; answer: string };
 
 // What can be done with an object, offered in its menu: the action's label, and
-// what the player then finds out.
-export type ObjectAction = { label: string; text: string };
+// what the player then finds out; with search, it shows what the object holds
+// instead (see contents).
+export type ObjectAction = { label: string; text?: string; search?: boolean };
 
 export type SceneObject = {
   id: string;
@@ -20,6 +21,9 @@ export type SceneObject = {
   label: string;
   text?: string;
   actions?: ObjectAction[];
+  // What it holds, by item (see ITEMS), up to CONTAINER_SLOTS: shown by an
+  // action with search, taken one by one into the inventory.
+  contents?: string[];
 };
 
 // A detail for realism, retouched into the background, never clickable.

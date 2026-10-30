@@ -2,12 +2,15 @@
 
 import {
   type Character,
+  CONTAINER_SLOTS,
   ENTER_ARROW,
   INTRO,
   INTRO_HOLD,
   INVENTORY_SLOTS,
   initialSceneState,
+  itemName,
   type ObjectAction,
+  objectAction,
   objectActions,
   objectMenuPlace,
   placeStyle,
@@ -19,6 +22,7 @@ import {
   sceneLayout,
   sceneText,
 } from "@esquisse/shared";
+import shovel from "@esquisse/shared/assets/items/pelle.webp";
 import satchel from "@esquisse/shared/assets/ui/besace.webp";
 import {
   type CSSProperties,
@@ -37,6 +41,9 @@ import { RingMenu } from "./RingMenu.tsx";
 import styles from "./Scene.module.css";
 
 type DrawerTabId = "inventory";
+
+// The items' images, by id (see ITEMS in packages/shared).
+const ITEM_IMAGES: Record<string, string> = { pelle: shovel.src };
 
 // Clickable scene: the background covers the frame, each object is one action,
 // each character opens a dialogue. Everything is placed in % of the image (see
@@ -64,7 +71,11 @@ const useNotTurned = (landscape: boolean) =>
 export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }) => {
   const { scene } = data;
   const layout = sceneLayout(data);
-  const [{ conversation }, dispatch] = useReducer(playScene, data, initialSceneState);
+  const [{ conversation, inventory, contents, searching }, dispatch] = useReducer(
+    playScene,
+    data,
+    initialSceneState,
+  );
 
   // The drawer shows the inventory, opened by the ring menu's satchel; it can be
   // folded to see the whole image. It starts folded.
@@ -148,6 +159,28 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
     return () => window.removeEventListener("keydown", onKey);
   }, [inConversation]);
 
+  // ── Searching: what an object holds, until it is closed ──────────────────────
+
+  const contentsRef = useRef<HTMLDivElement>(null);
+  const stopSearching = () => {
+    dispatch({ type: "stopSearching" });
+    menuFrom.current?.focus();
+  };
+
+  // Escape closes it.
+  const isSearching = searching !== undefined;
+  useEffect(() => {
+    if (!isSearching) return;
+    contentsRef.current?.querySelector("button")?.focus();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      dispatch({ type: "stopSearching" });
+      menuFrom.current?.focus();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isSearching]);
+
   return (
     <div
       ref={rootRef}
@@ -211,9 +244,16 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
               <section className={`${styles.inventory} ${styles.appear}`}>
                 <h2>{sceneText.inventory}</h2>
                 <ul>
-                  {INVENTORY_SLOTS.map((slot) => (
-                    <li key={slot} aria-label={sceneText.emptySlot} />
-                  ))}
+                  {INVENTORY_SLOTS.map((slot, i) => {
+                    const item = inventory[i];
+                    return item === undefined ? (
+                      <li key={slot} aria-label={sceneText.emptySlot} />
+                    ) : (
+                      <li key={slot} aria-label={itemName(item)}>
+                        <img src={ITEM_IMAGES[item]} alt="" draggable={false} />
+                      </li>
+                    );
+                  })}
                 </ul>
               </section>
             ),
@@ -241,7 +281,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
           y={menu.y}
           onClose={closeMenu}
           onAction={(action) => {
-            dispatch({ type: "look", title: action.label, text: action.text });
+            dispatch(objectAction(menu.object, action));
             closeMenu();
           }}
         />
@@ -256,6 +296,52 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
         </span>
         <p>{layout.landscape ? sceneText.turnLandscape : sceneText.turnPortrait}</p>
       </div>
+
+      {/* What the object searched holds: a press on an item puts it in the
+          inventory. Like a conversation, it takes the scene. */}
+      {searching && (
+        // biome-ignore lint/a11y/useKeyWithClickEvents lint/a11y/noStaticElementInteractions: Escape closes it too
+        <div
+          className={styles.dialogue}
+          onClick={(event) => {
+            if (event.target === event.currentTarget) stopSearching();
+          }}
+        >
+          <div
+            ref={contentsRef}
+            className={`${styles.panel} ${styles.contents}`}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="contents-name"
+          >
+            <h2 id="contents-name">{searching.label}</h2>
+            <ul className={styles.slots}>
+              {CONTAINER_SLOTS.map((slot, i) => {
+                const item = contents[searching.id]?.[i];
+                return item === undefined ? (
+                  <li key={slot} aria-label={sceneText.emptySlot} />
+                ) : (
+                  <li key={slot}>
+                    <button
+                      type="button"
+                      className={styles.take}
+                      aria-label={sceneText.take(itemName(item))}
+                      onClick={() => dispatch({ type: "take", item })}
+                    >
+                      <img src={ITEM_IMAGES[item]} alt="" draggable={false} />
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+            <div className={styles.choices}>
+              <button type="button" onClick={stopSearching}>
+                {sceneText.close}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {conversation && (
         // biome-ignore lint/a11y/useKeyWithClickEvents lint/a11y/noStaticElementInteractions: Escape closes it too
