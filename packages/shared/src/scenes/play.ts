@@ -186,7 +186,7 @@ export const CONTAINER_COLUMNS = 3;
 // circle's and an item's diameters, the least distance from the circle's
 // center to an item's, the least room between two items, and how far from its
 // center an item is still under the finger.
-export const RING = { size: 56, item: 44, radius: 88, space: 16, hit: 32 };
+export const RING = { size: 64, item: 44, radius: 88, space: 16, hit: 32 };
 
 export type Ring = typeof RING;
 
