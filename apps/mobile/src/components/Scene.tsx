@@ -277,7 +277,8 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
       )}
 
       {/* The ring menu, in the bottom right corner: its satchel opens the
-          inventory; what its other items do is to come. */}
+          inventory; what its other items, the logbook among them, do is to
+          come. */}
       <RingMenu
         items={[
           {
@@ -286,6 +287,11 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
             image: require("@esquisse/shared/assets/ui/besace.webp"),
           },
           ...RING_ITEMS.map((item) => ({ id: item, label: item })),
+          {
+            id: "logbook",
+            label: sceneText.logbook,
+            image: require("@esquisse/shared/assets/ui/journal.webp"),
+          },
         ]}
         onChoose={(item) => {
           if (item === "inventory") setInventoryOpen(true);

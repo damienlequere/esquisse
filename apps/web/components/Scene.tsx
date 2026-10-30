@@ -26,6 +26,7 @@ import {
 } from "@esquisse/shared";
 import shovel from "@esquisse/shared/assets/items/pelle.webp";
 import satchel from "@esquisse/shared/assets/ui/besace.webp";
+import logbook from "@esquisse/shared/assets/ui/journal.webp";
 import {
   type CSSProperties,
   type MouseEvent,
@@ -207,11 +208,13 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
       </div>
 
       {/* The ring menu, in the bottom right corner: its satchel opens the
-          inventory; what its other items do is to come. */}
+          inventory; what its other items, the logbook among them, do is to
+          come. */}
       <RingMenu
         items={[
           { id: "inventory", label: sceneText.inventory, image: satchel.src },
           ...RING_ITEMS.map((item) => ({ id: item, label: item })),
+          { id: "logbook", label: sceneText.logbook, image: logbook.src },
         ]}
         onChoose={(item) => {
           if (item === "inventory") setInventoryOpen(true);

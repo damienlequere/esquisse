@@ -148,6 +148,8 @@
   position: absolute;
   inset: -20%;
   width: 140%;
+  /* Tailwind's base would keep it as wide as the circle. */
+  max-width: none;
   height: 140%;
   object-fit: contain;
   filter: drop-shadow(0 0.3rem 0.5rem rgb(0 0 0 / 0.7));
