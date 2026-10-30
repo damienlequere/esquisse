@@ -1,7 +1,5 @@
 // Written by packages/generator/src/generate-scene.ts: do not edit by hand.
 
-import chateauFond from "@esquisse/shared/assets/scenes/chateau/fond.webp";
-import foretFond from "@esquisse/shared/assets/scenes/foret/fond.webp";
 import tristramCiel from "@esquisse/shared/assets/scenes/tristram/ciel.webp";
 import tristramCielDevant from "@esquisse/shared/assets/scenes/tristram/ciel-devant.webp";
 import tristramFeu from "@esquisse/shared/assets/scenes/tristram/feu.webp";
@@ -19,16 +17,6 @@ export type SceneImages = {
 };
 
 export const sceneImages = {
-  chateau: {
-    background: chateauFond,
-    characters: {},
-    effects: {},
-  },
-  foret: {
-    background: foretFond,
-    characters: {},
-    effects: {},
-  },
   tristram: {
     background: tristramFond,
     characters: {},

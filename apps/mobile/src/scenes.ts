@@ -11,16 +11,6 @@ export type SceneImages = {
 };
 
 export const sceneImages = {
-  chateau: {
-    background: require("@esquisse/shared/assets/scenes/chateau/fond.webp"),
-    characters: {},
-    effects: {},
-  },
-  foret: {
-    background: require("@esquisse/shared/assets/scenes/foret/fond.webp"),
-    characters: {},
-    effects: {},
-  },
   tristram: {
     background: require("@esquisse/shared/assets/scenes/tristram/fond.webp"),
     characters: {},
