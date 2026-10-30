@@ -181,7 +181,7 @@ export const CONTAINER_COLUMNS = 3;
 // The ring menu, in the bottom right corner of a scene: a circle which, held,
 // spreads its items in a quarter of a circle around it, from its left to above
 // it, clockwise; the one under the finger when it is let go is chosen: the
-// inventory's satchel, the logbook (what it opens is to come), then the
+// inventory's backpack, the logbook's page and quill, then the
 // cogwheel of the general menu. The same on both apps, in px on a phone: the
 // circle's and an item's diameters, the least distance from the circle's
 // center to an item's, the least room between two items, and how far from its
@@ -212,14 +212,15 @@ export const ringSizes = (width: number, height: number): Ring => {
 };
 
 // The ring menu's circle, and its items, drawn as the arrow to enter is: a
-// stroke in a 24 × 24 viewBox. A circle with a smaller one in it; a satchel, a
-// book, a cogwheel.
+// stroke in a 24 × 24 viewBox. A circle with a smaller one in it; a backpack,
+// a page with a quill across it, a cogwheel.
 export const RING_BUTTON =
   "M21,12 A9,9 0 1 1 3,12 A9,9 0 1 1 21,12 M15,12 A3,3 0 1 1 9,12 A3,3 0 1 1 15,12";
 export const RING_ICONS = {
   inventory:
-    "M3,9 H21 V18 A2,2 0 0 1 19,20 H5 A2,2 0 0 1 3,18 Z M3,9 V11 A2,2 0 0 0 5,13 H19 A2,2 0 0 0 21,11 V9 M12,13 V15 M8,9 V7 A4,3 0 0 1 16,7 V9",
-  logbook: "M5,20 V5 A1,1 0 0 1 6,4 H19 V17 H7 A2,2 0 0 0 5,19 A1,1 0 0 0 6,20 H19 M9,8 H15",
+    "M6,10 A6,5 0 0 1 18,10 V19 A2,2 0 0 1 16,21 H8 A2,2 0 0 1 6,19 Z M10,5.3 V4.5 A2,2 0 0 1 14,4.5 V5.3 M6,11 H18 M9,21 V16 A1,1 0 0 1 10,15 H14 A1,1 0 0 1 15,16 V21 M12,15 V17 M6,12 A2,2 0 0 0 4,14 V18 A1,1 0 0 0 5,19 H6 M18,12 A2,2 0 0 1 20,14 V18 A1,1 0 0 1 19,19 H18",
+  logbook:
+    "M3,4 A1,1 0 0 1 4,3 H11 L14,6 V20 A1,1 0 0 1 13,21 H4 A1,1 0 0 1 3,20 Z M11,3 V6 H14 M6,9 H10 M6,12 H10 M6,15 H8 M9,17 L21,3 M13.3,12 C12.5,7 16,3.5 21,3 C21.5,8 18,12 13.3,12",
   gameMenu:
     "M10.31,5.21 L10.44,2.63 L13.56,2.63 L13.69,5.21 L15.61,6 L17.52,4.27 L19.73,6.48 L18,8.39 L18.79,10.31 L21.37,10.44 L21.37,13.56 L18.79,13.69 L18,15.61 L19.73,17.52 L17.52,19.73 L15.61,18 L13.69,18.79 L13.56,21.37 L10.44,21.37 L10.31,18.79 L8.39,18 L6.48,19.73 L4.27,17.52 L6,15.61 L5.21,13.69 L2.63,13.56 L2.63,10.44 L5.21,10.31 L6,8.39 L4.27,6.48 L6.48,4.27 L8.39,6 Z M15,12 A3,3 0 1 1 9,12 A3,3 0 1 1 15,12",
 };
@@ -265,10 +266,11 @@ export const sceneText = {
   goodbye: "Au revoir.",
   // An object's menu of actions, for screen readers.
   actionsOf: (name: string) => `Actions : ${name}`,
-  // The ring menu's satchel, and the window it opens.
+  // The ring menu's backpack, and the window it opens.
   inventory: "Inventaire",
   // The ring menu's logbook, and the window it opens.
-  logbook: "Journal de bord",
+  logbook:
+    "M3,4 A1,1 0 0 1 4,3 H11 L14,6 V20 A1,1 0 0 1 13,21 H4 A1,1 0 0 1 3,20 Z M11,3 V6 H14 M6,9 H10 M6,12 H10 M6,15 H8 M9,17 L21,3 M13.3,12 C12.5,7 16,3.5 21,3 C21.5,8 18,12 13.3,12",
   // The ring menu's cogwheel, and the window it opens: save the game (to come),
   // or leave the scene for the home screen.
   gameMenu: "Menu général",

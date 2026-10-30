@@ -83,7 +83,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
   // The general menu's window, opened by the ring menu's cogwheel.
   const [gameMenuOpen, setGameMenuOpen] = useState(false);
 
-  // The inventory's window, opened by the ring menu's satchel.
+  // The inventory's window, opened by the ring menu's backpack.
   const [inventoryOpen, setInventoryOpen] = useState(false);
 
   // The logbook's window, opened by the ring menu's book.
@@ -213,7 +213,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
         </div>
       </div>
 
-      {/* The ring menu, in the bottom right corner: its satchel opens the
+      {/* The ring menu, in the bottom right corner: its backpack opens the
           inventory, its book the logbook, its cogwheel the general menu. */}
       <RingMenu
         items={[
@@ -251,7 +251,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
         <p>{layout.landscape ? sceneText.turnLandscape : sceneText.turnPortrait}</p>
       </div>
 
-      {/* The inventory, opened by the ring menu's satchel: the items carried. */}
+      {/* The inventory, opened by the ring menu's backpack: the items carried. */}
       {inventoryOpen && (
         <SlotsWindow
           label={sceneText.inventory}

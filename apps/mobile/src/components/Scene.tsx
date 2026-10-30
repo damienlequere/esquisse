@@ -179,7 +179,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
     return () => sub.remove();
   }, [inConversation]);
 
-  // The inventory's window, opened by the ring menu's satchel, the logbook's,
+  // The inventory's window, opened by the ring menu's backpack, the logbook's,
   // opened by its book, the general menu's, opened by its cogwheel, and the
   // one of what an object searched holds: under them, the scene is hidden
   // from screen readers.
@@ -299,7 +299,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
         </View>
       )}
 
-      {/* The ring menu, in the bottom right corner: its satchel opens the
+      {/* The ring menu, in the bottom right corner: its backpack opens the
           inventory, its book the logbook, its cogwheel the general menu. */}
       <RingMenu
         frame={screen}
@@ -329,7 +329,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
         />
       )}
 
-      {/* The inventory, opened by the ring menu's satchel: the items carried. */}
+      {/* The inventory, opened by the ring menu's backpack: the items carried. */}
       {inventoryOpen && (
         <SlotsWindow
           label={sceneText.inventory}
