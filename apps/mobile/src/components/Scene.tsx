@@ -394,7 +394,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
 
       {/* What the object searched holds, in a window in the middle of the
           screen (the web's Scene.module.css has the same): a press on an item
-          puts it in the inventory. */}
+          puts it in the inventory, a touch out of it closes it. */}
       {searching && (
         <Animated.View
           entering={FadeIn.duration(200)}
@@ -409,14 +409,9 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
           <Animated.View
             entering={FadeInDown.duration(250)}
             accessibilityViewIsModal
-            className="rounded-3xl border border-amber-300/30 bg-stone-900 p-5"
+            accessibilityLabel={searching.label}
+            className="rounded-3xl border border-white/10 bg-stone-900 p-5"
           >
-            <Text
-              accessibilityRole="header"
-              className="mb-3 font-serif text-sm uppercase tracking-widest text-amber-300"
-            >
-              {searching.label}
-            </Text>
             <View
               className="flex-row flex-wrap"
               style={{
@@ -449,9 +444,6 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
                   </Pressable>
                 );
               })}
-            </View>
-            <View className="mt-3">
-              <Choice label={sceneText.close} onPress={stopSearching} />
             </View>
           </Animated.View>
         </Animated.View>

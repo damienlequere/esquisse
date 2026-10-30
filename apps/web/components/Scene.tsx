@@ -171,7 +171,9 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
   const isSearching = searching !== undefined;
   useEffect(() => {
     if (!isSearching) return;
-    contentsRef.current?.querySelector("button")?.focus();
+    // On its first item, or on itself when it holds nothing.
+    const contents = contentsRef.current;
+    (contents?.querySelector("button") ?? contents)?.focus();
     const onKey = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
       dispatch({ type: "stopSearching" });
@@ -298,7 +300,8 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
       </div>
 
       {/* What the object searched holds, in a window in the middle of the
-          frame: a press on an item puts it in the inventory. */}
+          frame: a press on an item puts it in the inventory, a press out of
+          it closes it. */}
       {searching && (
         // biome-ignore lint/a11y/useKeyWithClickEvents lint/a11y/noStaticElementInteractions: Escape closes it too
         <div
@@ -312,9 +315,9 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
             className={styles.contents}
             role="dialog"
             aria-modal="true"
-            aria-labelledby="contents-name"
+            aria-label={searching.label}
+            tabIndex={-1}
           >
-            <h2 id="contents-name">{searching.label}</h2>
             <ul className={styles.slots}>
               {CONTAINER_SLOTS.map((slot, i) => {
                 const item = contents[searching.id]?.[i];
@@ -334,11 +337,6 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
                 );
               })}
             </ul>
-            <div className={styles.choices}>
-              <button type="button" onClick={stopSearching}>
-                {sceneText.close}
-              </button>
-            </div>
           </div>
         </div>
       )}
