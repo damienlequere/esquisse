@@ -350,7 +350,11 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
           first, the scene's intro the first (the web's has the same). */}
       {logbookOpen && (
         <Window label={sceneText.logbook} titled onClose={() => setLogbookOpen(false)}>
-          <ScrollView style={{ maxWidth: 416, maxHeight: (screen?.height ?? 600) * 0.6 }}>
+          {/* As tall as its entries, up to 60% of the screen: a ScrollView
+              otherwise grows to all it may. */}
+          <ScrollView
+            style={{ flexGrow: 0, maxWidth: 416, maxHeight: (screen?.height ?? 600) * 0.6 }}
+          >
             {logbook.map((entry, i) => (
               <Text
                 // biome-ignore lint/suspicious/noArrayIndexKey: entries are only appended
