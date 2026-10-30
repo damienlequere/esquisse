@@ -164,9 +164,9 @@ export const Drawer = <Id extends string>({
               accessibilityLabel={tab.label}
               accessibilityState={{ expanded: active }}
               onPress={() => onOpen(active ? undefined : tab.id)}
-              className={`h-11 w-11 items-center justify-center rounded-full border active:bg-stone-900 ${active ? "border-amber-300/80 bg-stone-900" : "border-amber-300/35 bg-stone-950"}`}
+              className={`h-11 w-11 items-center justify-center rounded-full border active:bg-stone-900 ${active ? "border-white/60 bg-stone-900" : "border-white/20 bg-stone-950"}`}
             >
-              <Text className="font-serif text-lg text-amber-200">{tab.icon}</Text>
+              <Text className="font-serif text-lg text-stone-100">{tab.icon}</Text>
             </Pressable>
           );
         })}

@@ -11,13 +11,13 @@ export default function Home() {
         <Link
           key={id}
           href={`/scene/${id}`}
-          className="mt-8 block rounded-lg border border-stone-300 bg-white p-5 transition hover:border-amber-600 dark:border-stone-700 dark:bg-stone-900 dark:hover:border-amber-400"
+          className="mt-8 block rounded-lg border border-stone-300 bg-white p-5 transition hover:border-stone-500 dark:border-stone-700 dark:bg-stone-900 dark:hover:border-stone-400"
         >
           <span className="font-serif text-xl font-semibold">{scenes[id].scene.title}</span>
           <span className="mt-1 block text-sm text-stone-500 dark:text-stone-400">
             {sceneSummary(scenes[id].scene)}
           </span>
-          <span className="mt-3 inline-block text-sm font-medium text-amber-800 dark:text-amber-300">
+          <span className="mt-3 inline-block text-sm font-medium text-stone-600 dark:text-stone-300">
             Open →
           </span>
         </Link>

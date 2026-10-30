@@ -94,10 +94,10 @@
   width: 2.75rem;
   height: 2.75rem;
   padding: 0;
-  border: 1px solid rgb(252 211 77 / 0.35);
+  border: 1px solid rgb(255 255 255 / 0.2);
   border-radius: 50%;
   background: #0c0a09;
-  color: #fde68a;
+  color: #f5f5f4;
   font: inherit;
   font-size: 1.1rem;
   line-height: 1;
@@ -112,7 +112,7 @@
 }
 
 .buttons button[aria-expanded="true"] {
-  border-color: rgb(252 211 77 / 0.8);
+  border-color: rgb(255 255 255 / 0.6);
 }
 
 /* An image as a button (see DrawerTab): the image alone, no disc nor border,
@@ -145,7 +145,7 @@
 }
 
 .buttons button:focus-visible {
-  outline: 2px solid #fcd34d;
+  outline: 2px solid #f5f5f4;
   outline-offset: 2px;
 }
 

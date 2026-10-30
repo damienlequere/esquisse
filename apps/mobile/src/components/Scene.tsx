@@ -113,7 +113,7 @@ const Tip = ({ label }: { label: string }) => (
     className="absolute bottom-full mb-1.5 items-center"
     style={{ left: -200, right: -200 }}
   >
-    <Text className="rounded-full bg-stone-950/85 px-2.5 py-1 font-serif text-sm text-amber-200">
+    <Text className="rounded-full bg-stone-950/85 px-2.5 py-1 font-serif text-sm text-stone-100">
       {label}
     </Text>
   </View>
@@ -478,7 +478,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
             >
               <Text
                 accessibilityRole="header"
-                className="mb-3 font-serif text-sm uppercase tracking-widest text-amber-300"
+                className="mb-3 font-serif text-sm uppercase tracking-widest text-stone-300"
               >
                 {conversation.character.name}
               </Text>
@@ -617,7 +617,7 @@ const ObjectMenu = ({
         entering={FadeIn.duration(150)}
         accessibilityLabel={sceneText.actionsOf(object.label)}
         onLayout={(event) => setSize(event.nativeEvent.layout)}
-        className="absolute min-w-40 rounded-xl border border-amber-300/30 bg-stone-950/90 p-1"
+        className="absolute min-w-40 rounded-xl border border-white/15 bg-stone-950/90 p-1"
         style={size ? objectMenuPlace({ x, y }, size, screen) : { left: x, top: y, opacity: 0 }}
       >
         {objectActions(object).map((action) => (
@@ -639,7 +639,7 @@ const Choice = ({ label, onPress }: { label: string; onPress(): void }) => (
   <Pressable
     accessibilityRole="button"
     onPress={onPress}
-    className="rounded-xl border border-amber-300/35 bg-amber-300/5 px-3 py-2.5 active:bg-amber-300/15"
+    className="rounded-xl border border-white/20 bg-white/5 px-3 py-2.5 active:bg-white/10"
   >
     <Text className="font-serif text-base text-stone-100">{label}</Text>
   </Pressable>

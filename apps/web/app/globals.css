@@ -7,7 +7,7 @@ body {
 /* Keyboard focus, always visible. */
 @layer base {
   :focus-visible {
-    outline: 2px solid var(--color-amber-600);
+    outline: 2px solid var(--color-stone-400);
     outline-offset: 2px;
   }
 }
