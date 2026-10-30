@@ -1,4 +1,4 @@
-import { ringItemAt, ringItemOffset, ringSizes, sceneText } from "@esquisse/shared";
+import { RING_BUTTON, ringItemAt, ringItemOffset, ringSizes, sceneText } from "@esquisse/shared";
 import {
   type CSSProperties,
   type KeyboardEvent,
@@ -164,7 +164,11 @@ export const RingMenu = <Id extends string>({
           }
         }}
         onKeyDown={(event) => event.key === "Escape" && fold()}
-      />
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d={RING_BUTTON} />
+        </svg>
+      </button>
     </div>
   );
 };

@@ -1,4 +1,11 @@
-import { type Ring, ringItemAt, ringItemOffset, ringSizes, sceneText } from "@esquisse/shared";
+import {
+  RING_BUTTON,
+  type Ring,
+  ringItemAt,
+  ringItemOffset,
+  ringSizes,
+  sceneText,
+} from "@esquisse/shared";
 import { useEffect, useRef, useState } from "react";
 import { type GestureResponderEvent, Text, useWindowDimensions, View } from "react-native";
 import Animated, { useAnimatedStyle, withDelay, withTiming } from "react-native-reanimated";
@@ -8,11 +15,30 @@ import Svg, { Path } from "react-native-svg";
 // How long the chosen item stays, lit, before the menu folds.
 const CHOSEN = 220;
 
-// An icon as an item: the stroke alone, as the arrow to enter is drawn, over a
-// darker, wider one which lifts it off the scene (the web's has the same).
+// The circle's and the icons' strokes, as the arrow to enter is drawn: each
+// over a darker, wider one which lifts it off the scene; `lit`, white (the
+// web's has the same).
 const ICON_SCALE = 0.8;
+const Icon = ({ path, size, lit }: { path: string; size: number; lit: boolean }) => (
+  <Svg width={size * ICON_SCALE} height={size * ICON_SCALE} viewBox="0 0 24 24">
+    {[
+      { stroke: "rgba(0,0,0,0.5)", width: 3.5 },
+      { stroke: lit ? "#ffffff" : "rgba(245,245,244,0.9)", width: 1.5 },
+    ].map(({ stroke, width }) => (
+      <Path
+        key={width}
+        d={path}
+        fill="none"
+        stroke={stroke}
+        strokeWidth={width}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    ))}
+  </Svg>
+);
 
-// Behind an icon under the finger, or chosen: a white glow, fading towards its edges.
+// Behind the circle held, or an icon under the finger or chosen: a white glow, fading towards its edges.
 const glow = (strength: number) =>
   `radial-gradient(closest-side, rgba(255,255,255,${strength}), rgba(255,255,255,0))`;
 
@@ -127,18 +153,18 @@ export const RingMenu = <Id extends string>({
           setOpen(false);
           setHovered(undefined);
         }}
-        className={`absolute inset-0 items-center justify-center rounded-full border ${open ? "border-white/80 bg-stone-950/85" : "border-stone-100/30 bg-stone-950/85"}`}
-        style={{
-          transform: [{ scale: open ? 0.9 : 1 }],
-          boxShadow: open ? "0 0 10px rgba(255,255,255,0.35)" : undefined,
-        }}
+        className="absolute inset-0 items-center justify-center"
+        style={{ transform: [{ scale: open ? 0.9 : 1 }] }}
       >
-        {/* A smaller circle in it. */}
-        <View
-          pointerEvents="none"
-          className={`rounded-full border ${open ? "border-white" : "border-stone-100/60"}`}
-          style={{ width: ring.size * 0.36, height: ring.size * 0.36 }}
-        />
+        {/* Its stroke alone, as the items' icons; held, glowing. */}
+        {open && (
+          <View
+            pointerEvents="none"
+            className="absolute"
+            style={{ width: ring.size, height: ring.size, backgroundImage: glow(0.35) }}
+          />
+        )}
+        <Icon path={RING_BUTTON} size={ring.size} lit={open} />
       </View>
     </View>
   );
@@ -182,7 +208,6 @@ const Item = <Id extends string>({
     };
   });
   if (item.icon) {
-    const size = ring.item * ICON_SCALE;
     return (
       <Spread
         pointerEvents="none"
@@ -211,25 +236,7 @@ const Item = <Id extends string>({
             }}
           />
         )}
-        <Svg width={size} height={size} viewBox="0 0 24 24">
-          {[
-            { stroke: "rgba(0,0,0,0.5)", width: 3.5 },
-            {
-              stroke: hovered || chosen ? "#ffffff" : "rgba(245,245,244,0.9)",
-              width: 1.5,
-            },
-          ].map(({ stroke, width }) => (
-            <Path
-              key={width}
-              d={item.icon}
-              fill="none"
-              stroke={stroke}
-              strokeWidth={width}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          ))}
-        </Svg>
+        <Icon path={item.icon} size={ring.item} lit={hovered || chosen} />
       </Spread>
     );
   }

@@ -207,8 +207,11 @@ export const ringSizes = (width: number, height: number): Ring => {
   };
 };
 
-// The ring menu's items, drawn as the arrow to enter is: a stroke in a 24 × 24
-// viewBox. A satchel, a book, a cogwheel.
+// The ring menu's circle, and its items, drawn as the arrow to enter is: a
+// stroke in a 24 × 24 viewBox. A circle with a smaller one in it; a satchel, a
+// book, a cogwheel.
+export const RING_BUTTON =
+  "M21,12 A9,9 0 1 1 3,12 A9,9 0 1 1 21,12 M15,12 A3,3 0 1 1 9,12 A3,3 0 1 1 15,12";
 export const RING_ICONS = {
   inventory:
     "M3,9 H21 V18 A2,2 0 0 1 19,20 H5 A2,2 0 0 1 3,18 Z M3,9 V11 A2,2 0 0 0 5,13 H19 A2,2 0 0 0 21,11 V9 M12,13 V15 M8,9 V7 A4,3 0 0 1 16,7 V9",
