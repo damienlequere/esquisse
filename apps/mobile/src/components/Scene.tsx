@@ -84,6 +84,8 @@ const BOX_STYLE = {
 // The items' images, by id (see ITEMS in packages/shared).
 const ITEM_IMAGES: Record<string, ImageSourcePropType> = {
   pelle: require("@esquisse/shared/assets/items/pelle.webp"),
+  lanterne: require("@esquisse/shared/assets/items/lanterne.webp"),
+  couteau: require("@esquisse/shared/assets/items/couteau.webp"),
 };
 
 // An item in a slot, the whole slot (the web's Scene.module.css has the same).

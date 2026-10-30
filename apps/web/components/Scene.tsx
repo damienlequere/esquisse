@@ -24,6 +24,8 @@ import {
   sceneLayout,
   sceneText,
 } from "@esquisse/shared";
+import knife from "@esquisse/shared/assets/items/couteau.webp";
+import lantern from "@esquisse/shared/assets/items/lanterne.webp";
 import shovel from "@esquisse/shared/assets/items/pelle.webp";
 import { useRouter } from "next/navigation";
 import {
@@ -45,7 +47,11 @@ import styles from "./Scene.module.css";
 import { Toast } from "./Toast.tsx";
 
 // The items' images, by id (see ITEMS in packages/shared).
-const ITEM_IMAGES: Record<string, string> = { pelle: shovel.src };
+const ITEM_IMAGES: Record<string, string> = {
+  pelle: shovel.src,
+  lanterne: lantern.src,
+  couteau: knife.src,
+};
 
 // Clickable scene: the background covers the frame, each object is one action,
 // each character opens a dialogue. Everything is placed in % of the image (see

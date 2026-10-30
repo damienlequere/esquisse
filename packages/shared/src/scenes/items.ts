@@ -8,6 +8,8 @@ export type Item = { name: string; feminine?: boolean };
 
 export const ITEMS: Record<string, Item> = {
   pelle: { name: "Pelle", feminine: true },
+  lanterne: { name: "Lanterne", feminine: true },
+  couteau: { name: "Couteau" },
 };
 
 // An item's name, or its id if it is not listed.

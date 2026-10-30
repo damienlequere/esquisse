@@ -49,7 +49,8 @@ export const INTRO = {
 };
 
 // A toast, in ms: it slides in at the bottom of the frame, stays, and fades out,
-// all in duration; fade is its entrance and its exit. Each app draws it.
+// all in duration; fade is its entrance and its exit. Several in a row stack,
+// the newest at the bottom. Each app draws it.
 export const TOAST = { duration: 2500, fade: 250 };
 
 // The arrow which enters the scene, pointing right: a stroke in a 24 × 24 viewBox.
