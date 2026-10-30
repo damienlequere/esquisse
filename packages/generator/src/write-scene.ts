@@ -24,29 +24,23 @@ const TEXT_MODEL = "claude-opus-5-5";
 const ATTEMPTS = 3;
 
 // A scene is portrait (9:16) or landscape (16:9), chosen when it is created.
-// Each has its safe zone, from the frames it is played in and where the text
-// goes (see the README): a band at the bottom in portrait, a panel on the right
-// in landscape. And the band where the characters' feet go, on the floor.
+// Each has its safe zone, from the frames it is played in (see the README),
+// and the band where the characters' feet go, on the floor.
 export type Orientation = "portrait" | "landscape";
 
 export const FORMATS = {
   portrait: {
     imageRatio: "9:16",
-    safe: { x0: 0.09, y0: 0.14, x1: 0.91, y1: 0.71 },
+    safe: { x0: 0.09, y0: 0.14, x1: 0.91, y1: 0.86 },
     words: "portrait 9:16",
-    text: "la bande de texte du bas",
     floor: "le tiers inférieur de l'image",
-    focus: "",
-    feet: { min: 0.62, max: 0.71 },
+    feet: { min: 0.62, max: 0.86 },
   },
   landscape: {
     imageRatio: "16:9",
-    safe: { x0: 0.14, y0: 0.22, x1: 0.68, y1: 0.86 },
+    safe: { x0: 0.14, y0: 0.14, x1: 0.86, y1: 0.86 },
     words: "paysage 16:9",
-    text: "le panneau de texte à droite",
     floor: "la moitié inférieure de l'image",
-    focus:
-      " Ce qui compte dans le décor est dans ses deux tiers gauches : le tiers droit passe sous le panneau de texte, il ne porte que du décor secondaire.",
     feet: { min: 0.62, max: 0.86 },
   },
 } satisfies Record<Orientation, { imageRatio: string; safe: Box; [k: string]: unknown }>;
@@ -130,7 +124,7 @@ Les images sont du matte painting numérique de cinéma : des décors peints num
 - intro : 1 à 2 phrases, à la deuxième personne (« tu »), au présent, qui posent le lieu et l'ambiance quand le joueur arrive.
 - style : un paragraphe de direction artistique commun à toutes les images de la scène (matte painting numérique, rendu des matières, palette, lumière, atmosphère), qui suit la direction artistique ci-dessus. Il finit toujours par les interdits : aucun texte, lettre, chiffre, signature ni logo ; pas de style cartoon, bande dessinée, anime ni caricature, pas de contours encrés ni d'aplats ; pas de photographie ni de rendu 3D lisse ; pas de cadre ni de bordure.
 - light : la lumière de la scène en quelques mots (sources, couleur, direction), pour que les éléments ajoutés ensuite soient éclairés comme le décor.
-- background.prompt : le décor seul, vu de face à hauteur d'homme, vide de toute personne et de tout animal. Le sol occupe ${format.floor} et reste dégagé, pour recevoir ensuite des objets et des personnages.${format.focus} Il décrit le lieu en détail : ses matières, leur état, et les détails secondaires aux murs et au fond qui le font vivre. Les objets et les personnages que la demande cite n'y sont pas : ils seront ajoutés un à un.
+- background.prompt : le décor seul, vu de face à hauteur d'homme, vide de toute personne et de tout animal. Le sol occupe ${format.floor} et reste dégagé, pour recevoir ensuite des objets et des personnages. Il décrit le lieu en détail : ses matières, leur état, et les détails secondaires aux murs et au fond qui le font vivre. Les objets et les personnages que la demande cite n'y sont pas : ils seront ajoutés un à un.
 - suggestions : 3 à 5 ajouts possibles, objets ou personnages, en quelques mots chacun (« un feu de camp au premier plan »), dans l'esprit de la demande, en commençant par ceux qu'elle cite.
 
 Si l'auteur demande une modification, tu renvoies le fond entier, modifié.
@@ -185,7 +179,7 @@ Tout est en français, sauf detect, et sauf si la demande dit une autre langue. 
 
 Les coordonnées sont des fractions de l'image, de 0 à 1, depuis son coin en haut à gauche ; une zone est {x0, y0, x1, y1}.
 
-- Zone sûre : ${JSON.stringify(format.safe)}. C'est la partie de l'image visible sur tous les écrans, moins une marge en haut et ${format.text}. Les zones des objets et des personnages y tiennent entières.
+- Zone sûre : ${JSON.stringify(format.safe)}. C'est la partie de l'image visible sur tous les écrans, moins une marge. Les zones des objets et des personnages y tiennent entières.
 - Les objets ne se recouvrent pas, et chacun fait au moins 0,12 de large et 0,08 de haut, pour se toucher du doigt sur un téléphone.
 - Un personnage occupe la zone : x de anchor.x − w/2 à anchor.x + w/2, y de anchor.y − height à anchor.y, avec w = height × ${(CHARACTER_ASPECT / sceneRatio(format)).toFixed(2)} (un personnage est environ ${CHARACTER_ASPECT} fois aussi large que haut, et l'image est ${format.imageRatio}). Ses pieds sont sur le sol, anchor.y entre ${decimal(format.feet.min)} et ${decimal(format.feet.max)} ; height entre 0,18 et 0,42, plus petit s'il est plus loin.
 - Les zones des personnages ne recouvrent pas celles des objets. Deux personnages peuvent être proches, sans se recouvrir de plus de moitié.

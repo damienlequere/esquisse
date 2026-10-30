@@ -80,10 +80,9 @@ waits, and starts over if the screen is turned away before its end.
   open it again. It starts folded: the scene's intro waits for the tab. In landscape, the screen is turned: a phone crops the top and bottom (9% each), a tablet the sides (12.5% each), and
   the text is a panel on the right, 16rem wide but never more than 30% of the
   screen, the whole height; a conversation opens in it too. What stays
-  visible everywhere, minus a margin at the top and the text, is the **safe zone**
-  (`safe` in `scene.json`): `{0.09, 0.14, 0.91, 0.71}` in portrait,
-  `{0.14, 0.22, 0.68, 0.86}` in landscape, where the decor that matters is in
-  the left two thirds.
+  visible everywhere, minus a margin, is the **safe zone** (`safe` in
+  `scene.json`): `{0.09, 0.14, 0.91, 0.86}` in portrait,
+  `{0.14, 0.14, 0.86, 0.86}` in landscape. The text no longer takes part of it.
 - **The screen turns like the scene.** The mobile app locks each scene's screen
   to its orientation (the home screen stays portrait). The web site cannot turn a
   phone: on a touch screen held the other way, the scene asks to turn it. On a
