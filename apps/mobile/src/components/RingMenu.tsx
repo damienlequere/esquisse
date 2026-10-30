@@ -1,6 +1,6 @@
-import { RING, ringItemAt, ringItemOffset, sceneText } from "@esquisse/shared";
+import { type Ring, ringItemAt, ringItemOffset, ringSizes, sceneText } from "@esquisse/shared";
 import { useEffect, useRef, useState } from "react";
-import { type GestureResponderEvent, Text, View } from "react-native";
+import { type GestureResponderEvent, Text, useWindowDimensions, View } from "react-native";
 import Animated, { useAnimatedStyle, withDelay, withTiming } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
@@ -21,6 +21,7 @@ export type RingItem<Id extends string> = { id: Id; label: string; icon?: string
 // in a quarter of a circle around it, from its left to above it, and the one
 // under the finger when it is let go is chosen (ringItemAt in packages/shared);
 // let go anywhere else, it folds. A screen reader offers its items as actions.
+// Its sizes follow the screen's (ringSizes).
 // The web has the same (apps/web/components/RingMenu.tsx).
 export const RingMenu = <Id extends string>({
   items,
@@ -30,6 +31,8 @@ export const RingMenu = <Id extends string>({
   onChoose(item: Id): void;
 }) => {
   const insets = useSafeAreaInsets();
+  const screen = useWindowDimensions();
+  const ring = ringSizes(screen.width, screen.height);
   const [open, setOpen] = useState(false);
   const [hovered, setHovered] = useState<number>();
   const [chosen, setChosen] = useState<number>();
@@ -43,6 +46,7 @@ export const RingMenu = <Id extends string>({
         y: event.nativeEvent.pageY - center.current.y,
       },
       items.length,
+      ring,
     );
   const choose = (index: number) => {
     setChosen(index);
@@ -68,8 +72,8 @@ export const RingMenu = <Id extends string>({
         position: "absolute",
         right: Math.max(16, insets.right),
         bottom: Math.max(16, insets.bottom),
-        width: RING.size,
-        height: RING.size,
+        width: ring.size,
+        height: ring.size,
       }}
     >
       {items.map((item, i) => (
@@ -78,6 +82,7 @@ export const RingMenu = <Id extends string>({
           item={item}
           index={i}
           count={items.length}
+          ring={ring}
           open={open}
           hovered={hovered === i}
           chosen={chosen === i}
@@ -98,8 +103,8 @@ export const RingMenu = <Id extends string>({
         onResponderGrant={(event) => {
           const { pageX, pageY, locationX, locationY } = event.nativeEvent;
           center.current = {
-            x: pageX - locationX + RING.size / 2,
-            y: pageY - locationY + RING.size / 2,
+            x: pageX - locationX + ring.size / 2,
+            y: pageY - locationY + ring.size / 2,
           };
           setOpen(true);
         }}
@@ -124,7 +129,7 @@ export const RingMenu = <Id extends string>({
         <View
           pointerEvents="none"
           className={`rounded-full border ${open ? "border-white" : "border-stone-100/60"}`}
-          style={{ width: RING.size * 0.36, height: RING.size * 0.36 }}
+          style={{ width: ring.size * 0.36, height: ring.size * 0.36 }}
         />
       </View>
     </View>
@@ -139,6 +144,7 @@ const Item = <Id extends string>({
   item,
   index,
   count,
+  ring,
   open,
   hovered,
   chosen,
@@ -146,11 +152,12 @@ const Item = <Id extends string>({
   item: RingItem<Id>;
   index: number;
   count: number;
+  ring: Ring;
   open: boolean;
   hovered: boolean;
   chosen: boolean;
 }) => {
-  const { x, y } = ringItemOffset(index, count);
+  const { x, y } = ringItemOffset(index, count, ring);
   const scale = chosen ? 1.2 : hovered ? 1.15 : 1;
   const spread = useAnimatedStyle(() => {
     const timing = (to: number) =>
@@ -174,11 +181,11 @@ const Item = <Id extends string>({
       style={[
         {
           position: "absolute",
-          left: (RING.size - RING.item) / 2,
-          top: (RING.size - RING.item) / 2,
-          width: RING.item,
-          height: RING.item,
-          borderRadius: RING.item / 2,
+          left: (ring.size - ring.item) / 2,
+          top: (ring.size - ring.item) / 2,
+          width: ring.item,
+          height: ring.item,
+          borderRadius: ring.item / 2,
           borderWidth: 1,
           alignItems: "center",
           justifyContent: "center",
@@ -198,7 +205,7 @@ const Item = <Id extends string>({
       ]}
     >
       {item.icon ? (
-        <Svg width={RING.item * 0.55} height={RING.item * 0.55} viewBox="0 0 24 24">
+        <Svg width={ring.item * 0.55} height={ring.item * 0.55} viewBox="0 0 24 24">
           <Path
             d={item.icon}
             fill="none"

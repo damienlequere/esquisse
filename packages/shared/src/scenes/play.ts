@@ -178,11 +178,34 @@ export const CONTAINER_COLUMNS = 3;
 // spreads its items in a quarter of a circle around it, from its left to above
 // it, clockwise; the one under the finger when it is let go is chosen: the
 // inventory's satchel, the logbook (what it opens is to come), then the
-// cogwheel of the general menu. The same in
-// px on both apps: the circle's and an item's diameters, the least distance from the
-// circle's center to an item's, the least room between two items, and how far
-// from its center an item is still under the finger.
+// cogwheel of the general menu. The same on both apps, in px on a phone: the
+// circle's and an item's diameters, the least distance from the circle's
+// center to an item's, the least room between two items, and how far from its
+// center an item is still under the finger.
 export const RING = { size: 56, item: 44, radius: 88, space: 16, hit: 32 };
+
+export type Ring = typeof RING;
+
+// The ring menu follows the screen: RING on a phone (its shorter side about
+// 400 px), larger on a tablet or a computer, smaller on a small phone, within
+// these bounds.
+const RING_REFERENCE = 400;
+const RING_SCALE = { min: 0.85, max: 1.5 };
+
+// The ring menu's sizes, in px, on a screen of this width and height.
+export const ringSizes = (width: number, height: number): Ring => {
+  const scale = Math.min(
+    RING_SCALE.max,
+    Math.max(RING_SCALE.min, Math.min(width, height) / RING_REFERENCE),
+  );
+  return {
+    size: Math.round(RING.size * scale),
+    item: Math.round(RING.item * scale),
+    radius: Math.round(RING.radius * scale),
+    space: Math.round(RING.space * scale),
+    hit: Math.round(RING.hit * scale),
+  };
+};
 
 // The ring menu's items, drawn as the arrow to enter is: a stroke in a 24 × 24
 // viewBox. A satchel, a book, a cogwheel.
@@ -195,27 +218,30 @@ export const RING_ICONS = {
 };
 
 // The angle between two items, and the distance from the circle's center to
-// theirs: further with more items, to keep RING.space between them.
+// theirs: further with more items, to keep ring.space between them.
 const ringStep = (count: number) => (count > 1 ? Math.PI / 2 / (count - 1) : 0);
-const ringRadius = (count: number) =>
+const ringRadius = (count: number, ring: Ring) =>
   count > 1
-    ? Math.max(RING.radius, (RING.item + RING.space) / (2 * Math.sin(ringStep(count) / 2)))
-    : RING.radius;
+    ? Math.max(ring.radius, (ring.item + ring.space) / (2 * Math.sin(ringStep(count) / 2)))
+    : ring.radius;
 
-// Where an item's center is, in px from the circle's center (y down).
-export const ringItemOffset = (index: number, count: number) => {
+// Where an item's center is, in px from the circle's center (y down), with the
+// ring menu's sizes (ringSizes).
+export const ringItemOffset = (index: number, count: number, ring: Ring) => {
   const angle = Math.PI - (count > 1 ? index * ringStep(count) : Math.PI / 4);
-  const radius = ringRadius(count);
+  const radius = ringRadius(count, ring);
   return { x: Math.cos(angle) * radius, y: -Math.sin(angle) * radius };
 };
 
 // The item under a point, in px from the circle's center, if any. Two
 // neighbours' never meet.
-export const ringItemAt = (point: { x: number; y: number }, count: number) => {
+export const ringItemAt = (point: { x: number; y: number }, count: number, ring: Ring) => {
   const hit =
-    count > 1 ? Math.min(RING.hit, ringRadius(count) * Math.sin(ringStep(count) / 2)) : RING.hit;
+    count > 1
+      ? Math.min(ring.hit, ringRadius(count, ring) * Math.sin(ringStep(count) / 2))
+      : ring.hit;
   for (let i = 0; i < count; i++) {
-    const { x, y } = ringItemOffset(i, count);
+    const { x, y } = ringItemOffset(i, count, ring);
     if (Math.hypot(point.x - x, point.y - y) <= hit) return i;
   }
   return undefined;

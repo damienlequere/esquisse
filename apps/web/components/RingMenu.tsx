@@ -1,4 +1,4 @@
-import { RING, ringItemAt, ringItemOffset, sceneText } from "@esquisse/shared";
+import { ringItemAt, ringItemOffset, ringSizes, sceneText } from "@esquisse/shared";
 import {
   type CSSProperties,
   type KeyboardEvent,
@@ -6,11 +6,20 @@ import {
   useEffect,
   useRef,
   useState,
+  useSyncExternalStore,
 } from "react";
 import styles from "./RingMenu.module.css";
 
 // How long the chosen item stays, lit, before the menu folds.
 const CHOSEN = 220;
+
+// The window's shorter side, which the ring menu's sizes follow (ringSizes);
+// a phone's before it is known.
+const onResize = (change: () => void) => {
+  window.addEventListener("resize", change);
+  return () => window.removeEventListener("resize", change);
+};
+const shorterSide = () => Math.min(window.innerWidth, window.innerHeight);
 
 // One of its items: a circle showing `label`; with `icon`, that stroke instead,
 // drawn as the arrow to enter is (a path in a 24 × 24 viewBox).
@@ -21,6 +30,7 @@ export type RingItem<Id extends string> = { id: Id; label: string; icon?: string
 // under the pointer when it is let go is chosen (ringItemAt in packages/shared);
 // let go anywhere else, it folds. From the keyboard, Enter opens it, the arrows
 // go from one item to the next, Enter chooses, Escape folds it.
+// Its sizes follow the window's (ringSizes).
 // The mobile app has the same (apps/mobile/src/components/RingMenu.tsx).
 export const RingMenu = <Id extends string>({
   items,
@@ -29,6 +39,8 @@ export const RingMenu = <Id extends string>({
   items: RingItem<Id>[];
   onChoose(item: Id): void;
 }) => {
+  const side = useSyncExternalStore(onResize, shorterSide, () => 400);
+  const ring = ringSizes(side, side);
   const [open, setOpen] = useState(false);
   const [hovered, setHovered] = useState<number>();
   const [chosen, setChosen] = useState<number>();
@@ -45,6 +57,7 @@ export const RingMenu = <Id extends string>({
         y: event.clientY - (box.top + box.height / 2),
       },
       items.length,
+      ring,
     );
   };
   const fold = () => {
@@ -86,14 +99,14 @@ export const RingMenu = <Id extends string>({
   };
 
   const style = {
-    "--ring-size": `${RING.size}px`,
-    "--ring-item": `${RING.item}px`,
+    "--ring-size": `${ring.size}px`,
+    "--ring-item": `${ring.item}px`,
   } as CSSProperties;
   return (
     <div className={styles.ring} style={style} data-open={open || undefined}>
       <div ref={list} role="menu" aria-label={sceneText.ringMenu} className={styles.items}>
         {items.map((item, i) => {
-          const { x, y } = ringItemOffset(i, items.length);
+          const { x, y } = ringItemOffset(i, items.length, ring);
           return (
             <button
               key={item.id}
