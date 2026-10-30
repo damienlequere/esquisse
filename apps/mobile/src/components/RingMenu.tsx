@@ -164,7 +164,11 @@ export const RingMenu = <Id extends string>({
             style={{ width: ring.size, height: ring.size, backgroundImage: glow(0.35) }}
           />
         )}
-        <Icon path={RING_BUTTON} size={ring.size} lit={open} />
+        {/* At rest, smaller than the icons and half seen, not to draw the eye
+            from the scene; held, fully seen. */}
+        <View style={{ opacity: open ? 1 : 0.55 }}>
+          <Icon path={RING_BUTTON} size={ring.size * 0.75} lit={open} />
+        </View>
       </View>
     </View>
   );
