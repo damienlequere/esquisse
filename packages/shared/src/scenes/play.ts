@@ -181,7 +181,7 @@ export const CONTAINER_COLUMNS = 3;
 // The ring menu, in the bottom right corner of a scene: a circle which, held,
 // spreads its items in a quarter of a circle around it, from its left to above
 // it, clockwise; the one under the finger when it is let go is chosen: the
-// inventory's backpack, the logbook's journal, then the
+// inventory's pouch, the logbook's journal, then the
 // cogwheel of the general menu. The same on both apps, in px on a phone: the
 // circle's and an item's diameters, the least distance from the circle's
 // center to an item's, the least room between two items, and how far from its
@@ -212,7 +212,8 @@ export const ringSizes = (width: number, height: number): Ring => {
 };
 
 // The ring menu's circle, and its items, drawn as the arrow to enter is: a
-// stroke in a 24 × 24 viewBox. A circle with a smaller one in it; a backpack;
+// stroke in a 24 × 24 viewBox. A circle with a smaller one in it; a leather
+// pouch, its neck tied by a cord whose two ends hang over it;
 // a bound journal, its cover and three rings on its left, four lines of text
 // on it (Bootstrap Icons' journal-text, MIT, its shapes drawn as strokes);
 // a cogwheel.
@@ -220,7 +221,7 @@ export const RING_BUTTON =
   "M21,12 A9,9 0 1 1 3,12 A9,9 0 1 1 21,12 M15,12 A3,3 0 1 1 9,12 A3,3 0 1 1 15,12";
 export const RING_ICONS = {
   inventory:
-    "M6,10 A6,5 0 0 1 18,10 V19 A2,2 0 0 1 16,21 H8 A2,2 0 0 1 6,19 Z M10,5.3 V4.5 A2,2 0 0 1 14,4.5 V5.3 M6,11 H18 M9,21 V16 A1,1 0 0 1 10,15 H14 A1,1 0 0 1 15,16 V21 M12,15 V17 M6,12 A2,2 0 0 0 4,14 V18 A1,1 0 0 0 5,19 H6 M18,12 A2,2 0 0 1 20,14 V18 A1,1 0 0 1 19,19 H18",
+    "M10,9 C6,10.5 4.5,14 5,17.5 C5.5,20.3 8.5,21 12,21 C15.5,21 18.5,20.3 19,17.5 C19.5,14 18,10.5 14,9 M9.5,9 H14.5 M10,9 C9.6,7.5 8.8,6 8,4.8 C9.5,5 10.8,4.7 12,3.8 C13.2,4.7 14.5,5 16,4.8 C15.2,6 14.4,7.5 14,9 M13,9 C13.8,10.5 14.2,12 13.8,14 M13,9 C14.8,10 16,11.3 16.3,13",
   logbook:
     "M3.875,5.125 V4.5 A1.875,1.875 0 0 1 5.75,2.625 H18.25 A1.875,1.875 0 0 1 20.125,4.5 V19.5 A1.875,1.875 0 0 1 18.25,21.375 H5.75 A1.875,1.875 0 0 1 3.875,19.5 V18.875 M2.625,8.875 H5.125 M3.875,7.625 V8.875 M2.625,12.625 H5.125 M3.875,11.375 V12.625 M2.625,16.375 H5.125 M3.875,15.125 V16.375 M8.875,7.625 H15.125 M8.875,10.125 H15.125 M8.875,12.625 H15.125 M8.875,15.125 H11.375",
   gameMenu:
