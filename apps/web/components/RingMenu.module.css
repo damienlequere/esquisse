@@ -52,11 +52,9 @@
   outline: none;
 }
 
-/* At rest, smaller than the icons and half seen, not to draw the eye from the
-   scene; pointed at, focused or held, fully seen. */
+/* At rest, half seen, not to draw the eye from the scene; pointed at, focused
+   or held, fully seen. */
 .circle svg {
-  width: 60%;
-  height: 60%;
   opacity: 0.55;
   transition:
     filter 120ms,
