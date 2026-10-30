@@ -392,12 +392,13 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
         />
       )}
 
-      {/* What the object searched holds: a press on an item puts it in the
-          inventory. Like a conversation, it takes the scene. */}
+      {/* What the object searched holds, in a window in the middle of the
+          screen (the web's Scene.module.css has the same): a press on an item
+          puts it in the inventory. */}
       {searching && (
         <Animated.View
           entering={FadeIn.duration(200)}
-          className={`absolute inset-0 justify-end bg-black/35 ${layout.landscape ? "flex-row" : ""}`}
+          className="absolute inset-0 items-center justify-center bg-black/50 p-4"
         >
           <Pressable
             className="absolute inset-0"
@@ -408,12 +409,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
           <Animated.View
             entering={FadeInDown.duration(250)}
             accessibilityViewIsModal
-            className={layout.landscape ? "bg-stone-900" : "rounded-t-3xl bg-stone-900 p-5"}
-            style={
-              layout.landscape
-                ? { width: panel, ...panelPadding }
-                : { paddingBottom: Math.max(20, insets.bottom) }
-            }
+            className="rounded-3xl border border-amber-300/30 bg-stone-900 p-5"
           >
             <Text
               accessibilityRole="header"

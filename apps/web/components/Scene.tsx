@@ -297,19 +297,19 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
         <p>{layout.landscape ? sceneText.turnLandscape : sceneText.turnPortrait}</p>
       </div>
 
-      {/* What the object searched holds: a press on an item puts it in the
-          inventory. Like a conversation, it takes the scene. */}
+      {/* What the object searched holds, in a window in the middle of the
+          frame: a press on an item puts it in the inventory. */}
       {searching && (
         // biome-ignore lint/a11y/useKeyWithClickEvents lint/a11y/noStaticElementInteractions: Escape closes it too
         <div
-          className={styles.dialogue}
+          className={styles.backdrop}
           onClick={(event) => {
             if (event.target === event.currentTarget) stopSearching();
           }}
         >
           <div
             ref={contentsRef}
-            className={`${styles.panel} ${styles.contents}`}
+            className={styles.contents}
             role="dialog"
             aria-modal="true"
             aria-labelledby="contents-name"

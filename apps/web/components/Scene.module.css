@@ -205,9 +205,30 @@
   filter: drop-shadow(0 0.15rem 0.3rem rgb(0 0 0 / 0.6));
 }
 
-/* What an object searched holds (see the dialogue's panel below): three rows
-   of three slots (CONTAINER_COLUMNS in packages/shared), like the inventory's;
+/* What an object searched holds, in a window in the middle of the frame, over
+   a darkened scene, in both orientations: its name, then three rows of three slots (CONTAINER_COLUMNS in packages/shared), like the inventory's;
    an item pressed goes to the inventory, it glows white under the pointer. */
+.backdrop {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgb(0 0 0 / 0.5);
+}
+
+.contents {
+  max-height: 100%;
+  overflow-y: auto;
+  padding: 1.25rem;
+  border: 1px solid rgb(252 211 77 / 0.3);
+  border-radius: 1.25rem;
+  background: #1c1917;
+  box-shadow: 0 1rem 3rem rgb(0 0 0 / 0.7);
+  animation: appear 250ms ease-out;
+}
+
 .slots {
   display: grid;
   grid-template-columns: repeat(3, 4.5rem);
@@ -280,7 +301,8 @@
   border-radius: 0;
 }
 
-.panel h2 {
+.panel h2,
+.contents h2 {
   margin: 0 0 0.75rem;
   font-size: 0.85rem;
   font-weight: normal;
@@ -535,7 +557,8 @@
   }
 
   .appear,
-  .panel {
+  .panel,
+  .contents {
     animation: none;
   }
 }
