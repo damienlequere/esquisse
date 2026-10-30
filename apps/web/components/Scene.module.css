@@ -145,50 +145,13 @@
   opacity: 1;
 }
 
-/* The inventory: a drawer (see Drawer.tsx) over the image, the bottom band, 22%
-   of the height; in landscape, a panel on the right, 16rem wide but never more
-   than 30% of the frame, the whole height. The safe zones of the scenes leave
-   it free (see packages/generator). The ring menu's satchel opens and folds it.
-   The conversation takes its place. */
-.root {
-  --band: 22cqh;
-}
-
+/* In landscape, the conversation's panel on the right: 16rem wide but never
+   more than 30% of the frame, the whole height. */
 .root[data-orientation="landscape"] {
   --panel: min(16rem, 30cqw);
 }
 
-/* The inventory: its title, then its slots, rounded squares, holding the items
-   carried (INVENTORY_COLUMNS in packages/shared). In the band, two rows of six, as wide
-   as the band allows and no taller than it; on the right, three columns. */
-.inventory h2 {
-  margin: 0 0 0.6rem;
-  font-size: 0.8rem;
-  font-weight: normal;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #d6d3d1;
-}
-
-.inventory ul {
-  --gap: 0.5rem;
-  display: grid;
-  grid-template-columns: repeat(
-      6,
-      min(calc((100% - 5 * var(--gap)) / 6), calc((var(--band) - 4.5rem) / 2))
-    );
-  gap: var(--gap);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.root[data-orientation="landscape"] .inventory ul {
-  grid-template-columns: repeat(3, 1fr);
-}
-
-.inventory li,
-.contents li {
+.slots li {
   aspect-ratio: 1;
   border: 1px solid rgb(255 255 255 / 0.1);
   border-radius: 0.6rem;
@@ -197,8 +160,7 @@
 }
 
 /* An item in a slot, the whole slot. */
-.inventory img,
-.contents img {
+.slots img {
   display: block;
   width: 100%;
   height: 100%;
@@ -207,9 +169,10 @@
   filter: drop-shadow(0 0.15rem 0.3rem rgb(0 0 0 / 0.6));
 }
 
-/* What an object searched holds, in a window in the middle of the frame, over
-   a darkened scene, in both orientations: three rows of three slots (CONTAINER_COLUMNS in packages/shared), like the inventory's;
-   an item pressed goes to the inventory, it glows white under the pointer. */
+/* A window in the middle of the frame, over a darkened scene, in both
+   orientations (see SlotsWindow): the inventory, or what an object searched
+   holds. Its slots, --columns to a row (INVENTORY_COLUMNS and CONTAINER_COLUMNS
+   in packages/shared); an item to take glows white under the pointer. */
 .backdrop {
   position: absolute;
   inset: 0;
@@ -220,7 +183,7 @@
   background: rgb(0 0 0 / 0.5);
 }
 
-.contents {
+.window {
   max-height: 100%;
   overflow-y: auto;
   padding: 1.25rem;
@@ -234,7 +197,7 @@
 
 .slots {
   display: grid;
-  grid-template-columns: repeat(3, 4.5rem);
+  grid-template-columns: repeat(var(--columns), 4.5rem);
   gap: 0.5rem;
   margin: 0;
   padding: 0;
@@ -258,10 +221,6 @@
 
 .take:focus-visible {
   outline: none;
-}
-
-.appear {
-  animation: appear 400ms ease-out;
 }
 
 @keyframes appear {
@@ -558,9 +517,8 @@
     animation-delay: 0s;
   }
 
-  .appear,
   .panel,
-  .contents {
+  .window {
     animation: none;
   }
 }

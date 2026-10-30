@@ -24,7 +24,7 @@ import {
 } from "@esquisse/shared";
 import { StatusBar } from "expo-status-bar";
 import { cssInterop } from "nativewind";
-import { useEffect, useReducer, useRef, useState } from "react";
+import { type ReactNode, useEffect, useReducer, useRef, useState } from "react";
 import {
   BackHandler,
   Image,
@@ -48,7 +48,6 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
 import type { SceneImages } from "../scenes.ts";
-import { Drawer } from "./Drawer.tsx";
 import { Effects } from "./Effects.tsx";
 import { RingMenu } from "./RingMenu.tsx";
 import { Toast } from "./Toast.tsx";
@@ -59,22 +58,14 @@ import { Toast } from "./Toast.tsx";
 // so it follows the cropping. What it shows as it is played is playScene's,
 // shared with the web site.
 
-// The text is a band at the bottom, 22% of the screen's height; in landscape, a
-// panel on the right, 256 wide but never more than 30% of the screen. Both are
-// over the image (the web's Scene.module.css has the same): the safe zones
-// leave them free (see packages/generator). Either can be folded, to see the
-// whole image.
-const BAND = 0.22;
+// In landscape, a conversation is a panel on the right, 256 wide but never more
+// than 30% of the screen (the web's Scene.module.css has the same).
 
-// Between the inventory's slots, and what the band keeps for its padding and
-// the title.
+// A slot of a window (see SlotsWindow), and the room between two (the web's
+// Scene.module.css has the same).
+const SLOT = 72;
 const SLOT_GAP = 8;
-const SLOTS_ROOM = 64;
-
-// A slot of what an object searched holds (the web's Scene.module.css has the same).
-const CONTAINER_SLOT = 72;
-
-type DrawerTabId = "inventory";
+const SLOT_LOOK = "rounded-[10px] border border-white/10 bg-white/5";
 
 // The items' images, by id (see ITEMS in packages/shared).
 const ITEM_IMAGES: Record<string, ImageSourcePropType> = {
@@ -103,7 +94,7 @@ cssInterop(Animated.View, { className: "style" });
 cssInterop(Animated.Text, { className: "style" });
 
 // The arrow to enter fades in, with an animated style that NativeWind breaks on
-// the Animated.View it styles: this one it does not know (Drawer has the same).
+// the Animated.View it styles: this one it does not know.
 const Fading = Animated.createAnimatedComponent(View);
 
 // The action's label, above what it names, centered and on one line even when
@@ -168,25 +159,13 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
     return () => sub.remove();
   }, [inConversation]);
 
-  // What an object searched holds, until it is closed: Android's back button
-  // closes it too.
-  const isSearching = searching !== undefined;
-  const stopSearching = () => dispatch({ type: "stopSearching" });
-  useEffect(() => {
-    if (!isSearching || Platform.OS !== "android") return;
-    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
-      dispatch({ type: "stopSearching" });
-      return true;
-    });
-    return () => sub.remove();
-  }, [isSearching]);
+  // The inventory's window, opened by the ring menu's satchel, and the one of
+  // what an object searched holds: under them, the scene is hidden from screen
+  // readers.
+  const [inventoryOpen, setInventoryOpen] = useState(false);
+  const inWindow = inventoryOpen || searching !== undefined;
 
   const panel = screen ? panelWidth(screen.width) : 0;
-  const band = screen ? screen.height * BAND : 0;
-
-  // The drawer shows the inventory, opened by the ring menu's satchel; it can be
-  // folded to see the whole image. It starts folded.
-  const [drawerTab, setDrawerTab] = useState<DrawerTabId | undefined>(undefined);
 
   // Opening the scene: its title on black, then its intro fading in under it;
   // shortly after it has appeared, the arrow to enter fades in, in the bottom
@@ -207,70 +186,17 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
     paddingLeft: 20,
   };
 
-  // The inventory: its title, then its slots, rounded squares, holding the
-  // items carried (see INVENTORY_COLUMNS): in the band, two rows, as wide as the band allows
-  // and no taller than it (SLOTS_ROOM is what the band keeps for its padding and
-  // the title); on the right, three columns (the web's Scene.module.css has the same).
-  const columns = layout.landscape ? INVENTORY_COLUMNS.right : INVENTORY_COLUMNS.bottom;
-  const [slotsWidth, setSlotsWidth] = useState(0);
-  const slotWidth = Math.max(
-    0,
-    Math.min(
-      (slotsWidth - SLOT_GAP * (columns - 1)) / columns,
-      layout.landscape ? Number.POSITIVE_INFINITY : (band - SLOTS_ROOM - SLOT_GAP) / 2,
-    ),
-  );
-  const inventoryPanel = (
-    <ScrollView
-      contentContainerClassName={layout.landscape ? undefined : "px-5 pt-4"}
-      contentContainerStyle={
-        layout.landscape ? panelPadding : { paddingBottom: Math.max(16, insets.bottom) }
-      }
-    >
-      <Animated.View entering={FadeInDown.duration(400)}>
-        <Text className="mb-2.5 font-serif text-xs uppercase tracking-widest text-stone-300">
-          {sceneText.inventory}
-        </Text>
-        {/* Each slot as high as it is wide, set, not stretched by its row. */}
-        <View
-          className="flex-row flex-wrap items-start"
-          style={{ gap: SLOT_GAP }}
-          onLayout={(event) => setSlotsWidth(event.nativeEvent.layout.width)}
-        >
-          {INVENTORY_SLOTS.map((slot, i) => {
-            const item = inventory[i];
-            return (
-              <View
-                key={slot}
-                accessible
-                accessibilityLabel={item === undefined ? sceneText.emptySlot : itemName(item)}
-                className="rounded-[10px] border border-white/10 bg-white/5"
-                style={{ width: slotWidth, height: slotWidth }}
-              >
-                {item !== undefined && <ItemImage item={item} />}
-              </View>
-            );
-          })}
-        </View>
-      </Animated.View>
-    </ScrollView>
-  );
-
   return (
     <View
       className="flex-1 overflow-hidden bg-stone-950"
       onLayout={(event) => setScreen(event.nativeEvent.layout)}
-      // A touch out of the drawer folds it (see Drawer).
-      onTouchStart={() => {
-        if (drawerTab !== undefined) setDrawerTab(undefined);
-      }}
     >
       <StatusBar style="light" />
 
       {screen && image && (
         <View
-          importantForAccessibility={inConversation || isSearching ? "no-hide-descendants" : "auto"}
-          accessibilityElementsHidden={inConversation || isSearching}
+          importantForAccessibility={inConversation || inWindow ? "no-hide-descendants" : "auto"}
+          accessibilityElementsHidden={inConversation || inWindow}
           style={{
             position: "absolute",
             width: image.width,
@@ -350,21 +276,8 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
         </View>
       )}
 
-      {/* The inventory: the bottom band, over the image; in landscape, the panel
-          on the right, the whole height (see BAND and panelWidth). */}
-      <Drawer<DrawerTabId>
-        side={layout.landscape ? "right" : "bottom"}
-        size={layout.landscape ? panel : band}
-        // The ring menu takes their place (see below).
-        hideButtons
-        open={drawerTab}
-        onOpen={setDrawerTab}
-        tabs={[{ id: "inventory", label: sceneText.inventory, content: inventoryPanel }]}
-      />
-
-      {/* The ring menu, in the bottom right corner: pressing it folds the
-          drawer, its satchel opens the inventory; what its other items do is
-          to come. */}
+      {/* The ring menu, in the bottom right corner: its satchel opens the
+          inventory; what its other items do is to come. */}
       <RingMenu
         items={[
           {
@@ -375,7 +288,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
           ...RING_ITEMS.map((item) => ({ id: item, label: item })),
         ]}
         onChoose={(item) => {
-          if (item === "inventory") setDrawerTab("inventory");
+          if (item === "inventory") setInventoryOpen(true);
         }}
       />
 
@@ -393,61 +306,62 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
         />
       )}
 
-      {/* What the object searched holds, in a window in the middle of the
-          screen (the web's Scene.module.css has the same): a press on an item
-          puts it in the inventory, a touch out of it closes it. */}
-      {searching && (
-        <Animated.View
-          entering={FadeIn.duration(200)}
-          className="absolute inset-0 items-center justify-center bg-black/50 p-4"
+      {/* The inventory, opened by the ring menu's satchel: the items carried. */}
+      {inventoryOpen && (
+        <SlotsWindow
+          label={sceneText.inventory}
+          columns={INVENTORY_COLUMNS}
+          onClose={() => setInventoryOpen(false)}
         >
-          <Pressable
-            className="absolute inset-0"
-            accessibilityLabel={sceneText.close}
-            accessibilityRole="button"
-            onPress={stopSearching}
-          />
-          <Animated.View
-            entering={FadeInDown.duration(250)}
-            accessibilityViewIsModal
-            accessibilityLabel={searching.label}
-            className="rounded-3xl border border-white/10 bg-stone-900 p-5"
-          >
-            <View
-              className="flex-row flex-wrap"
-              style={{
-                gap: SLOT_GAP,
-                width: CONTAINER_COLUMNS * CONTAINER_SLOT + (CONTAINER_COLUMNS - 1) * SLOT_GAP,
-              }}
-            >
-              {CONTAINER_SLOTS.map((slot, i) => {
-                const item = contents[searching.id]?.[i];
-                const box = { width: CONTAINER_SLOT, height: CONTAINER_SLOT };
-                const look = "rounded-[10px] border border-white/10 bg-white/5";
-                return item === undefined ? (
-                  <View
-                    key={slot}
-                    accessible
-                    accessibilityLabel={sceneText.emptySlot}
-                    className={look}
-                    style={box}
-                  />
-                ) : (
-                  <Pressable
-                    key={slot}
-                    accessibilityRole="button"
-                    accessibilityLabel={sceneText.take(itemName(item))}
-                    onPress={() => dispatch({ type: "take", item })}
-                    className={`${look} active:bg-white/15`}
-                    style={box}
-                  >
-                    <ItemImage item={item} />
-                  </Pressable>
-                );
-              })}
-            </View>
-          </Animated.View>
-        </Animated.View>
+          {INVENTORY_SLOTS.map((slot, i) => {
+            const item = inventory[i];
+            return (
+              <View
+                key={slot}
+                accessible
+                accessibilityLabel={item === undefined ? sceneText.emptySlot : itemName(item)}
+                className={SLOT_LOOK}
+                style={{ width: SLOT, height: SLOT }}
+              >
+                {item !== undefined && <ItemImage item={item} />}
+              </View>
+            );
+          })}
+        </SlotsWindow>
+      )}
+
+      {/* What the object searched holds: a press on an item puts it in the
+          inventory. */}
+      {searching && (
+        <SlotsWindow
+          label={searching.label}
+          columns={CONTAINER_COLUMNS}
+          onClose={() => dispatch({ type: "stopSearching" })}
+        >
+          {CONTAINER_SLOTS.map((slot, i) => {
+            const item = contents[searching.id]?.[i];
+            return item === undefined ? (
+              <View
+                key={slot}
+                accessible
+                accessibilityLabel={sceneText.emptySlot}
+                className={SLOT_LOOK}
+                style={{ width: SLOT, height: SLOT }}
+              />
+            ) : (
+              <Pressable
+                key={slot}
+                accessibilityRole="button"
+                accessibilityLabel={sceneText.take(itemName(item))}
+                onPress={() => dispatch({ type: "take", item })}
+                className={`${SLOT_LOOK} active:bg-white/15`}
+                style={{ width: SLOT, height: SLOT }}
+              >
+                <ItemImage item={item} />
+              </Pressable>
+            );
+          })}
+        </SlotsWindow>
       )}
 
       {/* Dialogue: an open conversation takes the scene, the background waits. */}
@@ -593,6 +507,60 @@ const EnterButton = ({
         )}
       </Pressable>
     </Fading>
+  );
+};
+
+// A window in the middle of the screen, over the darkened scene, in both
+// orientations: slots, `columns` to a row, as the inventory or what an object
+// searched holds (`children`). A touch out of it, or Android's back button,
+// closes it (the web's SlotsWindow has the same).
+const SlotsWindow = ({
+  label,
+  columns,
+  onClose,
+  children,
+}: {
+  label: string;
+  columns: number;
+  onClose(): void;
+  children: ReactNode;
+}) => {
+  const close = useRef(onClose);
+  close.current = onClose;
+  useEffect(() => {
+    if (Platform.OS !== "android") return;
+    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+      close.current();
+      return true;
+    });
+    return () => sub.remove();
+  }, []);
+
+  return (
+    <Animated.View
+      entering={FadeIn.duration(200)}
+      className="absolute inset-0 items-center justify-center bg-black/50 p-4"
+    >
+      <Pressable
+        className="absolute inset-0"
+        accessibilityLabel={sceneText.close}
+        accessibilityRole="button"
+        onPress={onClose}
+      />
+      <Animated.View
+        entering={FadeInDown.duration(250)}
+        accessibilityViewIsModal
+        accessibilityLabel={label}
+        className="rounded-3xl border border-white/10 bg-stone-900 p-5"
+      >
+        <View
+          className="flex-row flex-wrap"
+          style={{ gap: SLOT_GAP, width: columns * SLOT + (columns - 1) * SLOT_GAP }}
+        >
+          {children}
+        </View>
+      </Animated.View>
+    </Animated.View>
   );
 };
 

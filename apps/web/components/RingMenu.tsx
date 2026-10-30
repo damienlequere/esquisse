@@ -20,7 +20,6 @@ export type RingItem<Id extends string> = { id: Id; label: string; image?: strin
 // under the pointer when it is let go is chosen (ringItemAt in packages/shared);
 // let go anywhere else, it folds. From the keyboard, Enter opens it, the arrows
 // go from one item to the next, Enter chooses, Escape folds it.
-// Pressing it folds the drawer, as any press out of it (see Drawer).
 // The mobile app has the same (apps/mobile/src/components/RingMenu.tsx).
 export const RingMenu = <Id extends string>({
   items,

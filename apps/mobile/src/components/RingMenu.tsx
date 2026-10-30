@@ -36,8 +36,7 @@ const glow = (strength: number) =>
 // in a quarter of a circle around it, from its left to above it, and the one
 // under the finger when it is let go is chosen (ringItemAt in packages/shared);
 // let go anywhere else, it folds. A screen reader offers its items as actions.
-// Touching it folds the drawer, as any touch out of it (see Drawer). The web has
-// the same (apps/web/components/RingMenu.tsx).
+// The web has the same (apps/web/components/RingMenu.tsx).
 export const RingMenu = <Id extends string>({
   items,
   onChoose,

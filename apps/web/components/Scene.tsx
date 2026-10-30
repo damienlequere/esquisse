@@ -2,10 +2,12 @@
 
 import {
   type Character,
+  CONTAINER_COLUMNS,
   CONTAINER_SLOTS,
   ENTER_ARROW,
   INTRO,
   INTRO_HOLD,
+  INVENTORY_COLUMNS,
   INVENTORY_SLOTS,
   initialSceneState,
   itemName,
@@ -27,6 +29,7 @@ import satchel from "@esquisse/shared/assets/ui/besace.webp";
 import {
   type CSSProperties,
   type MouseEvent,
+  type ReactNode,
   useEffect,
   useLayoutEffect,
   useReducer,
@@ -35,13 +38,10 @@ import {
   useSyncExternalStore,
 } from "react";
 import type { SceneImages } from "../scenes.ts";
-import { Drawer } from "./Drawer.tsx";
 import { Effects } from "./Effects.tsx";
 import { RingMenu } from "./RingMenu.tsx";
 import styles from "./Scene.module.css";
 import { Toast } from "./Toast.tsx";
-
-type DrawerTabId = "inventory";
 
 // The items' images, by id (see ITEMS in packages/shared).
 const ITEM_IMAGES: Record<string, string> = { pelle: shovel.src };
@@ -78,9 +78,8 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
     initialSceneState,
   );
 
-  // The drawer shows the inventory, opened by the ring menu's satchel; it can be
-  // folded to see the whole image. It starts folded.
-  const [drawerTab, setDrawerTab] = useState<DrawerTabId | undefined>(undefined);
+  // The inventory's window, opened by the ring menu's satchel.
+  const [inventoryOpen, setInventoryOpen] = useState(false);
 
   // The title on black, then the intro under it, then the button to enter,
   // until it is pressed and they have faded out (see Intro). It waits for the
@@ -160,30 +159,6 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
     return () => window.removeEventListener("keydown", onKey);
   }, [inConversation]);
 
-  // ── Searching: what an object holds, until it is closed ──────────────────────
-
-  const contentsRef = useRef<HTMLDivElement>(null);
-  const stopSearching = () => {
-    dispatch({ type: "stopSearching" });
-    menuFrom.current?.focus();
-  };
-
-  // Escape closes it.
-  const isSearching = searching !== undefined;
-  useEffect(() => {
-    if (!isSearching) return;
-    // On its first item, or on itself when it holds nothing.
-    const contents = contentsRef.current;
-    (contents?.querySelector("button") ?? contents)?.focus();
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
-      dispatch({ type: "stopSearching" });
-      menuFrom.current?.focus();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [isSearching]);
-
   return (
     <div
       ref={rootRef}
@@ -230,50 +205,15 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
         </div>
       </div>
 
-      <Drawer<DrawerTabId>
-        id="drawer"
-        side={layout.landscape ? "right" : "bottom"}
-        size={layout.landscape ? "var(--panel)" : "var(--band)"}
-        // The ring menu takes their place (see below).
-        hideButtons
-        open={drawerTab}
-        onOpen={setDrawerTab}
-        tabs={[
-          {
-            id: "inventory",
-            image: satchel.src,
-            label: sceneText.inventory,
-            content: (
-              <section className={`${styles.inventory} ${styles.appear}`}>
-                <h2>{sceneText.inventory}</h2>
-                <ul>
-                  {INVENTORY_SLOTS.map((slot, i) => {
-                    const item = inventory[i];
-                    return item === undefined ? (
-                      <li key={slot} aria-label={sceneText.emptySlot} />
-                    ) : (
-                      <li key={slot} aria-label={itemName(item)}>
-                        <img src={ITEM_IMAGES[item]} alt="" draggable={false} />
-                      </li>
-                    );
-                  })}
-                </ul>
-              </section>
-            ),
-          },
-        ]}
-      />
-
-      {/* The ring menu, in the bottom right corner: pressing it folds the
-          drawer, its satchel opens the inventory; what its other items do is
-          to come. */}
+      {/* The ring menu, in the bottom right corner: its satchel opens the
+          inventory; what its other items do is to come. */}
       <RingMenu
         items={[
           { id: "inventory", label: sceneText.inventory, image: satchel.src },
           ...RING_ITEMS.map((item) => ({ id: item, label: item })),
         ]}
         onChoose={(item) => {
-          if (item === "inventory") setDrawerTab("inventory");
+          if (item === "inventory") setInventoryOpen(true);
         }}
       />
 
@@ -300,46 +240,52 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
         <p>{layout.landscape ? sceneText.turnLandscape : sceneText.turnPortrait}</p>
       </div>
 
-      {/* What the object searched holds, in a window in the middle of the
-          frame: a press on an item puts it in the inventory, a press out of
-          it closes it. */}
-      {searching && (
-        // biome-ignore lint/a11y/useKeyWithClickEvents lint/a11y/noStaticElementInteractions: Escape closes it too
-        <div
-          className={styles.backdrop}
-          onClick={(event) => {
-            if (event.target === event.currentTarget) stopSearching();
-          }}
+      {/* The inventory, opened by the ring menu's satchel: the items carried. */}
+      {inventoryOpen && (
+        <SlotsWindow
+          label={sceneText.inventory}
+          columns={INVENTORY_COLUMNS}
+          onClose={() => setInventoryOpen(false)}
         >
-          <div
-            ref={contentsRef}
-            className={styles.contents}
-            role="dialog"
-            aria-modal="true"
-            aria-label={searching.label}
-            tabIndex={-1}
-          >
-            <ul className={styles.slots}>
-              {CONTAINER_SLOTS.map((slot, i) => {
-                const item = contents[searching.id]?.[i];
-                return item === undefined ? (
-                  <li key={slot} aria-label={sceneText.emptySlot} />
-                ) : (
-                  <li key={slot}>
-                    <button
-                      type="button"
-                      className={styles.take}
-                      aria-label={sceneText.take(itemName(item))}
-                      onClick={() => dispatch({ type: "take", item })}
-                    >
-                      <img src={ITEM_IMAGES[item]} alt="" draggable={false} />
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        </div>
+          {INVENTORY_SLOTS.map((slot, i) => {
+            const item = inventory[i];
+            return item === undefined ? (
+              <li key={slot} aria-label={sceneText.emptySlot} />
+            ) : (
+              <li key={slot} aria-label={itemName(item)}>
+                <img src={ITEM_IMAGES[item]} alt="" draggable={false} />
+              </li>
+            );
+          })}
+        </SlotsWindow>
+      )}
+
+      {/* What the object searched holds: a press on an item puts it in the
+          inventory. */}
+      {searching && (
+        <SlotsWindow
+          label={searching.label}
+          columns={CONTAINER_COLUMNS}
+          onClose={() => dispatch({ type: "stopSearching" })}
+        >
+          {CONTAINER_SLOTS.map((slot, i) => {
+            const item = contents[searching.id]?.[i];
+            return item === undefined ? (
+              <li key={slot} aria-label={sceneText.emptySlot} />
+            ) : (
+              <li key={slot}>
+                <button
+                  type="button"
+                  className={styles.take}
+                  aria-label={sceneText.take(itemName(item))}
+                  onClick={() => dispatch({ type: "take", item })}
+                >
+                  <img src={ITEM_IMAGES[item]} alt="" draggable={false} />
+                </button>
+              </li>
+            );
+          })}
+        </SlotsWindow>
       )}
 
       {conversation && (
@@ -384,6 +330,59 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
 
       {/* What was just done, as taking an item: over the rest. */}
       <Toast message={toast} />
+    </div>
+  );
+};
+
+// A window in the middle of the frame, over the darkened scene, in both
+// orientations: slots, rounded squares, `columns` to a row, as the inventory or
+// what an object searched holds (`children`, its <li>). A press out of it, or
+// Escape, closes it. It takes the focus, on its first button or on itself, and
+// gives it back to what had it.
+const SlotsWindow = ({
+  label,
+  columns,
+  onClose,
+  children,
+}: {
+  label: string;
+  columns: number;
+  onClose(): void;
+  children: ReactNode;
+}) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const close = useRef(onClose);
+  close.current = onClose;
+  useEffect(() => {
+    const from = document.activeElement;
+    const own = ref.current;
+    (own?.querySelector("button") ?? own)?.focus();
+    const onKey = (event: KeyboardEvent) => event.key === "Escape" && close.current();
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      if (from instanceof HTMLElement) from.focus();
+    };
+  }, []);
+
+  return (
+    // biome-ignore lint/a11y/useKeyWithClickEvents lint/a11y/noStaticElementInteractions: Escape closes it too
+    <div
+      className={styles.backdrop}
+      onClick={(event) => event.target === event.currentTarget && onClose()}
+    >
+      <div
+        ref={ref}
+        className={styles.window}
+        role="dialog"
+        aria-modal="true"
+        aria-label={label}
+        tabIndex={-1}
+      >
+        <ul className={styles.slots} style={{ "--columns": columns } as CSSProperties}>
+          {children}
+        </ul>
+      </div>
     </div>
   );
 };

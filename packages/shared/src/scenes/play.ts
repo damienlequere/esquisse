@@ -157,14 +157,15 @@ export const objectMenuPlace = (
   };
 };
 
-// The inventory's slots, by number, the same in both apps: two rows of six in
-// the band at the bottom, three columns in the panel on the right. The items
-// carried fill them in the order taken.
+// The inventory's slots, by number, the same in both apps: three rows of four,
+// in a window in the middle of the screen. The items carried fill them in the
+// order taken.
 export const INVENTORY_SLOTS = Array.from({ length: 12 }, (_, i) => i + 1);
-export const INVENTORY_COLUMNS = { bottom: 6, right: 3 };
+export const INVENTORY_COLUMNS = 4;
 
 // What an object holds, shown when it is searched: three rows of three slots,
-// the same in both apps. An item pressed goes to the inventory.
+// in a window like the inventory's, the same in both apps. An item pressed goes
+// to the inventory.
 export const CONTAINER_SLOTS = Array.from({ length: 9 }, (_, i) => i + 1);
 export const CONTAINER_COLUMNS = 3;
 
@@ -216,7 +217,7 @@ export const sceneText = {
   goodbye: "Au revoir.",
   // An object's menu of actions, for screen readers.
   actionsOf: (name: string) => `Actions : ${name}`,
-  // The ring menu's satchel, and the drawer's panel it opens.
+  // The ring menu's satchel, and the window it opens.
   inventory: "Inventaire",
   emptySlot: "Emplacement vide",
   // An item in what an object holds, which goes to the inventory when pressed.
