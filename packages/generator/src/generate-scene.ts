@@ -130,7 +130,7 @@ const json = (value: unknown) => `${JSON.stringify(value, null, 2)}\n`;
 
 // What each kind of animation finds in the background, by file (see
 // effectFiles): the lights' mask; what stands in front of the sky (the painted
-// sky is not found: it stays).
+// sky is not found: it stays); nothing for the rain.
 const FOUND: Record<
   EffectKind,
   (background: Buffer, e: Effect) => Promise<Record<string, Buffer>>
@@ -151,6 +151,7 @@ const FOUND: Record<
     console.log("Finding the sky…");
     return { [`${e.id}-devant`]: (await skyMatte(background)).front };
   },
+  rain: async () => ({}),
 };
 const find = (e: Effect, background: Buffer) => {
   if (!Object.hasOwn(FOUND, e.kind)) throw new Error(`Unknown kind of effect: ${e.kind}`);

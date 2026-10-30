@@ -121,13 +121,49 @@ half4 main(float2 xy) {
 }
 `;
 
-const SHADERS = { firelight: FIRELIGHT, sky: SKY, glow: GLOW } satisfies Record<EffectKind, string>;
+// Rain: thin streaks fall straight down over the whole image, in three depths:
+// the nearer, the wider, longer, faster and more seen; light, never a
+// downpour. It has no image of its own: it is drawn from noise alone.
+
+const RAIN = `${HEADER}
+// One depth of the rain: columns across the image, cut in cells down it that
+// fall; a cell holds a drop or not. Its intensity at uv, in image heights.
+float drops(float2 uv, float columns, float cell, float speed, float len, float width, float seed) {
+  float x = uv.x * columns;
+  float column = floor(x);
+  float y = (uv.y - time * speed) / cell + hash(float2(column, seed)) * 7.0;
+  float row = floor(y);
+  float h = hash(float2(column + 0.37 * seed, row));
+  if (h > 0.3) return 0.0;
+  float x0 = 0.2 + 0.6 * hash(float2(row, column + seed));
+  float y0 = hash(float2(column - seed, row + 0.5)) * (1.0 - len / cell);
+  float across = abs(fract(x) - x0) / columns;
+  float along = (fract(y) - y0) * cell / len;
+  if (along < 0.0 || along > 1.0) return 0.0;
+  // Its head, below, is brighter than its tail.
+  return smoothstep(width, 0.0, across) * along * (0.5 + 1.6 * h);
+}
+
+half4 main(float2 xy) {
+  float2 uv = xy / size.y;
+  float rain = 0.4 * drops(uv, 22.0, 0.45, 1.5, 0.09, 0.0016, 1.0)
+    + 0.3 * drops(uv, 40.0, 0.3, 1.1, 0.06, 0.0011, 2.0)
+    + 0.22 * drops(uv, 70.0, 0.2, 0.75, 0.04, 0.0008, 3.0);
+  float a = min(rain, 0.5);
+  return half4(half3(0.78, 0.82, 0.9) * a, a);
+}
+`;
+
+const SHADERS = { firelight: FIRELIGHT, sky: SKY, glow: GLOW, rain: RAIN } satisfies Record<
+  EffectKind,
+  string
+>;
 
 // The shader of a kind of effect; none for a kind this version does not know.
 export const effectShader = (kind: string): string | undefined =>
   Object.hasOwn(SHADERS, kind) ? SHADERS[kind as EffectKind] : undefined;
 
 // An effect's own images, in the order its shader takes them after the
-// background: assets/scenes/<scene>/<file>.webp.
+// background: assets/scenes/<scene>/<file>.webp. The rain has none.
 export const effectFiles = (e: Pick<Effect, "id" | "kind">) =>
-  e.kind === "sky" ? [e.id, `${e.id}-devant`] : [e.id];
+  e.kind === "sky" ? [e.id, `${e.id}-devant`] : e.kind === "rain" ? [] : [e.id];

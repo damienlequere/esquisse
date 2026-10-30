@@ -36,6 +36,7 @@ export const sceneImages = {
       ciel: [tristramCiel, tristramCielDevant],
       lueur: [tristramLueur],
       feu: [tristramFeu],
+      pluie: [],
     },
   },
 } satisfies Record<string, SceneImages>;

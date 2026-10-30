@@ -70,6 +70,10 @@
       "id": "feu",
       "kind": "firelight",
       "detect": "each window glowing with warm orange firelight in the houses of the village (not the cathedral)"
+    },
+    {
+      "id": "pluie",
+      "kind": "rain"
     }
   ]
 }

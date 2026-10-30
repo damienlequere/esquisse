@@ -55,8 +55,8 @@ export const Effects = ({
   );
 };
 
-// An effect has one or two images of its own (see effectFiles): both are
-// asked for, the second maybe for none.
+// An effect has up to two images of its own (see effectFiles): both are
+// asked for, maybe for none.
 const Layer = ({
   effect,
   image,
@@ -78,7 +78,7 @@ const Layer = ({
   const clock = useClock();
   const { width, height } = size;
   const uniforms = useDerivedValue(() => ({ size: [width, height], time: clock.value / 1000 }));
-  if (source === null || own.length === 0 || own.some((i) => i === null)) return null;
+  if (source === null || own.some((i) => i === null)) return null;
   const rect = { x: 0, y: 0, width, height };
   return (
     <Fill>

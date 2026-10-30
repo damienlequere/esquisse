@@ -46,8 +46,9 @@ export type Character = {
 // An animation of the background: the shader of its kind is in effects.ts, its
 // images are assets/scenes/<scene>/<file>.webp (see effectFiles there). Its
 // kind is one of EffectKind, but read from scene.json it is only a string.
-// Firelight and glow are found by the generator from what detect describes.
-export type EffectKind = "firelight" | "sky" | "glow";
+// Firelight and glow are found by the generator from what detect describes;
+// the rain has nothing to find.
+export type EffectKind = "firelight" | "sky" | "glow" | "rain";
 export type Effect = { id: string; kind: string; detect?: string };
 
 export type Scene = {

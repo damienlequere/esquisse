@@ -31,6 +31,7 @@ export const sceneImages = {
       ],
       lueur: [require("@esquisse/shared/assets/scenes/tristram/lueur.webp")],
       feu: [require("@esquisse/shared/assets/scenes/tristram/feu.webp")],
+      pluie: [],
     },
   },
 } satisfies Record<string, SceneImages>;
