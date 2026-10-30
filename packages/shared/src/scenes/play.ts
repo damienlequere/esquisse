@@ -194,7 +194,7 @@ export type Ring = typeof RING;
 // 400 px), larger on a tablet or a computer, smaller on a small phone, within
 // these bounds.
 const RING_REFERENCE = 400;
-const RING_SCALE = { min: 0.85, max: 1.5 };
+const RING_SCALE = { min: 0.85, max: 1.2 };
 
 // The ring menu's sizes, in px, on a screen of this width and height.
 export const ringSizes = (width: number, height: number): Ring => {
