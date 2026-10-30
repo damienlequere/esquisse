@@ -8,6 +8,14 @@ import Svg, { Path } from "react-native-svg";
 // How long the chosen item stays, lit, before the menu folds.
 const CHOSEN = 220;
 
+// An icon as an item: the stroke alone, as the arrow to enter is drawn, over a
+// darker, wider one which lifts it off the scene (the web's has the same).
+const ICON_SCALE = 0.8;
+
+// Behind an icon under the finger, or chosen: a white glow, fading towards its edges.
+const glow = (strength: number) =>
+  `radial-gradient(closest-side, rgba(255,255,255,${strength}), rgba(255,255,255,0))`;
+
 // The items move with an animated style that NativeWind breaks on the
 // Animated.View it styles (see Scene's cssInterop): this one it does not know.
 const Spread = Animated.createAnimatedComponent(View);
@@ -138,8 +146,8 @@ export const RingMenu = <Id extends string>({
 
 // An item: centered on the circle, folded into it; open, it goes to its place
 // (ringItemOffset), a little after the one before. Neutral, as the arrow to
-// enter: under the finger, larger, white and glowing; chosen, lit white (the
-// web's RingMenu.module.css has the same).
+// enter: under the finger, larger, white and glowing; chosen, lit white. An
+// icon alone glows behind it (the web's RingMenu.module.css has the same).
 const Item = <Id extends string>({
   item,
   index,
@@ -173,6 +181,58 @@ const Item = <Id extends string>({
       ],
     };
   });
+  if (item.icon) {
+    const size = ring.item * ICON_SCALE;
+    return (
+      <Spread
+        pointerEvents="none"
+        importantForAccessibility="no-hide-descendants"
+        accessibilityElementsHidden
+        style={[
+          {
+            position: "absolute",
+            left: (ring.size - ring.item) / 2,
+            top: (ring.size - ring.item) / 2,
+            width: ring.item,
+            height: ring.item,
+            alignItems: "center",
+            justifyContent: "center",
+          },
+          spread,
+        ]}
+      >
+        {(hovered || chosen) && (
+          <View
+            className="absolute"
+            style={{
+              width: ring.item,
+              height: ring.item,
+              backgroundImage: glow(chosen ? 0.6 : 0.35),
+            }}
+          />
+        )}
+        <Svg width={size} height={size} viewBox="0 0 24 24">
+          {[
+            { stroke: "rgba(0,0,0,0.5)", width: 3.5 },
+            {
+              stroke: hovered || chosen ? "#ffffff" : "rgba(245,245,244,0.9)",
+              width: 1.5,
+            },
+          ].map(({ stroke, width }) => (
+            <Path
+              key={width}
+              d={item.icon}
+              fill="none"
+              stroke={stroke}
+              strokeWidth={width}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          ))}
+        </Svg>
+      </Spread>
+    );
+  }
   return (
     <Spread
       pointerEvents="none"
@@ -204,24 +264,11 @@ const Item = <Id extends string>({
         spread,
       ]}
     >
-      {item.icon ? (
-        <Svg width={ring.item * 0.55} height={ring.item * 0.55} viewBox="0 0 24 24">
-          <Path
-            d={item.icon}
-            fill="none"
-            stroke={chosen ? "#0c0a09" : hovered ? "#ffffff" : "rgba(245,245,244,0.7)"}
-            strokeWidth={1.5}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </Svg>
-      ) : (
-        <Text
-          className={`font-serif text-lg ${chosen ? "text-stone-950" : hovered ? "text-white" : "text-stone-100/70"}`}
-        >
-          {item.label}
-        </Text>
-      )}
+      <Text
+        className={`font-serif text-lg ${chosen ? "text-stone-950" : hovered ? "text-white" : "text-stone-100/70"}`}
+      >
+        {item.label}
+      </Text>
     </Spread>
   );
 };

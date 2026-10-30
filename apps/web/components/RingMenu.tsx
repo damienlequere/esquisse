@@ -114,7 +114,7 @@ export const RingMenu = <Id extends string>({
               role="menuitem"
               aria-label={item.icon ? item.label : undefined}
               tabIndex={open && keyboard ? 0 : -1}
-              className={styles.item}
+              className={item.icon ? `${styles.item} ${styles.icon}` : styles.item}
               data-hovered={hovered === i || undefined}
               data-chosen={chosen === i || undefined}
               style={{ "--x": `${x}px`, "--y": `${y}px`, "--i": i } as CSSProperties}

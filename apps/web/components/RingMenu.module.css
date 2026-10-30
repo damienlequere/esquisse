@@ -133,19 +133,45 @@
     0 0 14px rgb(255 255 255 / 0.6);
 }
 
-/* An icon as an item (see RingItem): a stroke in the circle, as the arrow to
-   enter is drawn, in the item's color. */
+/* An icon as an item (see RingItem): the stroke alone, as the arrow to enter
+   is drawn, no disc nor border, lifted off the scene by a dark halo; under the
+   pointer or focused, white and glowing; chosen, glowing more. */
+.item.icon,
+.ring[data-open] .item.icon {
+  border: 0;
+  background: none;
+  box-shadow: none;
+  color: rgb(245 245 244 / 0.9);
+}
+
+.ring[data-open] .item.icon[data-hovered],
+.ring[data-open] .item.icon:focus-visible,
+.ring[data-open] .item.icon[data-chosen] {
+  color: #fff;
+}
+
 .item svg {
   display: block;
-  width: 55%;
-  height: 55%;
+  width: 80%;
+  height: 80%;
   margin: auto;
   fill: none;
   stroke: currentColor;
   stroke-width: 1.5;
   stroke-linecap: round;
   stroke-linejoin: round;
+  filter: drop-shadow(0 0 2px rgb(0 0 0 / 0.9)) drop-shadow(0 1px 4px rgb(0 0 0 / 0.6));
   pointer-events: none;
+  transition: filter 120ms;
+}
+
+.ring[data-open] .item[data-hovered] svg,
+.ring[data-open] .item:focus-visible svg {
+  filter: drop-shadow(0 0 2px rgb(0 0 0 / 0.9)) drop-shadow(0 0 6px rgb(255 255 255 / 0.6));
+}
+
+.ring[data-open] .item[data-chosen] svg {
+  filter: drop-shadow(0 0 3px #fff) drop-shadow(0 0 12px rgb(255 255 255 / 0.9));
 }
 
 @media (prefers-reduced-motion: reduce) {
