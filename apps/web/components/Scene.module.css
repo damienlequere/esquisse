@@ -298,6 +298,12 @@
   margin-top: 0.75rem;
 }
 
+/* The general menu's choices, in its window, no room above them. */
+.gameMenu {
+  min-width: 14rem;
+  margin-top: 0;
+}
+
 .choices button {
   padding: 0.55rem 0.8rem;
   border: 1px solid rgb(255 255 255 / 0.2);

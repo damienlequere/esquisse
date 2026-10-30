@@ -30,7 +30,34 @@ export type SceneAction =
   | { type: "leave" }
   | { type: "search"; object: SceneObject }
   | { type: "take"; item: string }
-  | { type: "stopSearching" };
+  | { type: "stopSearching" }
+  | { type: "restore"; saved: unknown }
+  | { type: "saved" };
+
+// What a saved game keeps of a scene, on the device (see saveKey): the items
+// carried and what each object still holds.
+export type SavedGame = Pick<SceneState, "inventory" | "contents">;
+
+// Where each app keeps a scene's saved game: localStorage on the web,
+// AsyncStorage on mobile, as JSON.
+export const saveKey = (sceneId: string) => `esquisse:partie:${sceneId}`;
+
+export const savedGame = ({ inventory, contents }: SceneState): SavedGame => ({
+  inventory,
+  contents,
+});
+
+// A saved game as read back, if it holds what a SavedGame does.
+const strings = (value: unknown): value is string[] =>
+  Array.isArray(value) && value.every((v) => typeof v === "string");
+const readSaved = (saved: unknown): SavedGame | undefined => {
+  if (typeof saved !== "object" || saved === null) return undefined;
+  const { inventory, contents } = saved as Record<string, unknown>;
+  if (!strings(inventory) || typeof contents !== "object" || contents === null) return undefined;
+  const held = Object.entries(contents);
+  if (!held.every(([, items]) => strings(items))) return undefined;
+  return { inventory, contents: Object.fromEntries(held) as Record<string, string[]> };
+};
 
 // Opening a scene, in ms: its title alone, then its intro fading in under it
 // (textFade); shortly after it has fully appeared (buttonDelay), whatever its
@@ -63,6 +90,11 @@ export const initialSceneState = ({ scene }: SceneData): SceneState => ({
       contents ? [[id, contents.slice(0, CONTAINER_SLOTS.length)]] : [],
     ),
   ),
+});
+
+const toastOf = (state: SceneState, text: string) => ({
+  text,
+  key: (state.toast?.key ?? 0) + 1,
 });
 
 const narrate = (state: SceneState, title: string, text: string) => ({
@@ -116,11 +148,24 @@ export const playScene = (state: SceneState, action: SceneAction): SceneState =>
         ...state,
         inventory: [...state.inventory, action.item],
         contents: { ...state.contents, [object.id]: held.filter((_, i) => i !== at) },
-        toast: { text: itemAdded(action.item), key: (state.toast?.key ?? 0) + 1 },
+        toast: toastOf(state, itemAdded(action.item)),
       };
     }
     case "stopSearching":
       return { ...state, searching: undefined };
+    case "restore": {
+      // Over what the scene starts with: an object it no longer has is left out.
+      const saved = readSaved(action.saved);
+      if (saved === undefined) return state;
+      const contents = { ...state.contents };
+      for (const id of Object.keys(contents)) {
+        const held = saved.contents[id];
+        if (held !== undefined) contents[id] = held;
+      }
+      return { ...state, inventory: saved.inventory.slice(0, INVENTORY_SLOTS.length), contents };
+    }
+    case "saved":
+      return { ...state, toast: toastOf(state, sceneText.saved) };
   }
 };
 
@@ -172,7 +217,8 @@ export const CONTAINER_COLUMNS = 3;
 // The ring menu, in the bottom right corner of a scene: a circle which, held,
 // spreads its items in a quarter of a circle around it, from its left to above
 // it, clockwise; the one under the finger when it is let go is chosen: the
-// inventory's satchel, then the logbook (what it opens is to come). The same in
+// inventory's satchel, the logbook (what it opens is to come), then the
+// cogwheel of the general menu. The same in
 // px on both apps: the circle's and an item's diameters, the least distance from the
 // circle's center to an item's, the least room between two items, and how far
 // from its center an item is still under the finger.
@@ -220,6 +266,12 @@ export const sceneText = {
   inventory: "Inventaire",
   // The ring menu's logbook.
   logbook: "Journal de bord",
+  // The ring menu's cogwheel, and the window it opens: save the game, or leave
+  // the scene for the home screen.
+  gameMenu: "Menu général",
+  save: "Sauvegarder la partie",
+  saved: "Partie sauvegardée",
+  quit: "Quitter",
   emptySlot: "Emplacement vide",
   // An item in what an object holds, which goes to the inventory when pressed.
   take: (name: string) => `Prendre : ${name}`,

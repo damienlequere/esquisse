@@ -20,12 +20,16 @@ import {
   remainingTopics,
   type SceneData,
   type SceneObject,
+  savedGame,
+  saveKey,
   sceneLayout,
   sceneText,
 } from "@esquisse/shared";
 import shovel from "@esquisse/shared/assets/items/pelle.webp";
 import satchel from "@esquisse/shared/assets/ui/besace.webp";
 import logbook from "@esquisse/shared/assets/ui/journal.webp";
+import cogwheel from "@esquisse/shared/assets/ui/roue.webp";
+import { useRouter } from "next/navigation";
 import {
   type CSSProperties,
   type MouseEvent,
@@ -70,14 +74,42 @@ const useNotTurned = (landscape: boolean) =>
     () => false,
   );
 
-export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }) => {
+export const Scene = ({
+  id,
+  data,
+  images,
+}: {
+  id: string;
+  data: SceneData;
+  images: SceneImages;
+}) => {
   const { scene } = data;
   const layout = sceneLayout(data);
-  const [{ conversation, inventory, contents, searching, toast }, dispatch] = useReducer(
-    playScene,
-    data,
-    initialSceneState,
-  );
+  const [state, dispatch] = useReducer(playScene, data, initialSceneState);
+  const { conversation, inventory, contents, searching, toast } = state;
+
+  // ── The game: saved on the device, resumed where it was ──────────────────────
+
+  const router = useRouter();
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(saveKey(id));
+      if (saved !== null) dispatch({ type: "restore", saved: JSON.parse(saved) });
+    } catch {
+      // Nothing saved that can be read: the scene starts as it is.
+    }
+  }, [id]);
+  const save = () => {
+    try {
+      localStorage.setItem(saveKey(id), JSON.stringify(savedGame(state)));
+      dispatch({ type: "saved" });
+    } catch {
+      // Storage blocked or full: no toast, as nothing was saved.
+    }
+  };
+
+  // The general menu's window, opened by the ring menu's cogwheel.
+  const [gameMenuOpen, setGameMenuOpen] = useState(false);
 
   // The inventory's window, opened by the ring menu's satchel.
   const [inventoryOpen, setInventoryOpen] = useState(false);
@@ -207,14 +239,17 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
       </div>
 
       {/* The ring menu, in the bottom right corner: its satchel opens the
-          inventory; what its logbook does is to come. */}
+          inventory, its cogwheel the general menu; what its logbook does is to
+          come. */}
       <RingMenu
         items={[
           { id: "inventory", label: sceneText.inventory, image: satchel.src },
           { id: "logbook", label: sceneText.logbook, image: logbook.src },
+          { id: "gameMenu", label: sceneText.gameMenu, image: cogwheel.src },
         ]}
         onChoose={(item) => {
           if (item === "inventory") setInventoryOpen(true);
+          if (item === "gameMenu") setGameMenuOpen(true);
         }}
       />
 
@@ -260,6 +295,27 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
             );
           })}
         </SlotsWindow>
+      )}
+
+      {/* The general menu, opened by the ring menu's cogwheel: save the game
+          (it closes, a toast says so), or leave the scene for the home page. */}
+      {gameMenuOpen && (
+        <Window label={sceneText.gameMenu} onClose={() => setGameMenuOpen(false)}>
+          <div className={`${styles.choices} ${styles.gameMenu}`}>
+            <button
+              type="button"
+              onClick={() => {
+                save();
+                setGameMenuOpen(false);
+              }}
+            >
+              {sceneText.save}
+            </button>
+            <button type="button" onClick={() => router.push("/")}>
+              {sceneText.quit}
+            </button>
+          </div>
+        </Window>
       )}
 
       {/* What the object searched holds: a press on an item puts it in the
@@ -337,21 +393,17 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
 };
 
 // A window in the middle of the frame, over the darkened scene, in both
-// orientations: slots, rounded squares, `columns` to a row, as the inventory or
-// what an object searched holds (`children`, its <li>); `titled`, its label
-// above them, otherwise only for screen readers. A press out of it, or
-// Escape, closes it. It takes the focus, on its first button or on itself, and
-// gives it back to what had it.
-const SlotsWindow = ({
+// orientations, showing `children`; `titled`, its label above them, otherwise
+// only for screen readers. A press out of it, or Escape, closes it. It takes
+// the focus, on its first button or on itself, and gives it back to what had it.
+const Window = ({
   label,
   titled,
-  columns,
   onClose,
   children,
 }: {
   label: string;
   titled?: boolean;
-  columns: number;
   onClose(): void;
   children: ReactNode;
 }) => {
@@ -387,13 +439,31 @@ const SlotsWindow = ({
         tabIndex={-1}
       >
         {titled && <h2 id={title}>{label}</h2>}
-        <ul className={styles.slots} style={{ "--columns": columns } as CSSProperties}>
-          {children}
-        </ul>
+        {children}
       </div>
     </div>
   );
 };
+
+// A window of slots, rounded squares, `columns` to a row: the inventory, or what
+// an object searched holds (`children`, its <li>).
+const SlotsWindow = ({
+  columns,
+  children,
+  ...window
+}: {
+  label: string;
+  titled?: boolean;
+  columns: number;
+  onClose(): void;
+  children: ReactNode;
+}) => (
+  <Window {...window}>
+    <ul className={styles.slots} style={{ "--columns": columns } as CSSProperties}>
+      {children}
+    </ul>
+  </Window>
+);
 
 // An object's actions, in a menu to the right of where it was clicked, or to
 // its left (see objectMenuPlace).

@@ -12,7 +12,7 @@ export default function ScenePage() {
   return (
     <>
       <Stack.Screen options={{ orientation: isLandscape(data.scene) ? "landscape" : "portrait" }} />
-      <Scene data={data} images={sceneImages[id]} />
+      <Scene id={id} data={data} images={sceneImages[id]} />
     </>
   );
 }

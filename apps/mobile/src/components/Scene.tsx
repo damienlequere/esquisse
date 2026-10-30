@@ -18,9 +18,13 @@ import {
   remainingTopics,
   type SceneData,
   type SceneObject,
+  savedGame,
+  saveKey,
   sceneLayout,
   sceneText,
 } from "@esquisse/shared";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { cssInterop } from "nativewind";
 import { type ReactNode, useEffect, useReducer, useRef, useState } from "react";
@@ -110,7 +114,15 @@ const Tip = ({ label }: { label: string }) => (
   </View>
 );
 
-export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }) => {
+export const Scene = ({
+  id,
+  data,
+  images,
+}: {
+  id: string;
+  data: SceneData;
+  images: SceneImages;
+}) => {
   const { scene } = data;
   const layout = sceneLayout(data);
   const insets = useSafeAreaInsets();
@@ -123,11 +135,25 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
     height: Math.max(screen.height, screen.width / layout.ratio),
   };
 
-  const [{ conversation, inventory, contents, searching, toast }, dispatch] = useReducer(
-    playScene,
-    data,
-    initialSceneState,
-  );
+  const [state, dispatch] = useReducer(playScene, data, initialSceneState);
+  const { conversation, inventory, contents, searching, toast } = state;
+
+  // The game: saved on the device, resumed where it was (the web has the same).
+  const router = useRouter();
+  useEffect(() => {
+    AsyncStorage.getItem(saveKey(id))
+      .then((saved) => {
+        if (saved !== null) dispatch({ type: "restore", saved: JSON.parse(saved) });
+      })
+      // Nothing saved that can be read: the scene starts as it is.
+      .catch(() => {});
+  }, [id]);
+  const save = () =>
+    AsyncStorage.setItem(saveKey(id), JSON.stringify(savedGame(state)))
+      .then(() => dispatch({ type: "saved" }))
+      // Nothing saved: no toast.
+      .catch(() => {});
+  const quit = () => (router.canGoBack() ? router.back() : router.replace("/"));
 
   // ── Dialogue: an open conversation, until it is left ─────────────────────────
 
@@ -158,11 +184,12 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
     return () => sub.remove();
   }, [inConversation]);
 
-  // The inventory's window, opened by the ring menu's satchel, and the one of
-  // what an object searched holds: under them, the scene is hidden from screen
-  // readers.
+  // The inventory's window, opened by the ring menu's satchel, the general
+  // menu's, opened by its cogwheel, and the one of what an object searched
+  // holds: under them, the scene is hidden from screen readers.
   const [inventoryOpen, setInventoryOpen] = useState(false);
-  const inWindow = inventoryOpen || searching !== undefined;
+  const [gameMenuOpen, setGameMenuOpen] = useState(false);
+  const inWindow = inventoryOpen || gameMenuOpen || searching !== undefined;
 
   const panel = screen ? panelWidth(screen.width) : 0;
 
@@ -276,7 +303,8 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
       )}
 
       {/* The ring menu, in the bottom right corner: its satchel opens the
-          inventory; what its logbook does is to come. */}
+          inventory, its cogwheel the general menu; what its logbook does is to
+          come. */}
       <RingMenu
         items={[
           {
@@ -289,9 +317,15 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
             label: sceneText.logbook,
             image: require("@esquisse/shared/assets/ui/journal.webp"),
           },
+          {
+            id: "gameMenu",
+            label: sceneText.gameMenu,
+            image: require("@esquisse/shared/assets/ui/roue.webp"),
+          },
         ]}
         onChoose={(item) => {
           if (item === "inventory") setInventoryOpen(true);
+          if (item === "gameMenu") setGameMenuOpen(true);
         }}
       />
 
@@ -332,6 +366,23 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
             );
           })}
         </SlotsWindow>
+      )}
+
+      {/* The general menu, opened by the ring menu's cogwheel: save the game
+          (it closes, a toast says so), or leave the scene for the home screen. */}
+      {gameMenuOpen && (
+        <Window label={sceneText.gameMenu} onClose={() => setGameMenuOpen(false)}>
+          <View className="min-w-56 gap-1.5">
+            <Choice
+              label={sceneText.save}
+              onPress={() => {
+                save();
+                setGameMenuOpen(false);
+              }}
+            />
+            <Choice label={sceneText.quit} onPress={quit} />
+          </View>
+        </Window>
       )}
 
       {/* What the object searched holds: a press on an item puts it in the
@@ -515,20 +566,17 @@ const EnterButton = ({
 };
 
 // A window in the middle of the screen, over the darkened scene, in both
-// orientations: slots, `columns` to a row, as the inventory or what an object
-// searched holds (`children`); `titled`, its label above them, otherwise only
-// for screen readers. A touch out of it, or Android's back button,
-// closes it (the web's SlotsWindow has the same).
-const SlotsWindow = ({
+// orientations, showing `children`; `titled`, its label above them, otherwise
+// only for screen readers. A touch out of it, or Android's back button, closes
+// it (the web's Window has the same).
+const Window = ({
   label,
   titled,
-  columns,
   onClose,
   children,
 }: {
   label: string;
   titled?: boolean;
-  columns: number;
   onClose(): void;
   children: ReactNode;
 }) => {
@@ -569,16 +617,34 @@ const SlotsWindow = ({
             {label}
           </Text>
         )}
-        <View
-          className="flex-row flex-wrap"
-          style={{ gap: SLOT_GAP, width: columns * SLOT + (columns - 1) * SLOT_GAP }}
-        >
-          {children}
-        </View>
+        {children}
       </Animated.View>
     </Animated.View>
   );
 };
+
+// A window of slots, `columns` to a row: the inventory, or what an object
+// searched holds (`children`) (the web's SlotsWindow has the same).
+const SlotsWindow = ({
+  columns,
+  children,
+  ...window
+}: {
+  label: string;
+  titled?: boolean;
+  columns: number;
+  onClose(): void;
+  children: ReactNode;
+}) => (
+  <Window {...window}>
+    <View
+      className="flex-row flex-wrap"
+      style={{ gap: SLOT_GAP, width: columns * SLOT + (columns - 1) * SLOT_GAP }}
+    >
+      {children}
+    </View>
+  </Window>
+);
 
 // An object's actions, in a menu to the right of where it was pressed, or to
 // its left (see objectMenuPlace; the web's ObjectMenu has the same). A touch out of it closes it.
