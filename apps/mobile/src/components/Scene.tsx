@@ -310,6 +310,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
       {inventoryOpen && (
         <SlotsWindow
           label={sceneText.inventory}
+          titled
           columns={INVENTORY_COLUMNS}
           onClose={() => setInventoryOpen(false)}
         >
@@ -512,15 +513,18 @@ const EnterButton = ({
 
 // A window in the middle of the screen, over the darkened scene, in both
 // orientations: slots, `columns` to a row, as the inventory or what an object
-// searched holds (`children`). A touch out of it, or Android's back button,
+// searched holds (`children`); `titled`, its label above them, otherwise only
+// for screen readers. A touch out of it, or Android's back button,
 // closes it (the web's SlotsWindow has the same).
 const SlotsWindow = ({
   label,
+  titled,
   columns,
   onClose,
   children,
 }: {
   label: string;
+  titled?: boolean;
   columns: number;
   onClose(): void;
   children: ReactNode;
@@ -553,6 +557,15 @@ const SlotsWindow = ({
         accessibilityLabel={label}
         className="rounded-3xl border border-white/10 bg-stone-900 p-5"
       >
+        {titled && (
+          <Text
+            importantForAccessibility="no"
+            accessibilityElementsHidden
+            className="mb-3 font-serif text-xs uppercase tracking-widest text-stone-300"
+          >
+            {label}
+          </Text>
+        )}
         <View
           className="flex-row flex-wrap"
           style={{ gap: SLOT_GAP, width: columns * SLOT + (columns - 1) * SLOT_GAP }}

@@ -31,6 +31,7 @@ import {
   type MouseEvent,
   type ReactNode,
   useEffect,
+  useId,
   useLayoutEffect,
   useReducer,
   useRef,
@@ -244,6 +245,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
       {inventoryOpen && (
         <SlotsWindow
           label={sceneText.inventory}
+          titled
           columns={INVENTORY_COLUMNS}
           onClose={() => setInventoryOpen(false)}
         >
@@ -336,21 +338,25 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
 
 // A window in the middle of the frame, over the darkened scene, in both
 // orientations: slots, rounded squares, `columns` to a row, as the inventory or
-// what an object searched holds (`children`, its <li>). A press out of it, or
+// what an object searched holds (`children`, its <li>); `titled`, its label
+// above them, otherwise only for screen readers. A press out of it, or
 // Escape, closes it. It takes the focus, on its first button or on itself, and
 // gives it back to what had it.
 const SlotsWindow = ({
   label,
+  titled,
   columns,
   onClose,
   children,
 }: {
   label: string;
+  titled?: boolean;
   columns: number;
   onClose(): void;
   children: ReactNode;
 }) => {
   const ref = useRef<HTMLDivElement>(null);
+  const title = useId();
   const close = useRef(onClose);
   close.current = onClose;
   useEffect(() => {
@@ -376,9 +382,11 @@ const SlotsWindow = ({
         className={styles.window}
         role="dialog"
         aria-modal="true"
-        aria-label={label}
+        aria-label={titled ? undefined : label}
+        aria-labelledby={titled ? title : undefined}
         tabIndex={-1}
       >
+        {titled && <h2 id={title}>{label}</h2>}
         <ul className={styles.slots} style={{ "--columns": columns } as CSSProperties}>
           {children}
         </ul>

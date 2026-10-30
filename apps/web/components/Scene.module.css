@@ -195,6 +195,15 @@
   outline: none;
 }
 
+.window h2 {
+  margin: 0 0 0.75rem;
+  font-size: 0.8rem;
+  font-weight: normal;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #d6d3d1;
+}
+
 .slots {
   display: grid;
   grid-template-columns: repeat(var(--columns), 4.5rem);
