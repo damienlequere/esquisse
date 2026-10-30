@@ -45,7 +45,7 @@ export const INTRO = {
   fade: 1200,
 };
 
-// A toast, in ms: it slides in at the top of the frame, stays, and fades out,
+// A toast, in ms: it slides in at the bottom of the frame, stays, and fades out,
 // all in duration; fade is its entrance and its exit. Each app draws it.
 export const TOAST = { duration: 2500, fade: 250 };
 
