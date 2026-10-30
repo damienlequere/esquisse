@@ -1,6 +1,6 @@
 // What the player can carry, by id: what an object holds (contents in
 // scene.json) and what the inventory shows. Each one's image is
-// assets/items/<id>.webp, painted on green and keyed out like the satchel
+// assets/items/<id>.webp, painted on green and keyed out like a character
 // (packages/generator/sources/items/<id>.jpg), listed by each app.
 
 // feminine: its name takes the feminine (« Pelle ajoutée »).

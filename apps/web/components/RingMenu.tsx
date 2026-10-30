@@ -12,8 +12,9 @@ import styles from "./RingMenu.module.css";
 // How long the chosen item stays, lit, before the menu folds.
 const CHOSEN = 220;
 
-// One of its items: a circle showing `label`; with `image`, that image alone.
-export type RingItem<Id extends string> = { id: Id; label: string; image?: string };
+// One of its items: a circle showing `label`; with `icon`, that stroke instead,
+// drawn as the arrow to enter is (a path in a 24 × 24 viewBox).
+export type RingItem<Id extends string> = { id: Id; label: string; icon?: string };
 
 // A circle in the bottom right corner of its parent: held, it spreads `items`
 // in a quarter of a circle around it, from its left to above it, and the one
@@ -98,16 +99,22 @@ export const RingMenu = <Id extends string>({
               key={item.id}
               type="button"
               role="menuitem"
-              aria-label={item.image ? item.label : undefined}
+              aria-label={item.icon ? item.label : undefined}
               tabIndex={open && keyboard ? 0 : -1}
-              className={item.image ? `${styles.item} ${styles.image}` : styles.item}
+              className={styles.item}
               data-hovered={hovered === i || undefined}
               data-chosen={chosen === i || undefined}
               style={{ "--x": `${x}px`, "--y": `${y}px`, "--i": i } as CSSProperties}
               onClick={() => chosen === undefined && choose(i)}
               onKeyDown={(event) => onItemKey(event, i)}
             >
-              {item.image ? <img src={item.image} alt="" draggable={false} /> : item.label}
+              {item.icon ? (
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d={item.icon} />
+                </svg>
+              ) : (
+                item.label
+              )}
             </button>
           );
         })}

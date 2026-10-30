@@ -1,14 +1,9 @@
 import { RING, ringItemAt, ringItemOffset, sceneText } from "@esquisse/shared";
 import { useEffect, useRef, useState } from "react";
-import {
-  type GestureResponderEvent,
-  Image,
-  type ImageSourcePropType,
-  Text,
-  View,
-} from "react-native";
+import { type GestureResponderEvent, Text, View } from "react-native";
 import Animated, { useAnimatedStyle, withDelay, withTiming } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Svg, { Path } from "react-native-svg";
 
 // How long the chosen item stays, lit, before the menu folds.
 const CHOSEN = 220;
@@ -17,20 +12,10 @@ const CHOSEN = 220;
 // Animated.View it styles (see Scene's cssInterop): this one it does not know.
 const Spread = Animated.createAnimatedComponent(View);
 
-// One of its items: a circle showing `label`; with `image`, that image alone
-// (the web's has the same).
-export type RingItem<Id extends string> = {
-  id: Id;
-  label: string;
-  image?: ImageSourcePropType;
-};
-
-// An image as an item, larger than a circle, as on the web.
-const IMAGE_SCALE = 1.4;
-
-// Behind an image item under the finger, or chosen: a white glow, fading towards its edges.
-const glow = (strength: number) =>
-  `radial-gradient(closest-side, rgba(255,255,255,${strength}), rgba(255,255,255,0))`;
+// One of its items: a circle showing `label`; with `icon`, that stroke instead,
+// drawn as the arrow to enter is (a path in a 24 × 24 viewBox; the web's has
+// the same).
+export type RingItem<Id extends string> = { id: Id; label: string; icon?: string };
 
 // A circle in the bottom right corner of the screen: held, it spreads `items`
 // in a quarter of a circle around it, from its left to above it, and the one
@@ -148,8 +133,8 @@ export const RingMenu = <Id extends string>({
 
 // An item: centered on the circle, folded into it; open, it goes to its place
 // (ringItemOffset), a little after the one before. Neutral, as the arrow to
-// enter: under the finger, larger, white and glowing; chosen, lit white. An
-// image alone glows behind it (the web's RingMenu.module.css has the same).
+// enter: under the finger, larger, white and glowing; chosen, lit white (the
+// web's RingMenu.module.css has the same).
 const Item = <Id extends string>({
   item,
   index,
@@ -181,34 +166,6 @@ const Item = <Id extends string>({
       ],
     };
   });
-  const place = {
-    position: "absolute" as const,
-    left: (RING.size - RING.item) / 2,
-    top: (RING.size - RING.item) / 2,
-    width: RING.item,
-    height: RING.item,
-    alignItems: "center" as const,
-    justifyContent: "center" as const,
-  };
-  if (item.image) {
-    const size = RING.item * IMAGE_SCALE;
-    return (
-      <Spread
-        pointerEvents="none"
-        importantForAccessibility="no-hide-descendants"
-        accessibilityElementsHidden
-        style={[place, spread]}
-      >
-        {(hovered || chosen) && (
-          <View
-            className="absolute"
-            style={{ width: size, height: size, backgroundImage: glow(chosen ? 0.6 : 0.35) }}
-          />
-        )}
-        <Image source={item.image} resizeMode="contain" style={{ width: size, height: size }} />
-      </Spread>
-    );
-  }
   return (
     <Spread
       pointerEvents="none"
@@ -240,11 +197,24 @@ const Item = <Id extends string>({
         spread,
       ]}
     >
-      <Text
-        className={`font-serif text-lg ${chosen ? "text-stone-950" : hovered ? "text-white" : "text-stone-100/70"}`}
-      >
-        {item.label}
-      </Text>
+      {item.icon ? (
+        <Svg width={RING.item * 0.55} height={RING.item * 0.55} viewBox="0 0 24 24">
+          <Path
+            d={item.icon}
+            fill="none"
+            stroke={chosen ? "#0c0a09" : hovered ? "#ffffff" : "rgba(245,245,244,0.7)"}
+            strokeWidth={1.5}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </Svg>
+      ) : (
+        <Text
+          className={`font-serif text-lg ${chosen ? "text-stone-950" : hovered ? "text-white" : "text-stone-100/70"}`}
+        >
+          {item.label}
+        </Text>
+      )}
     </Spread>
   );
 };

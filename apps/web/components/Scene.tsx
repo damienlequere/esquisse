@@ -17,6 +17,7 @@ import {
   objectMenuPlace,
   placeStyle,
   playScene,
+  RING_ICONS,
   remainingTopics,
   type SceneData,
   type SceneObject,
@@ -24,9 +25,6 @@ import {
   sceneText,
 } from "@esquisse/shared";
 import shovel from "@esquisse/shared/assets/items/pelle.webp";
-import satchel from "@esquisse/shared/assets/ui/besace.webp";
-import logbook from "@esquisse/shared/assets/ui/journal.webp";
-import cogwheel from "@esquisse/shared/assets/ui/roue.webp";
 import { useRouter } from "next/navigation";
 import {
   type CSSProperties,
@@ -217,9 +215,9 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
           come. */}
       <RingMenu
         items={[
-          { id: "inventory", label: sceneText.inventory, image: satchel.src },
-          { id: "logbook", label: sceneText.logbook, image: logbook.src },
-          { id: "gameMenu", label: sceneText.gameMenu, image: cogwheel.src },
+          { id: "inventory", label: sceneText.inventory, icon: RING_ICONS.inventory },
+          { id: "logbook", label: sceneText.logbook, icon: RING_ICONS.logbook },
+          { id: "gameMenu", label: sceneText.gameMenu, icon: RING_ICONS.gameMenu },
         ]}
         onChoose={(item) => {
           if (item === "inventory") setInventoryOpen(true);

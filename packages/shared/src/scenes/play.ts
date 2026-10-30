@@ -184,6 +184,16 @@ export const CONTAINER_COLUMNS = 3;
 // from its center an item is still under the finger.
 export const RING = { size: 56, item: 44, radius: 88, space: 16, hit: 32 };
 
+// The ring menu's items, drawn as the arrow to enter is: a stroke in a 24 × 24
+// viewBox. A satchel, a book, a cogwheel.
+export const RING_ICONS = {
+  inventory:
+    "M3,9 H21 V18 A2,2 0 0 1 19,20 H5 A2,2 0 0 1 3,18 Z M3,9 V11 A2,2 0 0 0 5,13 H19 A2,2 0 0 0 21,11 V9 M12,13 V15 M8,9 V7 A4,3 0 0 1 16,7 V9",
+  logbook: "M5,20 V5 A1,1 0 0 1 6,4 H19 V17 H7 A2,2 0 0 0 5,19 A1,1 0 0 0 6,20 H19 M9,8 H15",
+  gameMenu:
+    "M10.31,5.21 L10.44,2.63 L13.56,2.63 L13.69,5.21 L15.61,6 L17.52,4.27 L19.73,6.48 L18,8.39 L18.79,10.31 L21.37,10.44 L21.37,13.56 L18.79,13.69 L18,15.61 L19.73,17.52 L17.52,19.73 L15.61,18 L13.69,18.79 L13.56,21.37 L10.44,21.37 L10.31,18.79 L8.39,18 L6.48,19.73 L4.27,17.52 L6,15.61 L5.21,13.69 L2.63,13.56 L2.63,10.44 L5.21,10.31 L6,8.39 L4.27,6.48 L6.48,4.27 L8.39,6 Z M15,12 A3,3 0 1 1 9,12 A3,3 0 1 1 15,12",
+};
+
 // The angle between two items, and the distance from the circle's center to
 // theirs: further with more items, to keep RING.space between them.
 const ringStep = (count: number) => (count > 1 ? Math.PI / 2 / (count - 1) : 0);
