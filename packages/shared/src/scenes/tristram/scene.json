@@ -36,13 +36,13 @@
     {
       "id": "tonneau",
       "zone": {
-        "x0": 0.0,
-        "y0": 0.71,
-        "x1": 0.1,
-        "y1": 0.78
+        "x0": 0.73,
+        "y0": 0.69,
+        "x1": 0.89,
+        "y1": 0.82
       },
-      "paint": "Le tonneau debout au premier plan à gauche, devant l'auberge : un vieux tonneau de chêne noirci, cerclé de fer rouillé, aux douves fendues.",
-      "detect": "the upright wooden barrel in the bottom left corner, in front of the inn (the leftmost barrel)",
+      "paint": "Le tonneau debout dans la moitié droite de la rue, devant la palissade : un vieux tonneau de chêne noirci, cerclé de fer rouillé, aux douves fendues.",
+      "detect": "the large upright wooden barrel standing in the muddy street on the right, in front of the wooden fence (not the small barrels under the porch in the background)",
       "label": "Le tonneau",
       "actions": [
         {
@@ -50,7 +50,9 @@
           "search": true
         }
       ],
-      "contents": ["pelle"]
+      "contents": [
+        "pelle"
+      ]
     }
   ],
   "characters": [],
