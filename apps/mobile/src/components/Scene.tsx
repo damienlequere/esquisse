@@ -66,7 +66,12 @@ import { Toast } from "./Toast.tsx";
 // Scene.module.css has the same).
 const SLOT = 72;
 const SLOT_GAP = 8;
-const SLOT_LOOK = "rounded-[10px] border border-white/10 bg-white/5";
+const SLOT_LOOK = "rounded-[10px] border border-stone-100/15 bg-black/25";
+
+// The look of every box over the scene (the tip, the windows, the dialogue, an
+// object's menu), as the ring menu's: a thin pale stroke on a dark, slightly
+// translucent ground (the web's Scene.module.css has the same).
+const BOX_LOOK = "border-stone-100/30 bg-stone-950/85";
 
 // The items' images, by id (see ITEMS in packages/shared).
 const ITEM_IMAGES: Record<string, ImageSourcePropType> = {
@@ -106,7 +111,9 @@ const Tip = ({ label }: { label: string }) => (
     className="absolute bottom-full mb-1.5 items-center"
     style={{ left: -200, right: -200 }}
   >
-    <Text className="rounded-full bg-stone-950/85 px-2.5 py-1 font-serif text-sm text-stone-100">
+    <Text
+      className={`rounded-full border px-2.5 py-1 font-serif text-sm text-stone-100 ${BOX_LOOK}`}
+    >
       {label}
     </Text>
   </View>
@@ -125,7 +132,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
     height: Math.max(screen.height, screen.width / layout.ratio),
   };
 
-  const [{ conversation, inventory, contents, searching, toast }, dispatch] = useReducer(
+  const [{ conversation, inventory, contents, searching, toast, logbook }, dispatch] = useReducer(
     playScene,
     data,
     initialSceneState,
@@ -164,12 +171,14 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
     return () => sub.remove();
   }, [inConversation]);
 
-  // The inventory's window, opened by the ring menu's satchel, the general
-  // menu's, opened by its cogwheel, and the one of what an object searched
-  // holds: under them, the scene is hidden from screen readers.
+  // The inventory's window, opened by the ring menu's satchel, the logbook's,
+  // opened by its book, the general menu's, opened by its cogwheel, and the
+  // one of what an object searched holds: under them, the scene is hidden
+  // from screen readers.
   const [inventoryOpen, setInventoryOpen] = useState(false);
+  const [logbookOpen, setLogbookOpen] = useState(false);
   const [gameMenuOpen, setGameMenuOpen] = useState(false);
-  const inWindow = inventoryOpen || gameMenuOpen || searching !== undefined;
+  const inWindow = inventoryOpen || logbookOpen || gameMenuOpen || searching !== undefined;
 
   const panel = screen ? panelWidth(screen.width) : 0;
 
@@ -283,8 +292,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
       )}
 
       {/* The ring menu, in the bottom right corner: its satchel opens the
-          inventory, its cogwheel the general menu; what its logbook does is to
-          come. */}
+          inventory, its book the logbook, its cogwheel the general menu. */}
       <RingMenu
         frame={screen}
         items={[
@@ -294,6 +302,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
         ]}
         onChoose={(item) => {
           if (item === "inventory") setInventoryOpen(true);
+          if (item === "logbook") setLogbookOpen(true);
           if (item === "gameMenu") setGameMenuOpen(true);
         }}
       />
@@ -337,6 +346,24 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
         </SlotsWindow>
       )}
 
+      {/* The logbook, opened by the ring menu's book: its entries, oldest
+          first, the scene's intro the first (the web's has the same). */}
+      {logbookOpen && (
+        <Window label={sceneText.logbook} titled onClose={() => setLogbookOpen(false)}>
+          <ScrollView style={{ maxWidth: 416, maxHeight: (screen?.height ?? 600) * 0.6 }}>
+            {logbook.map((entry, i) => (
+              <Text
+                // biome-ignore lint/suspicious/noArrayIndexKey: entries are only appended
+                key={i}
+                className={`font-serif text-base italic leading-6 text-stone-300 ${i > 0 ? "mt-3.5 border-t border-stone-100/15 pt-3.5" : ""}`}
+              >
+                {entry}
+              </Text>
+            ))}
+          </ScrollView>
+        </Window>
+      )}
+
       {/* The general menu, opened by the ring menu's cogwheel: save the game
           (to come: it does nothing yet), or leave the scene for the home screen. */}
       {gameMenuOpen && (
@@ -372,7 +399,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
                 accessibilityRole="button"
                 accessibilityLabel={sceneText.take(itemName(item))}
                 onPress={() => dispatch({ type: "take", item })}
-                className={`${SLOT_LOOK} active:bg-white/15`}
+                className={`${SLOT_LOOK} active:border-white/80`}
                 style={{ width: SLOT, height: SLOT }}
               >
                 <ItemImage item={item} />
@@ -398,7 +425,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
             entering={FadeInDown.duration(250)}
             accessibilityViewIsModal
             // In landscape, the conversation takes the text panel's place.
-            className={layout.landscape ? "bg-stone-900" : "max-h-[60%] rounded-t-3xl bg-stone-900"}
+            className={`${BOX_LOOK} ${layout.landscape ? "border-l" : "max-h-[60%] rounded-t-3xl border-t"}`}
             style={layout.landscape ? { width: panel } : undefined}
           >
             <ScrollView
@@ -411,7 +438,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
             >
               <Text
                 accessibilityRole="header"
-                className="mb-3 font-serif text-sm uppercase tracking-widest text-stone-300"
+                className="mb-3 font-serif text-sm uppercase tracking-widest text-stone-100/70"
               >
                 {conversation.character.name}
               </Text>
@@ -569,13 +596,13 @@ const Window = ({
         entering={FadeInDown.duration(250)}
         accessibilityViewIsModal
         accessibilityLabel={label}
-        className="rounded-3xl border border-white/10 bg-stone-900 p-5"
+        className={`rounded-3xl border p-5 ${BOX_LOOK}`}
       >
         {titled && (
           <Text
             importantForAccessibility="no"
             accessibilityElementsHidden
-            className="mb-3 font-serif text-xs uppercase tracking-widest text-stone-300"
+            className="mb-3 font-serif text-xs uppercase tracking-widest text-stone-100/70"
           >
             {label}
           </Text>
@@ -634,30 +661,50 @@ const ObjectMenu = ({
         entering={FadeIn.duration(150)}
         accessibilityLabel={sceneText.actionsOf(object.label)}
         onLayout={(event) => setSize(event.nativeEvent.layout)}
-        className="absolute min-w-40 rounded-xl border border-white/15 bg-stone-950/90 p-1"
+        className={`absolute min-w-40 gap-1 rounded-3xl border p-1.5 ${BOX_LOOK}`}
         style={size ? objectMenuPlace({ x, y }, size, screen) : { left: x, top: y, opacity: 0 }}
       >
         {objectActions(object).map((action) => (
-          <Pressable
+          <Choice
             key={action.label}
-            accessibilityRole="menuitem"
+            label={action.label}
+            role="menuitem"
             onPress={() => onAction(action)}
-            className="rounded-lg px-3 py-2.5 active:bg-white/10"
-          >
-            <Text className="font-serif text-base text-white">{action.label}</Text>
-          </Pressable>
+          />
         ))}
       </Animated.View>
     </View>
   );
 };
 
-const Choice = ({ label, onPress }: { label: string; onPress(): void }) => (
+// A choice, as the ring menu's items: a pill, its stroke and its text half
+// seen; pressed, lit white (the web's Scene.module.css has the same).
+const Choice = ({
+  label,
+  role = "button",
+  onPress,
+}: {
+  label: string;
+  role?: "button" | "menuitem";
+  onPress(): void;
+}) => (
   <Pressable
-    accessibilityRole="button"
+    accessibilityRole={role}
     onPress={onPress}
-    className="rounded-xl border border-white/20 bg-white/5 px-3 py-2.5 active:bg-white/10"
+    style={({ pressed }) => ({
+      borderRadius: 999,
+      borderWidth: 1,
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+      backgroundColor: pressed ? "#f5f5f4" : "transparent",
+      borderColor: pressed ? "#fff" : "rgba(245,245,244,0.3)",
+      boxShadow: pressed ? "0 0 14px rgba(255,255,255,0.6)" : undefined,
+    })}
   >
-    <Text className="font-serif text-base text-stone-100">{label}</Text>
+    {({ pressed }) => (
+      <Text className={`font-serif text-base ${pressed ? "text-stone-950" : "text-stone-100/70"}`}>
+        {label}
+      </Text>
+    )}
   </Pressable>
 );

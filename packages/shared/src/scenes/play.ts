@@ -4,7 +4,8 @@ import type { Character, ObjectAction, SceneData, SceneObject, Topic } from "./t
 // What a scene shows as it is played, the same in both apps: the narration
 // band, the open conversation if any, what the player carries, and what an
 // object being searched holds, and the last toast. The apps only draw it, and turn their
-// own inputs (Escape, Android's back button…) into actions.
+// own inputs (Escape, Android's back button…) into actions. The logbook
+// starts with the scene's intro.
 
 export type Line = { text: string; player?: boolean };
 export type Conversation = { character: Character; lines: Line[]; asked: string[] };
@@ -21,6 +22,8 @@ export type SceneState = {
   searching?: SceneObject;
   // What the last toast says; key changes with each one, so it shows again.
   toast?: { text: string; key: number };
+  // The logbook's entries, oldest first.
+  logbook: string[];
 };
 
 export type SceneAction =
@@ -58,6 +61,7 @@ export const INTRO_HOLD = INTRO.textDelay + INTRO.textFade + INTRO.buttonDelay;
 export const initialSceneState = ({ scene }: SceneData): SceneState => ({
   narration: { title: scene.title, text: scene.intro, key: 0 },
   inventory: [],
+  logbook: [scene.intro],
   contents: Object.fromEntries(
     scene.objects.flatMap(({ id, contents }) =>
       contents ? [[id, contents.slice(0, CONTAINER_SLOTS.length)]] : [],
@@ -263,7 +267,7 @@ export const sceneText = {
   actionsOf: (name: string) => `Actions : ${name}`,
   // The ring menu's satchel, and the window it opens.
   inventory: "Inventaire",
-  // The ring menu's logbook.
+  // The ring menu's logbook, and the window it opens.
   logbook: "Journal de bord",
   // The ring menu's cogwheel, and the window it opens: save the game (to come),
   // or leave the scene for the home screen.

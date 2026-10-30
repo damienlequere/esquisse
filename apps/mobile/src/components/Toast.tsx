@@ -32,7 +32,7 @@ export const Toast = ({ message }: { message: ToastMessage | undefined }) => {
           key={shown.key}
           entering={FadeInDown.duration(TOAST.fade)}
           exiting={FadeOut.duration(TOAST.fade)}
-          className="rounded-full border border-white/15 bg-stone-950/85 px-4 py-2"
+          className="rounded-full border border-stone-100/30 bg-stone-950/85 px-4 py-2"
         >
           <Text className="font-serif text-base text-stone-100">{shown.text}</Text>
         </Animated.View>

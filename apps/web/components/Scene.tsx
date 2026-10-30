@@ -73,7 +73,7 @@ const useNotTurned = (landscape: boolean) =>
 export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }) => {
   const { scene } = data;
   const layout = sceneLayout(data);
-  const [{ conversation, inventory, contents, searching, toast }, dispatch] = useReducer(
+  const [{ conversation, inventory, contents, searching, toast, logbook }, dispatch] = useReducer(
     playScene,
     data,
     initialSceneState,
@@ -85,6 +85,9 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
 
   // The inventory's window, opened by the ring menu's satchel.
   const [inventoryOpen, setInventoryOpen] = useState(false);
+
+  // The logbook's window, opened by the ring menu's book.
+  const [logbookOpen, setLogbookOpen] = useState(false);
 
   // The title on black, then the intro under it, then the button to enter,
   // until it is pressed and they have faded out (see Intro). It waits for the
@@ -211,8 +214,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
       </div>
 
       {/* The ring menu, in the bottom right corner: its satchel opens the
-          inventory, its cogwheel the general menu; what its logbook does is to
-          come. */}
+          inventory, its book the logbook, its cogwheel the general menu. */}
       <RingMenu
         items={[
           { id: "inventory", label: sceneText.inventory, icon: RING_ICONS.inventory },
@@ -221,6 +223,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
         ]}
         onChoose={(item) => {
           if (item === "inventory") setInventoryOpen(true);
+          if (item === "logbook") setLogbookOpen(true);
           if (item === "gameMenu") setGameMenuOpen(true);
         }}
       />
@@ -267,6 +270,20 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
             );
           })}
         </SlotsWindow>
+      )}
+
+      {/* The logbook, opened by the ring menu's book: its entries, oldest
+          first, the scene's intro the first. */}
+      {logbookOpen && (
+        <Window label={sceneText.logbook} titled onClose={() => setLogbookOpen(false)}>
+          <div className={styles.logbook}>
+            {logbook.map((entry, i) => (
+              <p key={i} className={styles.entry}>
+                {entry}
+              </p>
+            ))}
+          </div>
+        </Window>
       )}
 
       {/* The general menu, opened by the ring menu's cogwheel: save the game
