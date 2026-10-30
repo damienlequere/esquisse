@@ -286,6 +286,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
           inventory, its cogwheel the general menu; what its logbook does is to
           come. */}
       <RingMenu
+        frame={screen}
         items={[
           { id: "inventory", label: sceneText.inventory, icon: RING_ICONS.inventory },
           { id: "logbook", label: sceneText.logbook, icon: RING_ICONS.logbook },

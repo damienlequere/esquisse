@@ -7,7 +7,7 @@ import {
   sceneText,
 } from "@esquisse/shared";
 import { useEffect, useRef, useState } from "react";
-import { type GestureResponderEvent, Text, useWindowDimensions, View } from "react-native";
+import { type GestureResponderEvent, Text, View } from "react-native";
 import Animated, { useAnimatedStyle, withDelay, withTiming } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
@@ -55,18 +55,20 @@ export type RingItem<Id extends string> = { id: Id; label: string; icon?: string
 // in a quarter of a circle around it, from its left to above it, and the one
 // under the finger when it is let go is chosen (ringItemAt in packages/shared);
 // let go anywhere else, it folds. A screen reader offers its items as actions.
-// Its sizes follow the screen's (ringSizes).
+// Its sizes follow the frame's, the scene's screen (ringSizes); a phone's until
+// it is measured.
 // The web has the same (apps/web/components/RingMenu.tsx).
 export const RingMenu = <Id extends string>({
   items,
+  frame = { width: 400, height: 400 },
   onChoose,
 }: {
   items: RingItem<Id>[];
+  frame?: { width: number; height: number };
   onChoose(item: Id): void;
 }) => {
   const insets = useSafeAreaInsets();
-  const screen = useWindowDimensions();
-  const ring = ringSizes(screen.width, screen.height);
+  const ring = ringSizes(frame.width, frame.height);
   const [open, setOpen] = useState(false);
   const [hovered, setHovered] = useState<number>();
   const [chosen, setChosen] = useState<number>();
