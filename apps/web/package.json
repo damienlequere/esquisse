@@ -9,6 +9,7 @@
     "typecheck": "next typegen && tsc"
   },
   "dependencies": {
+    "@esquisse/content": "workspace:*",
     "@esquisse/shared": "workspace:*",
     "canvaskit-wasm": "0.42.0",
     "next": "catalog:",

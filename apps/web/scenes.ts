@@ -1,14 +1,14 @@
 // Written by packages/generator/src/generate-scene.ts: do not edit by hand.
 
-import aubergeFond from "@esquisse/shared/assets/scenes/auberge/fond.webp";
-import tristramCiel from "@esquisse/shared/assets/scenes/tristram/ciel.webp";
-import tristramCielDevant from "@esquisse/shared/assets/scenes/tristram/ciel-devant.webp";
-import tristramFeu from "@esquisse/shared/assets/scenes/tristram/feu.webp";
-import tristramFond from "@esquisse/shared/assets/scenes/tristram/fond.webp";
-import tristramLueur from "@esquisse/shared/assets/scenes/tristram/lueur.webp";
+import aubergeFond from "@esquisse/content/scenes/auberge/fond.webp";
+import tristramCiel from "@esquisse/content/scenes/tristram/ciel.webp";
+import tristramCielDevant from "@esquisse/content/scenes/tristram/ciel-devant.webp";
+import tristramFeu from "@esquisse/content/scenes/tristram/feu.webp";
+import tristramFond from "@esquisse/content/scenes/tristram/fond.webp";
+import tristramLueur from "@esquisse/content/scenes/tristram/lueur.webp";
 import type { StaticImageData } from "next/image";
 
-// The scenes' images, served from packages/shared/assets, like the mobile app's
+// The scenes' images, served from content/scenes, like the mobile app's
 // (apps/mobile/src/scenes.ts): the background, the characters' layers, and the
 // images of the background's animations, by effect (see effectFiles).
 export type SceneImages = {

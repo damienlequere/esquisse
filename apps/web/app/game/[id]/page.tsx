@@ -1,4 +1,4 @@
-import { games, isGameId } from "@esquisse/shared";
+import { games, isGameId } from "@esquisse/content";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Game } from "../../../components/Game.tsx";

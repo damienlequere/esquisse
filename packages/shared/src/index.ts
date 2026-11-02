@@ -7,3 +7,5 @@ export const TAGLINE = "Clickable illustrated scenes.";
 
 export * from "./games/index.ts";
 export * from "./scenes/index.ts";
+
+// The scenes, the items and the games themselves are in @esquisse/content.

@@ -206,7 +206,7 @@ export const playGame =
             ...state.visits,
             [state.at]: { contents: { ...contents, [object.id]: held.filter((_, i) => i !== at) } },
           },
-          toast: toastOf(state, itemAdded(action.item)),
+          toast: toastOf(state, itemAdded(game.items, action.item)),
         };
       }
       case "stopSearching":

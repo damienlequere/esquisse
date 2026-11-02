@@ -19,11 +19,7 @@ if (id === undefined) throw new Error("Usage: pnpm remove-scene <id> [--yes]");
 if (!/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/.test(id)) throw new Error(`Invalid id: ${id} (kebab-case)`);
 for (const a of args) if (a !== "--yes") throw new Error(`Unknown argument: ${a}`);
 
-const folders = [
-  join(ROOT, "packages/shared/src/scenes", id),
-  join(ROOT, "packages/shared/assets/scenes", id),
-  join(GENERATOR, "sources", id),
-].filter((f) => existsSync(f));
+const folders = [join(ROOT, "content/scenes", id)].filter((f) => existsSync(f));
 if (folders.length === 0) throw new Error(`No scene "${id}"`);
 
 console.log(`Removing the scene "${id}":\n  ${folders.map((f) => relative(ROOT, f)).join("\n  ")}`);

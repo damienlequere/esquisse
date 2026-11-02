@@ -3,7 +3,7 @@
 //
 //   pnpm check-game [<id>]
 //
-// Without an id, every game in packages/shared/src/games. Exits with 1 if a
+// Without an id, every game in content/games. Exits with 1 if a
 // game has an error.
 //
 // Errors: a game.json not shaped as a Game; a scene it names that does not
@@ -20,9 +20,8 @@ import { join } from "node:path";
 import type { Game, Scene } from "@esquisse/shared";
 
 const ROOT = join(import.meta.dirname, "../../..");
-const SHARED = join(ROOT, "packages/shared/src");
-const GAMES = join(SHARED, "games");
-const SCENES = join(SHARED, "scenes");
+const GAMES = join(ROOT, "content/games");
+const SCENES = join(ROOT, "content/scenes");
 
 const ID = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
 
@@ -92,7 +91,7 @@ export const checkGame = (
     ...Object.values(game.links).flatMap(Object.values),
   ]);
   for (const id of named) {
-    if (!(id in scenes)) errors.push(`No scene « ${id} » (packages/shared/src/scenes/${id})`);
+    if (!(id in scenes)) errors.push(`No scene « ${id} » (content/scenes/${id})`);
     else if (!listed.has(id)) errors.push(`« ${id} » is not listed in scenes/index.ts`);
   }
 
@@ -183,11 +182,11 @@ if (isMain) {
   const listedGames = imported(join(GAMES, "index.ts"));
 
   const ids = only === undefined ? folders(GAMES) : [only];
-  if (ids.length === 0) console.log("No game in packages/shared/src/games.");
+  if (ids.length === 0) console.log("No game in content/games.");
   let failed = false;
   for (const id of ids) {
     const file = join(GAMES, id, "game.json");
-    if (!existsSync(file)) throw new Error(`No game "${id}" (packages/shared/src/games/${id})`);
+    if (!existsSync(file)) throw new Error(`No game "${id}" (content/games/${id})`);
     const { errors, warnings } = checkGame(read(file), scenes, listedScenes);
     if (!listedGames.has(id)) errors.push(`« ${id} » is not listed in games/index.ts`);
     failed ||= errors.length > 0;

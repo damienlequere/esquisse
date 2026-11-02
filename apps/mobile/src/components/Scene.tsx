@@ -1,3 +1,4 @@
+import { ITEMS } from "@esquisse/content";
 import {
   BACK_ARROW,
   type Box,
@@ -83,11 +84,11 @@ const BOX_STYLE = {
   backgroundColor: "rgba(12,10,9,0.85)",
 };
 
-// The items' images, by id (see ITEMS in packages/shared).
+// The items' images, by id (see ITEMS in @esquisse/content).
 const ITEM_IMAGES: Record<string, ImageSourcePropType> = {
-  pelle: require("@esquisse/shared/assets/items/pelle.webp"),
-  lanterne: require("@esquisse/shared/assets/items/lanterne.webp"),
-  couteau: require("@esquisse/shared/assets/items/couteau.webp"),
+  pelle: require("@esquisse/content/items/pelle.webp"),
+  lanterne: require("@esquisse/content/items/lanterne.webp"),
+  couteau: require("@esquisse/content/items/couteau.webp"),
 };
 
 // An item in a slot, the whole slot (the web's Scene.module.css has the same).
@@ -370,7 +371,9 @@ export const Scene = ({
               <View
                 key={slot}
                 accessible
-                accessibilityLabel={item === undefined ? sceneText.emptySlot : itemName(item)}
+                accessibilityLabel={
+                  item === undefined ? sceneText.emptySlot : itemName(ITEMS, item)
+                }
                 className={SLOT_LOOK}
                 style={{ width: SLOT, height: SLOT }}
               >
@@ -436,7 +439,7 @@ export const Scene = ({
               <Pressable
                 key={slot}
                 accessibilityRole="button"
-                accessibilityLabel={sceneText.take(itemName(item))}
+                accessibilityLabel={sceneText.take(itemName(ITEMS, item))}
                 onPress={() => dispatch({ type: "take", item })}
                 className={`${SLOT_LOOK} active:border-white/80`}
                 style={{ width: SLOT, height: SLOT }}

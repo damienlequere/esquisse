@@ -1,12 +1,5 @@
-import {
-  APP_NAME,
-  type GameId,
-  gameSummary,
-  games,
-  sceneSummary,
-  scenes,
-  TAGLINE,
-} from "@esquisse/shared";
+import { type GameId, games, scenes } from "@esquisse/content";
+import { APP_NAME, gameSummary, sceneSummary, TAGLINE } from "@esquisse/shared";
 import Link from "next/link";
 import { type SceneId, sceneImages } from "../scenes.ts";
 

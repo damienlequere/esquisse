@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@esquisse/content": "workspace:*",
     "@esquisse/shared": "workspace:*",
     "@expo/metro-runtime": "~58.0.15",
     "@shopify/react-native-skia": "2.14.0",

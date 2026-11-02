@@ -1,4 +1,4 @@
-import { games, isGameId } from "@esquisse/shared";
+import { games, isGameId } from "@esquisse/content";
 import { Redirect, useLocalSearchParams } from "expo-router";
 import { Game } from "../../components/Game.tsx";
 

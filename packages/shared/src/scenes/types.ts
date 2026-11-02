@@ -32,7 +32,7 @@ export type SceneObject = {
   label: string;
   text?: string;
   actions?: ObjectAction[];
-  // What it holds, by item (see ITEMS), up to CONTAINER_SLOTS: shown by an
+  // What it holds, by item (see ITEMS in @esquisse/content), up to CONTAINER_SLOTS: shown by an
   // action with search, taken one by one into the inventory.
   contents?: string[];
 };
@@ -89,6 +89,6 @@ export type ObjectBoxes = Record<string, Box>;
 export type CharacterAspects = Record<string, number>;
 
 // A scene and what the generator found in its images (see
-// packages/generator/src/generate-scene.ts). The images are in packages/shared/assets,
-// listed by each app (apps/web/scenes.ts, apps/mobile/src/scenes.ts).
+// packages/generator/src/generate-scene.ts). Each one is in content/scenes/<id>,
+// with its images, listed by each app (apps/web/scenes.ts, apps/mobile/src/scenes.ts).
 export type SceneData = { scene: Scene; objects: ObjectBoxes; aspects: CharacterAspects };

@@ -7,9 +7,16 @@ apps/
   web/       Next.js 16 (App Router) + TypeScript + Tailwind CSS 4
   mobile/    Expo SDK 57 (React Native 0.86) + Expo Router + NativeWind 4
 packages/
-  shared/    Plain TypeScript shared by both apps (@esquisse/shared)
-  generator/ Node scripts that write and paint the scenes (@esquisse/generator)
+  shared/    Plain TypeScript shared by both apps: how a scene and a game are played (@esquisse/shared)
+  generator/ Node scripts that write and paint the scenes, and check the games (@esquisse/generator)
+content/     What the games are made of: scenes, items, games (@esquisse/content)
+  scenes/<id>/ a scene: its JSON, its images, their originals in sources/
+  items/       the items (ITEMS) and their images, their originals in sources/
+  games/<id>/  a game: its scenes, linked by their exits
 ```
+
+The code never names a scene: the content is data that the apps import and the
+generator writes.
 
 Tooling: pnpm workspaces (versions in the `catalog:` of `pnpm-workspace.yaml`),
 Turborepo for tasks, Biome for lint and format.
@@ -60,7 +67,7 @@ which opens a menu of its actions next to where it was clicked, and is slightly
 overexposed while it is open (not when pointed at) (`actions` in `scene.json`; without them, its
 `label` and `text` are its only action; an action with `search` shows
 instead what the object holds, `contents`, up to nine items listed in `ITEMS`
-in packages/shared, each of which goes to the inventory when pressed), and the characters, clickable too, open
+in `content/items`, each of which goes to the inventory when pressed), and the characters, clickable too, open
 a dialogue. An action's text goes to the text panel, which it does not open. On the web, the frame adapts to the screen (see The device frame); in the mobile app, the scene takes the whole screen. A scene opens
 on its title, in the middle, on black; its intro fades in under it, and once it
 has had time to be read (35 ms per character), an arrow to enter fades in, in
@@ -101,14 +108,15 @@ plays on a scene's first visit only.
 
 | File | Role |
 | --- | --- |
-| `packages/shared/src/scenes/<id>/scene.json` | The scene: safe zone, prompts, positions, texts and dialogues |
-| `packages/shared/src/scenes/<id>/objects.json`, `characters.json` | Detected boxes, layers' proportions (generated) |
-| `packages/shared/src/scenes/index.ts` | The scenes, for both apps (`scenes.foret`), and their types (generated) |
-| `packages/generator/sources/<id>/` | Original images and the composition guide |
-| `packages/shared/assets/scenes/<id>/` | Converted images, for both apps |
+| `content/scenes/<id>/scene.json` | The scene: safe zone, prompts, positions, texts and dialogues |
+| `content/scenes/<id>/objects.json`, `characters.json` | Detected boxes, layers' proportions (generated) |
+| `content/scenes/<id>/*.webp` | Converted images, for both apps |
+| `content/scenes/<id>/sources/` | Original images, never bundled |
+| `content/scenes/index.ts` | The scenes, for both apps (`scenes.foret`) (generated) |
+| `content/items/index.ts`, `content/items/<id>.webp` | The items (`ITEMS`): their names, their images |
 | `apps/web/scenes.ts`, `apps/mobile/src/scenes.ts` | Each app's list of the images (generated): Next and Metro each need every import spelled out |
 | `apps/web/components/Scene.tsx`, `apps/mobile/src/components/Scene.tsx` | The scene, in each app |
-| `packages/shared/src/games/<id>/game.json`, `games/index.ts` | The games: their scenes, linked by their exits (written by hand) |
+| `content/games/<id>/game.json`, `content/games/index.ts` | The games: their scenes, linked by their exits (written by hand) |
 | `packages/shared/src/scenes/play.ts` | How a game is played (`playGame`), the same in both apps |
 | `apps/web/components/Game.tsx`, `apps/mobile/src/components/Game.tsx` | A game, from scene to scene, in each app; a scene alone is a game of its own |
 
@@ -117,7 +125,7 @@ plays on a scene's first visit only.
 A game links scenes, each one still generated and adjusted alone. A scene
 declares its **exits**: an object's action with `exit` (`{ "label": "Entrer",
 "exit": "auberge" }`), a name of its own. The game, in
-`packages/shared/src/games/<id>/game.json`, says where each one leads:
+`content/games/<id>/game.json`, says where each one leads:
 
 ```json
 {
@@ -306,15 +314,15 @@ Que veux-tu ajouter ? (une description, un numéro d'idée, d pour des détails 
 
 What is validated is saved at once (`scene.json`, `objects.json`,
 `characters.json`, the images) and the scene is listed for both apps
-(`packages/shared/src/scenes/index.ts`, `apps/web/scenes.ts`,
+(`content/scenes/index.ts`, `apps/web/scenes.ts`,
 `apps/mobile/src/scenes.ts`): the session can stop at any time, and `pnpm dev`
 shows the scene on the home page and at `/scene/<id>`.
 
 | What | Where |
 | --- | --- |
-| The scene, its texts and the positions | `packages/shared/src/scenes/<id>/scene.json`, `objects.json`, `characters.json` |
-| The originals | `packages/generator/sources/<id>/fond.jpg`, `<character>.jpg` |
-| The converted images | `packages/shared/assets/scenes/<id>/fond.webp`, `<character>.webp` |
+| The scene, its texts and the positions | `content/scenes/<id>/scene.json`, `objects.json`, `characters.json` |
+| The converted images | `content/scenes/<id>/fond.webp`, `<character>.webp` |
+| The originals | `content/scenes/<id>/sources/fond.jpg`, `<character>.jpg` |
 
 ### Going on, starting over
 
@@ -344,16 +352,12 @@ that has objects.
 pnpm remove-scene <id>
 ```
 
-It deletes the scene's three folders (`packages/shared/src/scenes/<id>/`,
-`packages/shared/assets/scenes/<id>/`, `packages/generator/sources/<id>/`),
-after asking (`--yes` skips the question), then lists the remaining scenes for
+It deletes the scene's folder (`content/scenes/<id>/`), after asking (`--yes` skips the question), then lists the remaining scenes for
 both apps.
 
 ### Committing
 
-Commit the scene's folders (`packages/shared/src/scenes/<id>/`,
-`packages/shared/assets/scenes/<id>/`, `packages/generator/sources/<id>/`) with
-the three lists, which are written by the generator and never edited by hand.
+Commit the scene's folder (`content/scenes/<id>/`) with the three lists, which are written by the generator and never edited by hand.
 
 ## The device frame (web)
 

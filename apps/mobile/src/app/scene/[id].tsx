@@ -1,4 +1,5 @@
-import { sceneGame, scenes } from "@esquisse/shared";
+import { ITEMS, scenes } from "@esquisse/content";
+import { sceneGame } from "@esquisse/shared";
 import { Redirect, useLocalSearchParams } from "expo-router";
 import { Game } from "../../components/Game.tsx";
 import { isSceneId } from "../../scenes.ts";
@@ -9,5 +10,5 @@ import { isSceneId } from "../../scenes.ts";
 export default function ScenePage() {
   const { id } = useLocalSearchParams<{ id: string }>();
   if (!isSceneId(id)) return <Redirect href="/" />;
-  return <Game game={sceneGame(id, scenes[id])} />;
+  return <Game game={sceneGame(id, scenes[id], ITEMS)} />;
 }

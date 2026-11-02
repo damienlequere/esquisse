@@ -1,4 +1,5 @@
-import { sceneGame, scenes } from "@esquisse/shared";
+import { ITEMS, scenes } from "@esquisse/content";
+import { sceneGame } from "@esquisse/shared";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Game } from "../../../components/Game.tsx";
@@ -18,5 +19,5 @@ export async function generateMetadata({ params }: PageProps<"/scene/[id]">): Pr
 export default async function ScenePage({ params }: PageProps<"/scene/[id]">) {
   const { id } = await params;
   if (!isSceneId(id)) notFound();
-  return <Game game={sceneGame(id, scenes[id])} />;
+  return <Game game={sceneGame(id, scenes[id], ITEMS)} />;
 }

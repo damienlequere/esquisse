@@ -1,5 +1,9 @@
 "use client";
 
+import { ITEMS } from "@esquisse/content";
+import knife from "@esquisse/content/items/couteau.webp";
+import lantern from "@esquisse/content/items/lanterne.webp";
+import shovel from "@esquisse/content/items/pelle.webp";
 import {
   BACK_ARROW,
   type Character,
@@ -26,9 +30,6 @@ import {
   sceneLayout,
   sceneText,
 } from "@esquisse/shared";
-import knife from "@esquisse/shared/assets/items/couteau.webp";
-import lantern from "@esquisse/shared/assets/items/lanterne.webp";
-import shovel from "@esquisse/shared/assets/items/pelle.webp";
 import { useRouter } from "next/navigation";
 import {
   type CSSProperties,
@@ -47,7 +48,7 @@ import { RingMenu } from "./RingMenu.tsx";
 import styles from "./Scene.module.css";
 import { Toast } from "./Toast.tsx";
 
-// The items' images, by id (see ITEMS in packages/shared).
+// The items' images, by id (see ITEMS in @esquisse/content).
 const ITEM_IMAGES: Record<string, string> = {
   pelle: shovel.src,
   lanterne: lantern.src,
@@ -290,7 +291,7 @@ export const Scene = ({
             return item === undefined ? (
               <li key={slot} aria-label={sceneText.emptySlot} />
             ) : (
-              <li key={slot} aria-label={itemName(item)}>
+              <li key={slot} aria-label={itemName(ITEMS, item)}>
                 <img src={ITEM_IMAGES[item]} alt="" draggable={false} />
               </li>
             );
@@ -342,7 +343,7 @@ export const Scene = ({
                 <button
                   type="button"
                   className={styles.take}
-                  aria-label={sceneText.take(itemName(item))}
+                  aria-label={sceneText.take(itemName(ITEMS, item))}
                   onClick={() => dispatch({ type: "take", item })}
                 >
                   <img src={ITEM_IMAGES[item]} alt="" draggable={false} />

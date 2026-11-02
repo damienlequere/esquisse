@@ -1,12 +1,5 @@
-import {
-  APP_NAME,
-  type GameId,
-  gameSummary,
-  games,
-  sceneSummary,
-  scenes,
-  TAGLINE,
-} from "@esquisse/shared";
+import { type GameId, games, scenes } from "@esquisse/content";
+import { APP_NAME, gameSummary, sceneSummary, TAGLINE } from "@esquisse/shared";
 import { Link } from "expo-router";
 import { Pressable, ScrollView, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";

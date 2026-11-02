@@ -2,7 +2,7 @@
 
 import type { ImageSourcePropType } from "react-native";
 
-// The scenes' images, bundled with the app from packages/shared/assets, like the
+// The scenes' images, bundled with the app from content/scenes, like the
 // web site's (apps/web/scenes.ts): Metro needs each require spelled out.
 export type SceneImages = {
   background: ImageSourcePropType;
@@ -12,20 +12,20 @@ export type SceneImages = {
 
 export const sceneImages = {
   auberge: {
-    background: require("@esquisse/shared/assets/scenes/auberge/fond.webp"),
+    background: require("@esquisse/content/scenes/auberge/fond.webp"),
     characters: {},
     effects: {},
   },
   tristram: {
-    background: require("@esquisse/shared/assets/scenes/tristram/fond.webp"),
+    background: require("@esquisse/content/scenes/tristram/fond.webp"),
     characters: {},
     effects: {
       ciel: [
-        require("@esquisse/shared/assets/scenes/tristram/ciel.webp"),
-        require("@esquisse/shared/assets/scenes/tristram/ciel-devant.webp"),
+        require("@esquisse/content/scenes/tristram/ciel.webp"),
+        require("@esquisse/content/scenes/tristram/ciel-devant.webp"),
       ],
-      lueur: [require("@esquisse/shared/assets/scenes/tristram/lueur.webp")],
-      feu: [require("@esquisse/shared/assets/scenes/tristram/feu.webp")],
+      lueur: [require("@esquisse/content/scenes/tristram/lueur.webp")],
+      feu: [require("@esquisse/content/scenes/tristram/feu.webp")],
       pluie: [],
     },
   },

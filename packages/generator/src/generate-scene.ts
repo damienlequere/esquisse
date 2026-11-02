@@ -20,9 +20,8 @@
 // made here; when the background is retouched, what they move is found again.
 //
 // What is validated is saved at once, so the session can stop at any time: the
-// scene and the positions in packages/shared/src/scenes/<id>, the converted
-// images in packages/shared/assets/scenes/<id>, the originals in
-// packages/generator/sources/<id>, and the scene listed for both apps (see
+// scene, the positions and the converted images in content/scenes/<id>, the
+// originals in its sources/, and the scene listed for both apps (see
 // registry.ts). Needs ANTHROPIC_API_KEY (to write) and GEMINI_API_KEY (for the
 // images), in packages/generator/.env.local or .env (see env.ts).
 
@@ -89,9 +88,11 @@ if (args.length > 2) throw new Error(`Only one brief, in quotes.\n${USAGE}`);
 const orientation = args[0] as Orientation | undefined;
 const brief = args[1];
 
-const DIR = join(ROOT, "packages/shared/src/scenes", id);
-const SOURCES = join(GENERATOR, "sources", id);
-const MEDIA = join(ROOT, "packages/shared/assets/scenes", id);
+// A scene's folder holds it all: its texts and positions, its converted
+// images, and their originals in sources/.
+const DIR = join(ROOT, "content/scenes", id);
+const SOURCES = join(DIR, "sources");
+const MEDIA = DIR;
 const SCENE = join(DIR, "scene.json");
 
 // Both are checked before anything is paid for.

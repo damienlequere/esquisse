@@ -20,8 +20,8 @@ if (id === undefined || args.length > 0) throw new Error("Usage: pnpm show-scene
 // Checked as in generate-scene.ts: the id must not reach outside its folders.
 if (!/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/.test(id)) throw new Error(`Invalid id: ${id} (kebab-case)`);
 
-const DIR = join(ROOT, "packages/shared/src/scenes", id);
-const MEDIA = join(ROOT, "packages/shared/assets/scenes", id);
+const DIR = join(ROOT, "content/scenes", id);
+const MEDIA = DIR;
 if (!existsSync(join(DIR, "scene.json"))) throw new Error(`No scene "${id}"`);
 
 const read = (file: string) =>

@@ -1,5 +1,5 @@
 // Writes the lists of the scenes that Next and Metro need spelled out, one
-// import per file: packages/shared/src/scenes/index.ts, apps/web/scenes.ts and
+// import per file: content/scenes/index.ts, apps/web/scenes.ts and
 // apps/mobile/src/scenes.ts. A scene is listed once all its files are there.
 
 import { execFileSync } from "node:child_process";
@@ -9,8 +9,7 @@ import type { Scene } from "@esquisse/shared";
 import { effectFiles } from "@esquisse/shared/effects";
 
 const ROOT = join(import.meta.dirname, "../../..");
-const SCENES = join(ROOT, "packages/shared/src/scenes");
-const MEDIA = join(ROOT, "packages/shared/assets/scenes");
+const SCENES = join(ROOT, "content/scenes");
 
 const HEADER = "// Written by packages/generator/src/generate-scene.ts: do not edit by hand.";
 
@@ -28,7 +27,7 @@ const effectsOf = (scene: Scene) =>
 const complete = (id: string, scene: Scene) =>
   ["scene.json", "objects.json", "characters.json"].every((f) => existsSync(join(SCENES, id, f))) &&
   ["fond", ...scene.characters.map((c) => c.id), ...effectsOf(scene).flatMap((e) => e.files)].every(
-    (f) => existsSync(join(MEDIA, id, `${f}.webp`)),
+    (f) => existsSync(join(SCENES, id, `${f}.webp`)),
   );
 
 const listScenes = (): Listed[] =>
@@ -49,8 +48,9 @@ const listScenes = (): Listed[] =>
         : [];
     });
 
-const shared = (scenes: Listed[]) => `${HEADER}
+const content = (scenes: Listed[]) => `${HEADER}
 
+import type { SceneData } from "@esquisse/shared";
 ${scenes
   .flatMap(({ id }) => [
     `import ${camel(id)}Aspects from "./${id}/characters.json";`,
@@ -58,14 +58,6 @@ ${scenes
     `import ${camel(id)}Scene from "./${id}/scene.json";`,
   ])
   .join("\n")}
-import type { SceneData } from "./types.ts";
-
-export * from "./effects.ts";
-export * from "./items.ts";
-export * from "./layout.ts";
-export * from "./play.ts";
-export * from "./summary.ts";
-export * from "./types.ts";
 
 export const scenes = {
 ${scenes
@@ -77,7 +69,7 @@ ${scenes
 } satisfies Record<string, SceneData>;
 `;
 
-const asset = (id: string, file: string) => `@esquisse/shared/assets/scenes/${id}/${file}.webp`;
+const asset = (id: string, file: string) => `@esquisse/content/scenes/${id}/${file}.webp`;
 
 const web = (scenes: Listed[]) => `${HEADER}
 
@@ -91,7 +83,7 @@ ${scenes
   .join("\n")}
 import type { StaticImageData } from "next/image";
 
-// The scenes' images, served from packages/shared/assets, like the mobile app's
+// The scenes' images, served from content/scenes, like the mobile app's
 // (apps/mobile/src/scenes.ts): the background, the characters' layers, and the
 // images of the background's animations, by effect (see effectFiles).
 export type SceneImages = {
@@ -125,7 +117,7 @@ const mobile = (scenes: Listed[]) => `${HEADER}
 
 import type { ImageSourcePropType } from "react-native";
 
-// The scenes' images, bundled with the app from packages/shared/assets, like the
+// The scenes' images, bundled with the app from content/scenes, like the
 // web site's (apps/web/scenes.ts): Metro needs each require spelled out.
 export type SceneImages = {
   background: ImageSourcePropType;
@@ -157,7 +149,7 @@ export const isSceneId = (id: string): id is SceneId => Object.hasOwn(sceneImage
 export const writeRegistries = () => {
   const scenes = listScenes();
   const files = {
-    [join(SCENES, "index.ts")]: shared(scenes),
+    [join(SCENES, "index.ts")]: content(scenes),
     [join(ROOT, "apps/web/scenes.ts")]: web(scenes),
     [join(ROOT, "apps/mobile/src/scenes.ts")]: mobile(scenes),
   };

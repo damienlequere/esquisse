@@ -223,6 +223,9 @@ importers:
 
   apps/mobile:
     dependencies:
+      '@esquisse/content':
+        specifier: workspace:*
+        version: link:../../content
       '@esquisse/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -293,6 +296,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@esquisse/content':
+        specifier: workspace:*
+        version: link:../../content
       '@esquisse/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -324,6 +330,16 @@ importers:
       tailwindcss:
         specifier: 'catalog:'
         version: 4.3.3
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  content:
+    dependencies:
+      '@esquisse/shared':
+        specifier: workspace:*
+        version: link:../packages/shared
+    devDependencies:
       typescript:
         specifier: 'catalog:'
         version: 7.0.2
