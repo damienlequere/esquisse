@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@esquisse/content": "workspace:*",
-    "@esquisse/shared": "workspace:*",
+    "@esquisse/engine": "workspace:*",
     "@expo/metro-runtime": "~58.0.15",
     "@shopify/react-native-skia": "2.14.0",
     "expo": "~58.0.19",

@@ -5,7 +5,7 @@ import {
   ringItemOffset,
   ringSizes,
   sceneText,
-} from "@esquisse/shared";
+} from "@esquisse/engine";
 import { useEffect, useRef, useState } from "react";
 import { type GestureResponderEvent, Text, View } from "react-native";
 import Animated, { useAnimatedStyle, withDelay, withTiming } from "react-native-reanimated";
@@ -53,7 +53,7 @@ export type RingItem<Id extends string> = { id: Id; label: string; icon?: string
 
 // A circle in the bottom right corner of the screen: held, it spreads `items`
 // in a quarter of a circle around it, from its left to above it, and the one
-// under the finger when it is let go is chosen (ringItemAt in packages/shared);
+// under the finger when it is let go is chosen (ringItemAt in packages/engine);
 // let go anywhere else, it folds. A screen reader offers its items as actions.
 // Its sizes follow the frame's, the scene's screen (ringSizes); a phone's until
 // it is measured.

@@ -1,6 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
 import { preload } from "react-dom";
-import type { SceneImages } from "../scenes.ts";
+import type { SceneImages } from "../images.ts";
 import { Stage } from "./Stage.tsx";
 
 // A scene's frame, the phone's, in a device frame when the screen allows it

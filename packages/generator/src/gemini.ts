@@ -2,7 +2,7 @@
 // (Nano Banana), boxes through generateContent in vision. The key comes from
 // GEMINI_API_KEY.
 
-import type { Box } from "@esquisse/shared";
+import type { Box } from "@esquisse/engine";
 
 export type ImageRequest = {
   model: string;

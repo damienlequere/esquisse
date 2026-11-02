@@ -1,4 +1,4 @@
-import { APP_NAME } from "@esquisse/shared";
+import { APP_NAME } from "@esquisse/engine";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";

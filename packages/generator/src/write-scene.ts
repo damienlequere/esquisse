@@ -14,8 +14,8 @@ import type {
   SceneData,
   SceneObject,
   Topic,
-} from "@esquisse/shared";
-import { characterBox, isLandscape, sceneRatio } from "@esquisse/shared/layout";
+} from "@esquisse/engine";
+import { characterBox, isLandscape, sceneRatio } from "@esquisse/engine/layout";
 import { z } from "zod";
 import { CHARACTER_ASPECT, detailProblems, sceneProblems } from "./check-scene.ts";
 

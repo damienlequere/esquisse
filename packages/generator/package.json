@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "catalog:",
-    "@esquisse/shared": "workspace:*",
+    "@esquisse/engine": "workspace:*",
     "sharp": "catalog:",
     "zod": "catalog:"
   },

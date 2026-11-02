@@ -1,9 +1,9 @@
 // The mask of lights lit by a fire (windows, a lantern), for their animation
-// (see packages/shared/src/scenes/effects.ts): in each box where Gemini found
+// (see packages/engine/src/scenes/effects.ts): in each box where Gemini found
 // one, its warm pixels, white, and around them a softer glow on the wall, which
 // flickers with them.
 
-import type { Box } from "@esquisse/shared";
+import type { Box } from "@esquisse/engine";
 import sharp from "sharp";
 
 // The image is searched small: the lights' outline is softened.
@@ -72,7 +72,7 @@ export const lightsMask = async (jpg: Buffer, boxes: Box[]) => {
     .toBuffer();
 };
 
-// The zone of a glow (see GLOW in packages/shared/src/scenes/effects.ts): the
+// The zone of a glow (see GLOW in packages/engine/src/scenes/effects.ts): the
 // boxes where Gemini found what glows, a little wider, their edges softened.
 // The shader finds the glow in it by its colour.
 const GLOW_MARGIN = 0.2;

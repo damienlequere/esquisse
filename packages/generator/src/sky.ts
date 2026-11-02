@@ -1,5 +1,5 @@
 // What stands in front of a scene's other sky (see SKY in
-// packages/shared/src/scenes/effects.ts), found again after a retouch.
+// packages/engine/src/scenes/effects.ts), found again after a retouch.
 //
 // The sky's matte: for each pixel of the background, at its full size, how
 // much of it is sky (white) rather than what stands in front of it (black): the
@@ -12,7 +12,7 @@
 // sky as much as its colour is nearer the sky around it than what stands in
 // front of it around it. What is red (the cathedral's glow) is not sky.
 
-import { SKY_ASPECT, SKY_HEIGHT } from "@esquisse/shared/effects";
+import { SKY_ASPECT, SKY_HEIGHT } from "@esquisse/engine/effects";
 import sharp from "sharp";
 
 // ── Where the sky is, roughly ────────────────────────────────────────────────
@@ -346,7 +346,7 @@ export const skyMatte = async (jpg: Buffer) => {
 // ── The new sky ──────────────────────────────────────────────────────────────
 
 // The background as it is still: its front over the new sky, as the apps draw
-// it when it starts (see SKY in packages/shared/src/scenes/effects.ts).
+// it when it starts (see SKY in packages/engine/src/scenes/effects.ts).
 export const stillWithSky = async (front: Buffer, sky: Buffer) => {
   const { width = 0, height = 0 } = await sharp(front).metadata();
   const high = Math.round(height * SKY_HEIGHT);

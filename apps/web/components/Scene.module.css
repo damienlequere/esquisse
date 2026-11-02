@@ -191,7 +191,7 @@
 /* A window in the middle of the frame, over a darkened scene, in both
    orientations (see SlotsWindow): the inventory, or what an object searched
    holds. Its slots, --columns to a row (INVENTORY_COLUMNS and CONTAINER_COLUMNS
-   in packages/shared); an item to take glows white under the pointer. */
+   in packages/engine); an item to take glows white under the pointer. */
 .backdrop {
   position: absolute;
   inset: 0;
@@ -411,7 +411,7 @@
    under it; shortly after it has appeared, an arrow to enter fades in, in the
    bottom right corner of the frame.
    Pressed, everything fades out to show the scene. The durations are set by the scene (INTRO in
-   packages/shared). It cannot be skipped. */
+   packages/engine). It cannot be skipped. */
 .intro {
   position: absolute;
   inset: 0;

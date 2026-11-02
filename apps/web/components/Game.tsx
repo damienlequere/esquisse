@@ -1,30 +1,41 @@
 "use client";
 
-import { exitTo, type GameData, isLandscape, playGame, startGame } from "@esquisse/shared";
+import { exitTo, type GameData, isLandscape, playGame, startGame } from "@esquisse/engine";
 import { useMemo, useReducer } from "react";
-import { isSceneId, sceneImages } from "../scenes.ts";
+import { type GameImages, gameImages } from "../images.ts";
 import { Scene } from "./Scene.tsx";
 import { SceneFrame } from "./SceneFrame.tsx";
 
-// A game, from scene to scene, as playGame in packages/shared plays it: each
+const IMAGES: Record<string, GameImages> = gameImages;
+
+// A game, from scene to scene, as playGame in packages/engine plays it: each
 // scene in its own frame, which waits for its images, then shows it. A scene
-// played alone is a game of its own (see sceneGame). The mobile app has the
-// same (apps/mobile/src/components/Game.tsx).
-export const Game = ({ game }: { game: GameData }) => {
+// played alone is a game of its own (see sceneGame), with the images of the
+// game it is in, `id`. The mobile app has the same
+// (apps/mobile/src/components/Game.tsx).
+export const Game = ({ id, game }: { id: string; game: GameData }) => {
   const reducer = useMemo(() => playGame(game), [game]);
   const [state, dispatch] = useReducer(reducer, game, startGame);
   const data = game.scenes[state.at];
-  if (data === undefined || !isSceneId(state.at)) throw new Error(`No scene « ${state.at} »`);
+  const images = IMAGES[id]?.scenes[state.at];
+  if (data === undefined || images === undefined) throw new Error(`No scene « ${state.at} »`);
   // The back button, where the game links the scene's back exit.
   const { back } = data.scene;
   const onBack =
     back !== undefined && exitTo(game, state, back) !== undefined
       ? () => dispatch({ type: "exit", exit: back })
       : undefined;
-  const images = sceneImages[state.at];
   return (
     <SceneFrame key={state.at} images={images} landscape={isLandscape(data.scene)}>
-      <Scene data={data} images={images} state={state} dispatch={dispatch} onBack={onBack} />
+      <Scene
+        data={data}
+        images={images}
+        state={state}
+        dispatch={dispatch}
+        onBack={onBack}
+        items={game.items}
+        itemImages={IMAGES[id]?.items ?? {}}
+      />
     </SceneFrame>
   );
 };

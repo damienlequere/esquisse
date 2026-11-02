@@ -10,7 +10,7 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@esquisse/shared": "workspace:*"
+    "@esquisse/engine": "workspace:*"
   },
   "devDependencies": {
     "typescript": "catalog:"

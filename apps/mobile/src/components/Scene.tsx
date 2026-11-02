@@ -1,4 +1,3 @@
-import { ITEMS } from "@esquisse/content";
 import {
   BACK_ARROW,
   type Box,
@@ -12,6 +11,7 @@ import {
   INTRO_HOLD,
   INVENTORY_COLUMNS,
   INVENTORY_SLOTS,
+  type Items,
   itemName,
   type ObjectAction,
   objectActions,
@@ -24,7 +24,7 @@ import {
   type SceneObject,
   sceneLayout,
   sceneText,
-} from "@esquisse/shared";
+} from "@esquisse/engine";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { cssInterop } from "nativewind";
@@ -51,14 +51,14 @@ import Animated, {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
-import type { SceneImages } from "../scenes.ts";
+import type { SceneImages } from "../images.ts";
 import { Effects } from "./Effects.tsx";
 import { RingMenu } from "./RingMenu.tsx";
 import { Toast } from "./Toast.tsx";
 
 // Same scene as the web one (apps/web/components/Scene.tsx): the background
 // covers the screen, each object is one action, each character opens a dialogue.
-// Everything is placed in % of the image (see sceneLayout in packages/shared),
+// Everything is placed in % of the image (see sceneLayout in packages/engine),
 // so it follows the cropping. What it shows as it is played is the game's (see
 // Game), as playGame plays it, shared with the web site.
 
@@ -84,17 +84,10 @@ const BOX_STYLE = {
   backgroundColor: "rgba(12,10,9,0.85)",
 };
 
-// The items' images, by id (see ITEMS in @esquisse/content).
-const ITEM_IMAGES: Record<string, ImageSourcePropType> = {
-  pelle: require("@esquisse/content/items/pelle.webp"),
-  lanterne: require("@esquisse/content/items/lanterne.webp"),
-  couteau: require("@esquisse/content/items/couteau.webp"),
-};
-
 // An item in a slot, the whole slot (the web's Scene.module.css has the same).
-const ItemImage = ({ item }: { item: string }) => (
+const ItemImage = ({ source }: { source: ImageSourcePropType | undefined }) => (
   <Image
-    source={ITEM_IMAGES[item]}
+    source={source}
     resizeMode="contain"
     style={{ width: "76%", height: "76%", margin: "12%" }}
   />
@@ -138,9 +131,14 @@ export const Scene = ({
   state,
   dispatch,
   onBack,
+  items,
+  itemImages,
 }: {
   data: SceneData;
   images: SceneImages;
+  // The game's items, and their images, by id.
+  items: Items;
+  itemImages: Record<string, ImageSourcePropType>;
   state: GameState;
   dispatch(action: GameAction): void;
   // Leaves the scene by its back exit, where the game links it.
@@ -372,12 +370,12 @@ export const Scene = ({
                 key={slot}
                 accessible
                 accessibilityLabel={
-                  item === undefined ? sceneText.emptySlot : itemName(ITEMS, item)
+                  item === undefined ? sceneText.emptySlot : itemName(items, item)
                 }
                 className={SLOT_LOOK}
                 style={{ width: SLOT, height: SLOT }}
               >
-                {item !== undefined && <ItemImage item={item} />}
+                {item !== undefined && <ItemImage source={itemImages[item]} />}
               </View>
             );
           })}
@@ -439,12 +437,12 @@ export const Scene = ({
               <Pressable
                 key={slot}
                 accessibilityRole="button"
-                accessibilityLabel={sceneText.take(itemName(ITEMS, item))}
+                accessibilityLabel={sceneText.take(itemName(items, item))}
                 onPress={() => dispatch({ type: "take", item })}
                 className={`${SLOT_LOOK} active:border-white/80`}
                 style={{ width: SLOT, height: SLOT }}
               >
-                <ItemImage item={item} />
+                <ItemImage source={itemImages[item]} />
               </Pressable>
             );
           })}

@@ -9,8 +9,8 @@ export default function RootLayout() {
         {/* The home screen stays upright; each scene turns the screen like its
             image (components/Game.tsx). */}
         <Stack.Screen name="index" options={{ headerShown: false, orientation: "portrait" }} />
-        <Stack.Screen name="scene/[id]" options={{ headerShown: false }} />
-        <Stack.Screen name="game/[id]" options={{ headerShown: false }} />
+        <Stack.Screen name="game/[id]/index" options={{ headerShown: false }} />
+        <Stack.Screen name="game/[id]/scene/[scene]" options={{ headerShown: false }} />
       </Stack>
       <StatusBar style="auto" />
     </>

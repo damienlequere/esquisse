@@ -1,7 +1,11 @@
 // Builds a scene step by step, with its author, in the terminal:
 //
-//   pnpm generate <id> portrait|landscape "brief"   a new scene, from its brief
-//   pnpm generate <id>                              an existing scene, to add to it
+//   pnpm generate <game> <id> portrait|landscape "brief"   a new scene, from its brief
+//   pnpm generate <game> <id>                              an existing scene, to add to it
+//
+// A scene belongs to a game (content/games/<game>): a new game is made with its
+// first scene, which it starts in; its game.json then says where the exits of
+// the scenes added to it lead (see pnpm check-game).
 //
 // The orientation is the image's: portrait (9:16) or landscape (16:9), played
 // with the screen turned to match.
@@ -20,9 +24,9 @@
 // made here; when the background is retouched, what they move is found again.
 //
 // What is validated is saved at once, so the session can stop at any time: the
-// scene, the positions and the converted images in content/scenes/<id>, the
-// originals in its sources/, and the scene listed for both apps (see
-// registry.ts). Needs ANTHROPIC_API_KEY (to write) and GEMINI_API_KEY (for the
+// scene, the positions and the converted images in
+// content/games/<game>/scenes/<id>, the originals in its sources/, and the
+// scene listed for both apps (see registry.ts). Needs ANTHROPIC_API_KEY (to write) and GEMINI_API_KEY (for the
 // images), in packages/generator/.env.local or .env (see env.ts).
 
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -36,8 +40,8 @@ import type {
   Scene,
   SceneData,
   SceneObject,
-} from "@esquisse/shared";
-import { isLandscape } from "@esquisse/shared/layout";
+} from "@esquisse/engine";
+import { isLandscape } from "@esquisse/engine/layout";
 import sharp from "sharp";
 import { inside } from "./check-scene.ts";
 import { apiKey } from "./env.ts";
@@ -53,7 +57,7 @@ import {
   show,
   where,
 } from "./paint.ts";
-import { writeRegistries } from "./registry.ts";
+import { gameDir, ID, sceneDir, writeRegistries } from "./registry.ts";
 import { skyMatte, stillWithSky } from "./sky.ts";
 import {
   type Base,
@@ -70,14 +74,11 @@ import {
   type Orientation,
 } from "./write-scene.ts";
 
-const GENERATOR = join(import.meta.dirname, "..");
-const ROOT = join(GENERATOR, "../..");
-
-const USAGE = 'Usage: pnpm generate <id> [portrait|landscape "brief"]';
-const [id, ...args] = process.argv.slice(2);
-if (id === undefined) throw new Error(USAGE);
-// The id is a folder, a URL and a name in the registries' imports.
-if (!/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/.test(id)) throw new Error(`Invalid id: ${id} (kebab-case)`);
+const USAGE = 'Usage: pnpm generate <game> <id> [portrait|landscape "brief"]';
+const [game, id, ...args] = process.argv.slice(2);
+if (game === undefined || id === undefined) throw new Error(USAGE);
+// Both ids are folders, URLs and names in the registries' imports.
+for (const i of [game, id]) if (!ID.test(i)) throw new Error(`Invalid id: ${i} (kebab-case)`);
 const isOrientation = (o: string | undefined): o is Orientation =>
   o !== undefined && Object.hasOwn(FORMATS, o);
 if (args.length > 0 && !isOrientation(args[0])) {
@@ -90,8 +91,9 @@ const brief = args[1];
 
 // A scene's folder holds it all: its texts and positions, its converted
 // images, and their originals in sources/.
-const DIR = join(ROOT, "content/scenes", id);
+const DIR = sceneDir(game, id);
 const SOURCES = join(DIR, "sources");
+const GAME = join(gameDir(game), "game.json");
 const MEDIA = DIR;
 const SCENE = join(DIR, "scene.json");
 
@@ -214,7 +216,7 @@ const save = async ({ data, background, backgroundChanged, character, files }: C
       .toFile(join(MEDIA, `${character.id}.webp`));
   }
   writeRegistries();
-  console.log(`✓ Saved: /scene/${id} in both apps`);
+  console.log(`✓ Saved: /game/${game}/scene/${id} in both apps`);
 };
 
 const load = (): State => {
@@ -232,7 +234,8 @@ const load = (): State => {
   return { data, background: readFileSync(join(SOURCES, "fond.jpg")), layers };
 };
 
-const showState = async (s: State) => show(id, await render(s.data, s.background, s.layers));
+const showState = async (s: State) =>
+  show(`${game}-${id}`, await render(s.data, s.background, s.layers));
 
 // ── The background ───────────────────────────────────────────────────────────
 
@@ -554,10 +557,19 @@ if (orientation !== undefined && brief !== undefined) {
     if (answer === "n") process.exit(0);
     for (const dir of [DIR, SOURCES, MEDIA]) rmSync(dir, { recursive: true, force: true });
   }
+  // A new game starts in its first scene; its title is to be written by hand.
+  if (!existsSync(GAME)) {
+    mkdirSync(gameDir(game), { recursive: true });
+    writeFileSync(GAME, `${JSON.stringify({ title: game, start: id, links: {} }, null, 2)}\n`);
+    console.log(`New game "${game}", starting in "${id}": its title is in ${GAME}`);
+  }
   ({ state, suggestions } = await createBackground(brief, FORMATS[orientation]));
   state = await addRealism(state);
 } else {
-  if (!exists) throw new Error(`No scene "${id}": pnpm generate ${id} portrait|landscape "brief"`);
+  if (!exists)
+    throw new Error(
+      `No scene "${id}" in "${game}": pnpm generate ${game} ${id} portrait|landscape "brief"`,
+    );
   state = load();
   console.log(
     `${state.data.scene.title}: ${state.data.scene.objects.length} object(s), ${state.data.scene.characters.length} character(s)`,
@@ -599,7 +611,9 @@ for (const c of state.data.scene.characters) {
     c.dialogue.farewell === "" && "son au revoir",
   ].filter(Boolean);
   if (missing.length > 0) {
-    console.log(`⚠ ${c.name} n'a pas encore ${missing.join(" ni ")} : pnpm generate ${id}, puis p`);
+    console.log(
+      `⚠ ${c.name} n'a pas encore ${missing.join(" ni ")} : pnpm generate ${game} ${id}, puis p`,
+    );
   }
 }
-console.log(`✓ ${state.data.scene.title}: /scene/${id}, run pnpm dev to play it`);
+console.log(`✓ ${state.data.scene.title}: /game/${game}/scene/${id}, run pnpm dev to play it`);

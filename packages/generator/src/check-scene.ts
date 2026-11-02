@@ -4,8 +4,8 @@
 // zone too. Used when the scene is written
 // (write-scene.ts) and when the objects are detected (generate-scene.ts).
 
-import type { Box, Detail, Scene } from "@esquisse/shared";
-import { characterBox, sceneRatio } from "@esquisse/shared/layout";
+import type { Box, Detail, Scene } from "@esquisse/engine";
+import { characterBox, sceneRatio } from "@esquisse/engine/layout";
 
 // Tolerance on the safe zone's edges.
 export const MARGIN = 0.02;

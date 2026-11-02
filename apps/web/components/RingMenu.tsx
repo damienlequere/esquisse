@@ -1,4 +1,4 @@
-import { RING_BUTTON, ringItemAt, ringItemOffset, ringSizes, sceneText } from "@esquisse/shared";
+import { RING_BUTTON, ringItemAt, ringItemOffset, ringSizes, sceneText } from "@esquisse/engine";
 import {
   type CSSProperties,
   type KeyboardEvent,
@@ -19,7 +19,7 @@ export type RingItem<Id extends string> = { id: Id; label: string; icon?: string
 
 // A circle in the bottom right corner of its parent: held, it spreads `items`
 // in a quarter of a circle around it, from its left to above it, and the one
-// under the pointer when it is let go is chosen (ringItemAt in packages/shared);
+// under the pointer when it is let go is chosen (ringItemAt in packages/engine);
 // let go anywhere else, it folds. From the keyboard, Enter opens it, the arrows
 // go from one item to the next, Enter chooses, Escape folds it.
 // Its sizes follow its parent's, the frame (ringSizes).

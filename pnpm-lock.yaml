@@ -226,9 +226,9 @@ importers:
       '@esquisse/content':
         specifier: workspace:*
         version: link:../../content
-      '@esquisse/shared':
+      '@esquisse/engine':
         specifier: workspace:*
-        version: link:../../packages/shared
+        version: link:../../packages/engine
       '@expo/metro-runtime':
         specifier: ~58.0.15
         version: 58.0.15(@expo/log-box@58.0.13)(expo@58.0.19)(react-dom@19.3.0(react@19.3.0))(react-native@0.88.0(@babel/core@7.29.7(supports-color@8.1.1))(@react-native/metro-config@0.88.0(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(react@19.3.0)
@@ -299,9 +299,9 @@ importers:
       '@esquisse/content':
         specifier: workspace:*
         version: link:../../content
-      '@esquisse/shared':
+      '@esquisse/engine':
         specifier: workspace:*
-        version: link:../../packages/shared
+        version: link:../../packages/engine
       canvaskit-wasm:
         specifier: 0.42.0
         version: 0.42.0
@@ -336,9 +336,15 @@ importers:
 
   content:
     dependencies:
-      '@esquisse/shared':
+      '@esquisse/engine':
         specifier: workspace:*
-        version: link:../packages/shared
+        version: link:../packages/engine
+    devDependencies:
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  packages/engine:
     devDependencies:
       typescript:
         specifier: 'catalog:'
@@ -349,9 +355,9 @@ importers:
       '@anthropic-ai/sdk':
         specifier: 'catalog:'
         version: 0.137.0(zod@4.6.7)
-      '@esquisse/shared':
+      '@esquisse/engine':
         specifier: workspace:*
-        version: link:../shared
+        version: link:../engine
       sharp:
         specifier: 'catalog:'
         version: 0.35.5(@types/node@24.19.1)
@@ -362,12 +368,6 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 24.19.1
-      typescript:
-        specifier: 'catalog:'
-        version: 7.0.2
-
-  packages/shared:
-    devDependencies:
       typescript:
         specifier: 'catalog:'
         version: 7.0.2

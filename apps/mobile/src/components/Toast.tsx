@@ -1,4 +1,4 @@
-import { TOAST } from "@esquisse/shared";
+import { TOAST } from "@esquisse/engine";
 import { useEffect, useState } from "react";
 import { AccessibilityInfo, Text, View } from "react-native";
 import Animated, { FadeInDown, FadeOut, LinearTransition } from "react-native-reanimated";
@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 export type ToastMessage = { text: string; key: number };
 
 // Short messages at the bottom of the screen: each one slides in, stays, and
-// fades out by itself (TOAST in packages/shared). A new message, with a new
+// fades out by itself (TOAST in packages/engine). A new message, with a new
 // key, goes under those still shown, which it pushes up. Screen readers hear
 // it. The web has the same (apps/web/components/Toast.tsx). NativeWind styles
 // its Animated.View through Scene's cssInterop.

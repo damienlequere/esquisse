@@ -1,5 +1,5 @@
 {
-  "name": "@esquisse/shared",
+  "name": "@esquisse/engine",
   "private": true,
   "type": "module",
   "exports": {

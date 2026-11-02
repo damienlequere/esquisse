@@ -1,25 +1,33 @@
-// The games, for both apps, written by hand for now: each one's game.json
-// names its scenes, which must be in scenes/index.ts (pnpm check-game checks
-// it all, in packages/generator).
+// Written by packages/generator/src/generate-scene.ts: do not edit by hand.
 
-import { type Game, type GameData, gameScenes, type SceneData } from "@esquisse/shared";
-import { ITEMS } from "../items/index.ts";
-import { scenes } from "../scenes/index.ts";
+import type { GameData } from "@esquisse/engine";
 import tristramGame from "./tristram/game.json";
+import { ITEMS as tristramItems } from "./tristram/items/index.ts";
+import tristramSceneAubergeAspects from "./tristram/scenes/auberge/characters.json";
+import tristramSceneAubergeObjects from "./tristram/scenes/auberge/objects.json";
+import tristramSceneAubergeScene from "./tristram/scenes/auberge/scene.json";
+import tristramSceneTristramAspects from "./tristram/scenes/tristram/characters.json";
+import tristramSceneTristramObjects from "./tristram/scenes/tristram/objects.json";
+import tristramSceneTristramScene from "./tristram/scenes/tristram/scene.json";
 
-const sceneData = (id: string): SceneData => {
-  if (!Object.hasOwn(scenes, id)) throw new Error(`No scene « ${id} » in scenes/index.ts`);
-  return scenes[id as keyof typeof scenes];
-};
-
-const gameData = (game: Game): GameData => ({
-  game,
-  scenes: Object.fromEntries(gameScenes(game).map((id) => [id, sceneData(id)])),
-  items: ITEMS,
-});
-
+// The games, by id: each one with all its scenes, by id, and its items.
 export const games = {
-  tristram: gameData(tristramGame),
+  tristram: {
+    game: tristramGame,
+    scenes: {
+      auberge: {
+        scene: tristramSceneAubergeScene,
+        objects: tristramSceneAubergeObjects,
+        aspects: tristramSceneAubergeAspects,
+      },
+      tristram: {
+        scene: tristramSceneTristramScene,
+        objects: tristramSceneTristramObjects,
+        aspects: tristramSceneTristramAspects,
+      },
+    },
+    items: tristramItems,
+  },
 } satisfies Record<string, GameData>;
 
 export type GameId = keyof typeof games;

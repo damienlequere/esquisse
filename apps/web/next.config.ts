@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const config: NextConfig = {
   // Workspace packages are shipped as TypeScript sources.
-  transpilePackages: ["@esquisse/content", "@esquisse/shared"],
+  transpilePackages: ["@esquisse/content", "@esquisse/engine"],
   // CanvasKit (see components/Effects.tsx) asks for fs only when run by Node.
   turbopack: { resolveAlias: { fs: { browser: "./empty.ts" } } },
 };

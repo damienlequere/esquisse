@@ -7,16 +7,17 @@ apps/
   web/       Next.js 16 (App Router) + TypeScript + Tailwind CSS 4
   mobile/    Expo SDK 57 (React Native 0.86) + Expo Router + NativeWind 4
 packages/
-  shared/    Plain TypeScript shared by both apps: how a scene and a game are played (@esquisse/shared)
+  engine/    Plain TypeScript shared by both apps: how a scene and a game are played (@esquisse/engine)
   generator/ Node scripts that write and paint the scenes, and check the games (@esquisse/generator)
-content/     What the games are made of: scenes, items, games (@esquisse/content)
-  scenes/<id>/ a scene: its JSON, its images, their originals in sources/
-  items/       the items (ITEMS) and their images, their originals in sources/
-  games/<id>/  a game: its scenes, linked by their exits
+content/     The games (@esquisse/content)
+  games/<game>/
+    game.json      its title, its first scene, where each scene's exits lead
+    scenes/<id>/   a scene: its JSON, its images, their originals in sources/
+    items/         its items (ITEMS) and their images, their originals in sources/
 ```
 
-The code never names a scene: the content is data that the apps import and the
-generator writes.
+The code never names a game nor a scene: the content is data that the apps
+import and the generator writes. A game is one folder, all it needs in it.
 
 Tooling: pnpm workspaces (versions in the `catalog:` of `pnpm-workspace.yaml`),
 Turborepo for tasks, Biome for lint and format.
@@ -33,15 +34,15 @@ eas init      # for builds on Expo's servers
 
 ```bash
 pnpm install
-pnpm dev             # web site: http://localhost:3000 (a scene: /scene/foret)
+pnpm dev             # web site: http://localhost:3000 (a game: /game/tristram, a scene alone: /game/tristram/scene/auberge)
 pnpm dev:mobile      # Expo dev server: scan the QR code with Expo Go
 pnpm dev:all         # both, through Turborepo
 pnpm build           # production builds
 pnpm typecheck
 pnpm lint            # pnpm format to fix
-pnpm generate <id> portrait|landscape "brief"  # a new scene, built step by step (see Generating a scene)
-pnpm remove-scene <id> # removes a scene, its texts and its images
-pnpm show-scene <id> # the scene's background with what is clickable outlined, in the image viewer
+pnpm generate <game> <id> portrait|landscape "brief"  # a new scene of a game, built step by step (see Generating a scene)
+pnpm remove-scene <game> <id> # removes a scene, its texts and its images
+pnpm show-scene <game> <id> # the scene's background with what is clickable outlined, in the image viewer
 pnpm check-game [<id>] # checks a game's links, exits and flags against its scenes (every game without an id)
 pnpm loc             # lines of code per app and package (source / tests)
 pnpm deploy:preview  # lint, typecheck, check the games, then deploy the web site to a Vercel preview URL
@@ -52,7 +53,7 @@ pnpm deploy:prod     # same, to production
 
 Once, from the repository root: `vercel link`, to create or pick the Vercel
 project, then in its settings set **Root Directory** to `apps/web` (Vercel
-installs the whole pnpm workspace, so `@esquisse/shared` is found). The deploy
+installs the whole pnpm workspace, so `@esquisse/engine` is found). The deploy
 scripts then upload from the root. The region is set in `apps/web/vercel.json`
 (`fra1`, Paris).
 
@@ -60,14 +61,14 @@ The scripts are not named `deploy`: `pnpm deploy` is a built-in pnpm command.
 
 ## Clickable scenes
 
-Each scene, at `/scene/<id>` on the web site (`/scene/foret` for now), and in the mobile app, is a
+Each scene of a game, played alone at `/game/<game>/scene/<id>` on the web site, or in its game, and in the mobile app, is a
 clickable scene, ported from protagonist's `prototypes/scene-cliquable`: the
 place's image fills the frame, each object is a clickable part of the image,
 which opens a menu of its actions next to where it was clicked, and is slightly
 overexposed while it is open (not when pointed at) (`actions` in `scene.json`; without them, its
 `label` and `text` are its only action; an action with `search` shows
-instead what the object holds, `contents`, up to nine items listed in `ITEMS`
-in `content/items`, each of which goes to the inventory when pressed), and the characters, clickable too, open
+instead what the object holds, `contents`, up to nine items listed in its game's `ITEMS`
+(`content/games/<game>/items`), each of which goes to the inventory when pressed), and the characters, clickable too, open
 a dialogue. An action's text goes to the text panel, which it does not open. On the web, the frame adapts to the screen (see The device frame); in the mobile app, the scene takes the whole screen. A scene opens
 on its title, in the middle, on black; its intro fades in under it, and once it
 has had time to be read (35 ms per character), an arrow to enter fades in, in
@@ -108,16 +109,16 @@ plays on a scene's first visit only.
 
 | File | Role |
 | --- | --- |
-| `content/scenes/<id>/scene.json` | The scene: safe zone, prompts, positions, texts and dialogues |
-| `content/scenes/<id>/objects.json`, `characters.json` | Detected boxes, layers' proportions (generated) |
-| `content/scenes/<id>/*.webp` | Converted images, for both apps |
-| `content/scenes/<id>/sources/` | Original images, never bundled |
-| `content/scenes/index.ts` | The scenes, for both apps (`scenes.foret`) (generated) |
-| `content/items/index.ts`, `content/items/<id>.webp` | The items (`ITEMS`): their names, their images |
-| `apps/web/scenes.ts`, `apps/mobile/src/scenes.ts` | Each app's list of the images (generated): Next and Metro each need every import spelled out |
+| `content/games/<game>/scenes/<id>/scene.json` | The scene: safe zone, prompts, positions, texts and dialogues |
+| `content/games/<game>/scenes/<id>/objects.json`, `characters.json` | Detected boxes, layers' proportions (generated) |
+| `content/games/<game>/scenes/<id>/*.webp` | Converted images, for both apps |
+| `content/games/<game>/scenes/<id>/sources/` | Original images, never bundled |
+| `content/games/<game>/items/index.ts`, `items/<id>.webp` | The game's items (`ITEMS`): their names, their images |
+| `content/games/index.ts` | The games, with their scenes and items, for both apps (generated) |
+| `apps/web/images.ts`, `apps/mobile/src/images.ts` | Each app's list of the games' images (generated): Next and Metro each need every import spelled out |
 | `apps/web/components/Scene.tsx`, `apps/mobile/src/components/Scene.tsx` | The scene, in each app |
-| `content/games/<id>/game.json`, `content/games/index.ts` | The games: their scenes, linked by their exits (written by hand) |
-| `packages/shared/src/scenes/play.ts` | How a game is played (`playGame`), the same in both apps |
+| `content/games/<game>/game.json` | A game: its first scene, and its scenes' links (written by hand) |
+| `packages/engine/src/scenes/play.ts` | How a game is played (`playGame`), the same in both apps |
 | `apps/web/components/Game.tsx`, `apps/mobile/src/components/Game.tsx` | A game, from scene to scene, in each app; a scene alone is a game of its own |
 
 ## Games
@@ -125,7 +126,7 @@ plays on a scene's first visit only.
 A game links scenes, each one still generated and adjusted alone. A scene
 declares its **exits**: an object's action with `exit` (`{ "label": "Entrer",
 "exit": "auberge" }`), a name of its own. The game, in
-`content/games/<id>/game.json`, says where each one leads:
+`content/games/<game>/game.json`, says where each one leads:
 
 ```json
 {
@@ -140,10 +141,10 @@ exit, linked like the others, taken by the back button, a return arrow in the
 bottom left corner of the frame, shown only where the game links it.
 
 An exit the game does not link, as every exit of a scene played alone at
-`/scene/<id>`, stays closed: the action does what it would without `exit` (its
-text, or a search). A game is played at `/game/<id>` on the web site, and from
-the home screen in both apps, and is listed in `games/index.ts`, which fails
-on a scene it does not know.
+`/game/<game>/scene/<id>`, stays closed: the action does what it would without
+`exit` (its text, or a search). A game is played at `/game/<game>` on the web
+site, and from the home screen in both apps, which lists each game with its
+scenes. It is listed once its first scene is.
 
 What the player keeps from scene to scene is the game's (`GameProgress` in
 `play.ts`): the inventory, the logbook (each scene's intro, on its first
@@ -154,11 +155,12 @@ scene comes back without its opening.
 
 `pnpm check-game [<id>]` checks a game against its scenes, as they are on disk,
 without calling an API (`packages/generator/src/check-game.ts`). Errors, which
-make it fail (and stop a deploy): a `game.json` badly shaped, a scene that does
-not exist or that the apps do not list, a link from an exit its scene does not
-have, a flag required that nothing in the game raises, a game not listed in
-`games/index.ts`. Warnings: an exit left closed, a scene no exit leads to from
-the first, a flag raised that nothing requires. Run it after writing a
+make it fail (and stop a deploy): a `game.json` badly shaped, a scene it names
+that is not in its `scenes/` or not complete (so the apps do not list it), a
+link from an exit its scene does not have, a flag required that nothing in the
+game raises, an item an object holds that the game's items do not list.
+Warnings: an exit left closed, a scene no exit leads to from the first, a scene
+no link names (only played alone), a flag raised that nothing requires. Run it after writing a
 `game.json`, and after changing or removing a scene a game goes through.
 
 ```text
@@ -196,11 +198,16 @@ Node as they are (`--experimental-strip-types`, from Node 22.6).
 ### A new scene
 
 ```bash
-pnpm generate <id> portrait|landscape "<brief>"
+pnpm generate <game> <id> portrait|landscape "<brief>"
 ```
 
-- **`<id>`** is the scene's name in the code and its URL (`/scene/<id>`):
-  lowercase letters, digits and dashes, like `marche` or `cave-a-vin`.
+- **`<game>`** is the game the scene belongs to, its folder in
+  `content/games` and its URL (`/game/<game>`). A game that does not exist yet
+  is made with it: its `game.json` starts in this scene, its title is the
+  game's id until written by hand.
+- **`<id>`** is the scene's name in the game and its URL
+  (`/game/<game>/scene/<id>`): lowercase letters, digits and dashes, like
+  `marche` or `cave-a-vin`, as the game's.
 - **`portrait`** or **`landscape`** is the image's orientation, 9:16 or 16:9,
   fixed for the scene's life.
 - **`<brief>`**, in quotes, says what the scene is about: the place, the era,
@@ -208,7 +215,7 @@ pnpm generate <id> portrait|landscape "<brief>"
   rest.
 
 ```bash
-pnpm generate foret portrait "l'orée d'une forêt au crépuscule, un bivouac abandonné"
+pnpm generate bois foret portrait "l'orée d'une forêt au crépuscule, un bivouac abandonné"
 ```
 
 The session goes in four stages. Each render is saved in the system's temporary
@@ -259,17 +266,18 @@ outlined in orange and the characters in blue.
 A session looks like this (Claude's texts shortened):
 
 ```text
-$ pnpm generate foret portrait "l'orée d'une forêt au crépuscule, un bivouac abandonné"
+$ pnpm generate bois foret portrait "l'orée d'une forêt au crépuscule, un bivouac abandonné"
+New game "bois", starting in "foret": its title is in content/games/bois/game.json
 Writing with claude-opus-5-5…
 
 Le bivouac abandonné
 Tu sors du couvert des arbres…
 
 Painting the background…
-  Render: /tmp/esquisse-foret-1.jpg
+  Render: /tmp/esquisse-bois-foret-1.jpg
 Le fond :  [v] valider  [r] repeindre  [m] modifier  [q] quitter
 > v
-✓ Saved: /scene/foret in both apps
+✓ Saved: /game/bois/scene/foret in both apps
 Writing with claude-opus-5-5…
 
 Détails de réalisme :
@@ -284,10 +292,10 @@ Lesquels ajouter ? (des numéros, « tous », une description, ou Entrée pour p
 Les détails : …
 
 Adding the details to the background…
-  Render: /tmp/esquisse-foret-2.jpg
+  Render: /tmp/esquisse-bois-foret-2.jpg
 Les détails :  [v] valider  [r] refaire  [m] modifier  [a] abandonner
 > v
-✓ Saved: /scene/foret in both apps
+✓ Saved: /game/bois/scene/foret in both apps
 
 Idées :
   1. un feu de camp au premier plan
@@ -299,36 +307,37 @@ Writing with claude-opus-5-5…
 Objet « feu-de-camp », de 55 % à 88 % de la largeur, de 58 % à 70 % de la hauteur
 Adding feu-de-camp to the background…
 Detecting the objects…
-  Render: /tmp/esquisse-foret-3.jpg
+  Render: /tmp/esquisse-bois-foret-3.jpg
 « feu-de-camp » :  [v] valider  [r] refaire  [m] modifier  [a] abandonner
 > m
 Que changer ?
 > plus petit, et à gauche
 …
 > v
-✓ Saved: /scene/foret in both apps
+✓ Saved: /game/bois/scene/foret in both apps
 Que veux-tu ajouter ? (une description, un numéro d'idée, d pour des détails de réalisme, ou Entrée pour finir)
 >
-✓ Le bivouac abandonné: /scene/foret, run pnpm dev to play it
+✓ Le bivouac abandonné: /game/bois/scene/foret, run pnpm dev to play it
 ```
 
 What is validated is saved at once (`scene.json`, `objects.json`,
 `characters.json`, the images) and the scene is listed for both apps
-(`content/scenes/index.ts`, `apps/web/scenes.ts`,
-`apps/mobile/src/scenes.ts`): the session can stop at any time, and `pnpm dev`
-shows the scene on the home page and at `/scene/<id>`.
+(`content/games/index.ts`, `apps/web/images.ts`,
+`apps/mobile/src/images.ts`): the session can stop at any time, and `pnpm dev`
+shows the scene on the home page, under its game, and at
+`/game/<game>/scene/<id>`.
 
 | What | Where |
 | --- | --- |
-| The scene, its texts and the positions | `content/scenes/<id>/scene.json`, `objects.json`, `characters.json` |
-| The converted images | `content/scenes/<id>/fond.webp`, `<character>.webp` |
-| The originals | `content/scenes/<id>/sources/fond.jpg`, `<character>.jpg` |
+| The scene, its texts and the positions | `content/games/<game>/scenes/<id>/scene.json`, `objects.json`, `characters.json` |
+| The converted images | `content/games/<game>/scenes/<id>/fond.webp`, `<character>.webp` |
+| The originals | `content/games/<game>/scenes/<id>/sources/fond.jpg`, `<character>.jpg` |
 
 ### Going on, starting over
 
-- **Add to a scene** later: `pnpm generate <id>`, without a brief, shows the
+- **Add to a scene** later: `pnpm generate <game> <id>`, without a brief, shows the
   current render and asks what to add, or `p` for a character's dialogue.
-- **Start over**: `pnpm generate <id> portrait|landscape "<brief>"` on an existing scene asks, then
+- **Start over**: `pnpm generate <game> <id> portrait|landscape "<brief>"` on an existing scene asks, then
   deletes it and starts again from the background.
 - **Edit by hand**: everything in `scene.json` can be changed (a text, a
   dialogue, a prompt); a position changed by hand is not repainted.
@@ -349,15 +358,18 @@ that has objects.
 ### Removing a scene
 
 ```bash
-pnpm remove-scene <id>
+pnpm remove-scene <game> <id>
 ```
 
-It deletes the scene's folder (`content/scenes/<id>/`), after asking (`--yes` skips the question), then lists the remaining scenes for
-both apps.
+It deletes the scene's folder (`content/games/<game>/scenes/<id>/`), after
+asking (`--yes` skips the question), then lists the remaining scenes for both
+apps. Its game may still name it: `pnpm check-game <game>` says where.
 
 ### Committing
 
-Commit the scene's folder (`content/scenes/<id>/`) with the three lists, which are written by the generator and never edited by hand.
+Commit the scene's folder (`content/games/<game>/scenes/<id>/`), and its game's
+`game.json` when it is new, with the three lists, which are written by the
+generator and never edited by hand.
 
 ## The device frame (web)
 
@@ -374,7 +386,7 @@ and menus must open in `#device` (positioned), not on `body`.
 
 ## Notes
 
-- Mobile TypeScript stays on the version Expo expects (`~6.0.3`); web and shared
+- Mobile TypeScript stays on the version Expo expects (`~6.0.3`); web, engine and content
   use the catalog's (7.x).
 - NativeWind 4 needs Tailwind CSS 3, so `apps/mobile` uses `tailwindcss@3` while
   `apps/web` uses Tailwind 4. NativeWind 5 (Tailwind 4) is still a release

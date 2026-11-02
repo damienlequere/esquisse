@@ -1,12 +1,12 @@
 "use client";
 
-import { type Effect, effectShader } from "@esquisse/shared";
+import { type Effect, effectShader } from "@esquisse/engine";
 import type { CanvasKit, Image as SkImage } from "canvaskit-wasm";
 import type { StaticImageData } from "next/image";
 import { useEffect, useRef } from "react";
 import styles from "./Scene.module.css";
 
-// The background's animations (see effects.ts in packages/shared), drawn by
+// The background's animations (see effects.ts in packages/engine), drawn by
 // CanvasKit, Skia in WebAssembly, in a canvas over the background: only what
 // moves, transparent elsewhere. CanvasKit is about 3 MB: it is loaded once,
 // after the page, and the background shows still until it is there, or if it

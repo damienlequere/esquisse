@@ -2,7 +2,7 @@
 // API: the render of the generator's sessions (see render in paint.ts), from the
 // scene as it is now, opened in the image viewer.
 //
-//   pnpm show-scene <id>
+//   pnpm show-scene <game> <id>
 //
 // The background is the one both apps show (fond.webp), the characters are
 // placed by their feet, the safe zone is dashed, the objects are outlined in
@@ -10,19 +10,19 @@
 
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import type { SceneData } from "@esquisse/shared";
+import type { SceneData } from "@esquisse/engine";
 import { render, show } from "./paint.ts";
+import { ID, sceneDir } from "./registry.ts";
 
-const ROOT = join(import.meta.dirname, "../../..");
+const [game, id, ...args] = process.argv.slice(2);
+if (game === undefined || id === undefined || args.length > 0)
+  throw new Error("Usage: pnpm show-scene <game> <id>");
+// Checked as in generate-scene.ts: the ids must not reach outside their folders.
+for (const i of [game, id]) if (!ID.test(i)) throw new Error(`Invalid id: ${i} (kebab-case)`);
 
-const [id, ...args] = process.argv.slice(2);
-if (id === undefined || args.length > 0) throw new Error("Usage: pnpm show-scene <id>");
-// Checked as in generate-scene.ts: the id must not reach outside its folders.
-if (!/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/.test(id)) throw new Error(`Invalid id: ${id} (kebab-case)`);
-
-const DIR = join(ROOT, "content/scenes", id);
+const DIR = sceneDir(game, id);
 const MEDIA = DIR;
-if (!existsSync(join(DIR, "scene.json"))) throw new Error(`No scene "${id}"`);
+if (!existsSync(join(DIR, "scene.json"))) throw new Error(`No scene "${id}" in "${game}"`);
 
 const read = (file: string) =>
   existsSync(join(DIR, file)) ? JSON.parse(readFileSync(join(DIR, file), "utf8")) : {};
@@ -37,4 +37,4 @@ const layers = Object.fromEntries(
     .map((c) => [c.id, readFileSync(join(MEDIA, `${c.id}.webp`))]),
 );
 
-show(id, await render(data, readFileSync(join(MEDIA, "fond.webp")), layers));
+show(`${game}-${id}`, await render(data, readFileSync(join(MEDIA, "fond.webp")), layers));

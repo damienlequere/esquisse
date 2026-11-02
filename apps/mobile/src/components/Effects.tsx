@@ -1,4 +1,4 @@
-import { type Effect, effectShader } from "@esquisse/shared";
+import { type Effect, effectShader } from "@esquisse/engine";
 import {
   Canvas,
   type DataSourceParam,
@@ -15,7 +15,7 @@ import { useMemo } from "react";
 import type { ImageSourcePropType } from "react-native";
 import { useDerivedValue, useReducedMotion } from "react-native-reanimated";
 
-// The background's animations (see effects.ts in packages/shared), drawn by
+// The background's animations (see effects.ts in packages/engine), drawn by
 // React Native Skia over the background, the same shaders as the web site's
 // (apps/web/components/Effects.tsx): only what moves, transparent elsewhere.
 // They fade in as they start, so the lights do not jump. Nothing moves for whom

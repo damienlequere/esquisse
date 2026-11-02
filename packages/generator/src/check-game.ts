@@ -3,27 +3,23 @@
 //
 //   pnpm check-game [<id>]
 //
-// Without an id, every game in content/games. Exits with 1 if a
-// game has an error.
+// Without an id, every game in content/games. Exits with 1 if a game has an
+// error.
 //
-// Errors: a game.json not shaped as a Game; a scene it names that does not
-// exist, or that the apps do not list (scenes/index.ts); a link from an exit
-// its scene does not have (an object's action's exit, or its back); a flag
-// required in the game that nothing in it raises; a game not listed in
-// games/index.ts.
+// Errors: a game.json not shaped as a Game; a scene it names that is not in
+// its scenes/ folder, or not complete, so the apps do not list it (see
+// registry.ts); a link from an exit its scene does not have (an object's
+// action's exit, or its back); a flag required in the game that nothing in it
+// raises; an item an object holds that the game's items do not list.
 // Warnings: an exit the game does not link (it stays closed: the action does
 // what it would without it, the back button is not shown); a scene no exit
-// leads to from the first; a flag raised that nothing requires.
+// leads to from the first; a scene of the game that no link names (it is only
+// played alone); a flag raised that nothing requires.
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import type { Game, Scene } from "@esquisse/shared";
-
-const ROOT = join(import.meta.dirname, "../../..");
-const GAMES = join(ROOT, "content/games");
-const SCENES = join(ROOT, "content/scenes");
-
-const ID = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
+import type { Game, Items, Scene } from "@esquisse/engine";
+import { GAMES, gameDir, ID, listGames, sceneDir } from "./registry.ts";
 
 export type Report = { errors: string[]; warnings: string[] };
 
@@ -72,12 +68,13 @@ const flagsOf = (id: string, scene: Scene) => {
   return { sets, requires };
 };
 
-// The checks of one game, from its game.json as read, the scenes as they are on
-// disk (by id, those that exist), and the scenes the apps list.
+// The checks of one game, from its game.json as read, its scenes as they are on
+// disk (by id, those that exist), those the apps list, and its items.
 export const checkGame = (
   raw: unknown,
   scenes: Record<string, Scene>,
   listed: Set<string>,
+  items: Items,
 ): Report => {
   const errors = shapeErrors(raw);
   const warnings: string[] = [];
@@ -91,9 +88,19 @@ export const checkGame = (
     ...Object.values(game.links).flatMap(Object.values),
   ]);
   for (const id of named) {
-    if (!(id in scenes)) errors.push(`No scene « ${id} » (content/scenes/${id})`);
-    else if (!listed.has(id)) errors.push(`« ${id} » is not listed in scenes/index.ts`);
+    if (!(id in scenes)) errors.push(`No scene « ${id} » in the game (scenes/${id})`);
+    else if (!listed.has(id))
+      errors.push(`« ${id} » is not complete: the apps do not list it (pnpm generate)`);
   }
+  for (const id of Object.keys(scenes))
+    if (!named.has(id)) warnings.push(`« ${id} » is in no link: it is only played alone`);
+
+  // What the objects hold is in the game's items.
+  for (const [id, scene] of Object.entries(scenes))
+    for (const object of scene.objects)
+      for (const item of object.contents ?? [])
+        if (!Object.hasOwn(items, item))
+          errors.push(`${id}: ${object.id} holds « ${item} », not in the game's items`);
 
   // Each link leaves from an exit its scene has.
   for (const [from, links] of Object.entries(game.links)) {
@@ -160,35 +167,33 @@ if (isMain) {
   if (only !== undefined && !ID.test(only)) throw new Error(`Invalid id: ${only} (kebab-case)`);
 
   const folders = (dir: string) =>
-    readdirSync(dir, { withFileTypes: true })
-      .filter((e) => e.isDirectory())
-      .map((e) => e.name)
-      .sort();
+    existsSync(dir)
+      ? readdirSync(dir, { withFileTypes: true })
+          .filter((e) => e.isDirectory())
+          .map((e) => e.name)
+          .sort()
+      : [];
 
-  const scenes = Object.fromEntries(
-    folders(SCENES)
-      .filter((id) => existsSync(join(SCENES, id, "scene.json")))
-      .map((id) => [id, read(join(SCENES, id, "scene.json")) as Scene]),
-  );
-  // The lists the apps import, written by the generator (registry.ts) or by
-  // hand (games/index.ts): an id is listed if its folder is imported.
-  const imported = (file: string) =>
-    new Set(
-      [...readFileSync(file, "utf8").matchAll(/from "\.\/([a-z0-9-]+)\//g)].flatMap(([, id]) =>
-        id ? [id] : [],
-      ),
-    );
-  const listedScenes = imported(join(SCENES, "index.ts"));
-  const listedGames = imported(join(GAMES, "index.ts"));
+  // What the apps list (see registry.ts): the games, and each one's scenes.
+  const listed = new Map(listGames().map((g) => [g.id, new Set(g.scenes.map((s) => s.id))]));
 
   const ids = only === undefined ? folders(GAMES) : [only];
   if (ids.length === 0) console.log("No game in content/games.");
   let failed = false;
   for (const id of ids) {
-    const file = join(GAMES, id, "game.json");
+    const file = join(gameDir(id), "game.json");
     if (!existsSync(file)) throw new Error(`No game "${id}" (content/games/${id})`);
-    const { errors, warnings } = checkGame(read(file), scenes, listedScenes);
-    if (!listedGames.has(id)) errors.push(`« ${id} » is not listed in games/index.ts`);
+    const scenes = Object.fromEntries(
+      folders(join(gameDir(id), "scenes"))
+        .filter((s) => existsSync(join(sceneDir(id, s), "scene.json")))
+        .map((s) => [s, read(join(sceneDir(id, s), "scene.json")) as Scene]),
+    );
+    const catalog = join(gameDir(id), "items/index.ts");
+    const items: Items = existsSync(catalog) ? (await import(catalog)).ITEMS : {};
+    const raw = read(file);
+    const { errors, warnings } = checkGame(raw, scenes, listed.get(id) ?? new Set(), items);
+    if (!listed.has(id) && errors.length === 0)
+      errors.push("The apps do not list it: its first scene is not complete");
     failed ||= errors.length > 0;
     console.log(`${errors.length > 0 ? "✗" : "✓"} ${id}`);
     for (const e of errors) console.log(`  ✗ ${e}`);

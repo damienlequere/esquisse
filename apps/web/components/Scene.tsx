@@ -1,9 +1,5 @@
 "use client";
 
-import { ITEMS } from "@esquisse/content";
-import knife from "@esquisse/content/items/couteau.webp";
-import lantern from "@esquisse/content/items/lanterne.webp";
-import shovel from "@esquisse/content/items/pelle.webp";
 import {
   BACK_ARROW,
   type Character,
@@ -17,6 +13,7 @@ import {
   INTRO_HOLD,
   INVENTORY_COLUMNS,
   INVENTORY_SLOTS,
+  type Items,
   itemName,
   type ObjectAction,
   objectActions,
@@ -29,7 +26,8 @@ import {
   type SceneObject,
   sceneLayout,
   sceneText,
-} from "@esquisse/shared";
+} from "@esquisse/engine";
+import type { StaticImageData } from "next/image";
 import { useRouter } from "next/navigation";
 import {
   type CSSProperties,
@@ -42,22 +40,15 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
-import type { SceneImages } from "../scenes.ts";
+import type { SceneImages } from "../images.ts";
 import { Effects } from "./Effects.tsx";
 import { RingMenu } from "./RingMenu.tsx";
 import styles from "./Scene.module.css";
 import { Toast } from "./Toast.tsx";
 
-// The items' images, by id (see ITEMS in @esquisse/content).
-const ITEM_IMAGES: Record<string, string> = {
-  pelle: shovel.src,
-  lanterne: lantern.src,
-  couteau: knife.src,
-};
-
 // Clickable scene: the background covers the frame, each object is one action,
 // each character opens a dialogue. Everything is placed in % of the image (see
-// sceneLayout in packages/shared), so it follows the cropping. What it shows as
+// sceneLayout in packages/engine), so it follows the cropping. What it shows as
 // it is played is the game's (see Game), as playGame plays it, shared with the
 // mobile app.
 
@@ -85,9 +76,14 @@ export const Scene = ({
   state,
   dispatch,
   onBack,
+  items,
+  itemImages,
 }: {
   data: SceneData;
   images: SceneImages;
+  // The game's items, and their images, by id.
+  items: Items;
+  itemImages: Record<string, StaticImageData>;
   state: GameState;
   dispatch(action: GameAction): void;
   // Leaves the scene by its back exit, where the game links it.
@@ -291,8 +287,8 @@ export const Scene = ({
             return item === undefined ? (
               <li key={slot} aria-label={sceneText.emptySlot} />
             ) : (
-              <li key={slot} aria-label={itemName(ITEMS, item)}>
-                <img src={ITEM_IMAGES[item]} alt="" draggable={false} />
+              <li key={slot} aria-label={itemName(items, item)}>
+                <img src={itemImages[item]?.src} alt="" draggable={false} />
               </li>
             );
           })}
@@ -343,10 +339,10 @@ export const Scene = ({
                 <button
                   type="button"
                   className={styles.take}
-                  aria-label={sceneText.take(itemName(ITEMS, item))}
+                  aria-label={sceneText.take(itemName(items, item))}
                   onClick={() => dispatch({ type: "take", item })}
                 >
-                  <img src={ITEM_IMAGES[item]} alt="" draggable={false} />
+                  <img src={itemImages[item]?.src} alt="" draggable={false} />
                 </button>
               </li>
             );

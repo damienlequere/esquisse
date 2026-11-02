@@ -1,15 +1,24 @@
-// Writes the lists of the scenes that Next and Metro need spelled out, one
-// import per file: content/scenes/index.ts, apps/web/scenes.ts and
-// apps/mobile/src/scenes.ts. A scene is listed once all its files are there.
+// Writes the lists of the games that Next and Metro need spelled out, one
+// import per file: content/games/index.ts, apps/web/images.ts and
+// apps/mobile/src/images.ts. A game is listed once its first scene is; a scene
+// once all its files are there; an item once its image is.
 
 import { execFileSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import type { Scene } from "@esquisse/shared";
-import { effectFiles } from "@esquisse/shared/effects";
+import type { Game, Scene } from "@esquisse/engine";
+import { effectFiles } from "@esquisse/engine/effects";
 
 const ROOT = join(import.meta.dirname, "../../..");
-const SCENES = join(ROOT, "content/scenes");
+export const GAMES = join(ROOT, "content/games");
+
+// A game's folder, and the folder of one of its scenes, which holds it all: its
+// texts and positions, its converted images, and their originals in sources/.
+export const gameDir = (game: string) => join(GAMES, game);
+export const sceneDir = (game: string, scene: string) => join(GAMES, game, "scenes", scene);
+
+// A game's or a scene's id is a folder, a URL and a name in the lists' imports.
+export const ID = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
 
 const HEADER = "// Written by packages/generator/src/generate-scene.ts: do not edit by hand.";
 
@@ -18,149 +27,246 @@ const camel = (id: string) => id.replace(/-(.)/g, (_, c: string) => c.toUpperCas
 const pascal = (id: string) => camel(id).replace(/^./, (c) => c.toUpperCase());
 const key = (id: string) => (/^[a-z][a-zA-Z0-9]*$/.test(id) ? id : JSON.stringify(id));
 
+// The names of the imports: a game's, one of its scenes', one of its items';
+// the words between keep them apart whatever the ids.
+const gameName = (game: string) => `${camel(game)}Game`;
+const sceneName = (game: string, scene: string) => `${camel(game)}Scene${pascal(scene)}`;
+const itemName = (game: string, item: string) => `${camel(game)}Item${pascal(item)}`;
+
 // An effect's images, by its id (see effectFiles).
-type Listed = { id: string; characters: string[]; effects: { id: string; files: string[] }[] };
+type ListedScene = {
+  id: string;
+  characters: string[];
+  effects: { id: string; files: string[] }[];
+};
+// items: those with an image; catalog: whether items/index.ts lists them.
+type ListedGame = { id: string; scenes: ListedScene[]; items: string[]; catalog: boolean };
+
+const folders = (dir: string) =>
+  existsSync(dir)
+    ? readdirSync(dir, { withFileTypes: true })
+        .filter((d) => d.isDirectory())
+        .map((d) => d.name)
+        .sort()
+    : [];
 
 const effectsOf = (scene: Scene) =>
   (scene.effects ?? []).map((e) => ({ id: e.id, files: effectFiles(e) }));
 
-const complete = (id: string, scene: Scene) =>
-  ["scene.json", "objects.json", "characters.json"].every((f) => existsSync(join(SCENES, id, f))) &&
+const complete = (dir: string, scene: Scene) =>
+  ["scene.json", "objects.json", "characters.json"].every((f) => existsSync(join(dir, f))) &&
   ["fond", ...scene.characters.map((c) => c.id), ...effectsOf(scene).flatMap((e) => e.files)].every(
-    (f) => existsSync(join(SCENES, id, `${f}.webp`)),
+    (f) => existsSync(join(dir, `${f}.webp`)),
   );
 
-const listScenes = (): Listed[] =>
-  readdirSync(SCENES, { withFileTypes: true })
-    .filter((d) => d.isDirectory() && existsSync(join(SCENES, d.name, "scene.json")))
-    .map((d) => d.name)
-    .sort()
-    .flatMap((id) => {
-      const scene: Scene = JSON.parse(readFileSync(join(SCENES, id, "scene.json"), "utf8"));
-      return complete(id, scene)
-        ? [
-            {
-              id,
-              characters: scene.characters.map((c) => c.id),
-              effects: effectsOf(scene),
-            },
-          ]
-        : [];
-    });
+const listScenes = (game: string): ListedScene[] =>
+  folders(join(gameDir(game), "scenes")).flatMap((id) => {
+    const dir = sceneDir(game, id);
+    if (!existsSync(join(dir, "scene.json"))) return [];
+    const scene: Scene = JSON.parse(readFileSync(join(dir, "scene.json"), "utf8"));
+    return complete(dir, scene)
+      ? [{ id, characters: scene.characters.map((c) => c.id), effects: effectsOf(scene) }]
+      : [];
+  });
 
-const content = (scenes: Listed[]) => `${HEADER}
+// The games the apps can play: those whose first scene is listed.
+export const listGames = (): ListedGame[] =>
+  folders(GAMES).flatMap((id) => {
+    const file = join(gameDir(id), "game.json");
+    if (!existsSync(file)) return [];
+    const game: Game = JSON.parse(readFileSync(file, "utf8"));
+    const scenes = listScenes(id);
+    if (!scenes.some((s) => s.id === game.start)) return [];
+    const items = join(gameDir(id), "items");
+    return [
+      {
+        id,
+        scenes,
+        items: existsSync(items)
+          ? readdirSync(items)
+              .filter((f) => f.endsWith(".webp"))
+              .map((f) => f.slice(0, -".webp".length))
+              .sort()
+          : [],
+        catalog: existsSync(join(items, "index.ts")),
+      },
+    ];
+  });
 
-import type { SceneData } from "@esquisse/shared";
-${scenes
-  .flatMap(({ id }) => [
-    `import ${camel(id)}Aspects from "./${id}/characters.json";`,
-    `import ${camel(id)}Objects from "./${id}/objects.json";`,
-    `import ${camel(id)}Scene from "./${id}/scene.json";`,
-  ])
-  .join("\n")}
+// Sorted by path; Biome then puts them in its own order (see writeRegistries).
+const imports = (lines: [string, string][]) =>
+  lines
+    .sort(([a], [b]) => (a < b ? -1 : 1))
+    .map(([, line]) => line)
+    .join("\n");
 
-export const scenes = {
-${scenes
+const content = (games: ListedGame[]) => `${HEADER}
+
+import type { GameData } from "@esquisse/engine";
+${imports(
+  games.flatMap(({ id, scenes, catalog }) => [
+    [`./${id}/game.json`, `import ${gameName(id)} from "./${id}/game.json";`],
+    ...(catalog
+      ? ([
+          [
+            `./${id}/items/index.ts`,
+            `import { ITEMS as ${camel(id)}Items } from "./${id}/items/index.ts";`,
+          ],
+        ] as [string, string][])
+      : []),
+    ...scenes.flatMap(({ id: s }) =>
+      (
+        [
+          ["characters", "Aspects"],
+          ["objects", "Objects"],
+          ["scene", "Scene"],
+        ] as const
+      ).map(([file, name]): [string, string] => {
+        const path = `./${id}/scenes/${s}/${file}.json`;
+        return [path, `import ${sceneName(id, s)}${name} from "${path}";`];
+      }),
+    ),
+  ]),
+)}
+
+// The games, by id: each one with all its scenes, by id, and its items.
+export const games = {
+${games
   .map(
-    ({ id }) =>
-      `  ${key(id)}: { scene: ${camel(id)}Scene, objects: ${camel(id)}Objects, aspects: ${camel(id)}Aspects },`,
+    ({ id, scenes, catalog }) =>
+      `  ${key(id)}: {\n    game: ${gameName(id)},\n    scenes: {\n${scenes
+        .map(({ id: s }) => {
+          const n = sceneName(id, s);
+          return `      ${key(s)}: { scene: ${n}Scene, objects: ${n}Objects, aspects: ${n}Aspects },`;
+        })
+        .join("\n")}\n    },\n    items: ${catalog ? `${camel(id)}Items` : "{}"},\n  },`,
   )
   .join("\n")}
-} satisfies Record<string, SceneData>;
+} satisfies Record<string, GameData>;
+
+export type GameId = keyof typeof games;
+
+export const isGameId = (id: string): id is GameId => Object.hasOwn(games, id);
 `;
 
-const asset = (id: string, file: string) => `@esquisse/content/scenes/${id}/${file}.webp`;
+const sceneAsset = (game: string, scene: string, file: string) =>
+  `@esquisse/content/games/${game}/scenes/${scene}/${file}.webp`;
+const itemAsset = (game: string, item: string) =>
+  `@esquisse/content/games/${game}/items/${item}.webp`;
 
-const web = (scenes: Listed[]) => `${HEADER}
+const sceneFiles = ({ characters, effects }: ListedScene) => [
+  "fond",
+  ...characters,
+  ...effects.flatMap((e) => e.files),
+];
 
-${scenes
-  .flatMap(({ id, characters, effects }) =>
-    // Sorted, as Biome wants imports.
-    ["fond", ...characters, ...effects.flatMap((e) => e.files)]
-      .sort()
-      .map((file) => `import ${camel(id)}${pascal(file)} from "${asset(id, file)}";`),
-  )
-  .join("\n")}
+// A game's images, as an object literal, from how each one is written (an
+// import's name on the web, a require on mobile).
+const gameImages = (
+  { id, scenes, items }: ListedGame,
+  scene: (s: string, file: string) => string,
+  item: (i: string) => string,
+) =>
+  `  ${key(id)}: {\n    scenes: {\n${scenes
+    .map(
+      ({ id: s, characters, effects }) =>
+        `      ${key(s)}: {\n        background: ${scene(s, "fond")},\n        characters: {\n${characters
+          .map((c) => `          ${key(c)}: ${scene(s, c)},`)
+          .join("\n")}\n        },\n        effects: {\n${effects
+          .map((e) => `          ${key(e.id)}: [${e.files.map((f) => scene(s, f)).join(", ")}],`)
+          .join("\n")}\n        },\n      },`,
+    )
+    .join("\n")}\n    },\n    items: {\n${items
+    .map((i) => `      ${key(i)}: ${item(i)},`)
+    .join("\n")}\n    },\n  },`;
+
+const web = (games: ListedGame[]) => `${HEADER}
+
+${imports(
+  games.flatMap((g) => [
+    ...g.scenes.flatMap((s) =>
+      sceneFiles(s).map((file): [string, string] => {
+        const path = sceneAsset(g.id, s.id, file);
+        return [path, `import ${sceneName(g.id, s.id)}${pascal(file)} from "${path}";`];
+      }),
+    ),
+    ...g.items.map((i): [string, string] => {
+      const path = itemAsset(g.id, i);
+      return [path, `import ${itemName(g.id, i)} from "${path}";`];
+    }),
+  ]),
+)}
 import type { StaticImageData } from "next/image";
 
-// The scenes' images, served from content/scenes, like the mobile app's
-// (apps/mobile/src/scenes.ts): the background, the characters' layers, and the
-// images of the background's animations, by effect (see effectFiles).
+// The games' images, served from content/games, like the mobile app's
+// (apps/mobile/src/images.ts): each scene's background, its characters'
+// layers, and the images of its background's animations, by effect (see
+// effectFiles); and the items', by id.
 export type SceneImages = {
   background: StaticImageData;
   characters: Record<string, StaticImageData>;
   effects: Record<string, StaticImageData[]>;
 };
+export type GameImages = {
+  scenes: Record<string, SceneImages>;
+  items: Record<string, StaticImageData>;
+};
 
-export const sceneImages = {
-${scenes
-  .map(
-    ({ id, characters, effects }) =>
-      `  ${key(id)}: {\n    background: ${camel(id)}Fond,\n    characters: {\n${characters
-        .map((c) => `      ${key(c)}: ${camel(id)}${pascal(c)},`)
-        .join("\n")}\n    },\n    effects: {\n${effects
-        .map(
-          (e) =>
-            `      ${key(e.id)}: [${e.files.map((f) => `${camel(id)}${pascal(f)}`).join(", ")}],`,
-        )
-        .join("\n")}\n    },\n  },`,
+export const gameImages = {
+${games
+  .map((g) =>
+    gameImages(
+      g,
+      (s, file) => `${sceneName(g.id, s)}${pascal(file)}`,
+      (i) => itemName(g.id, i),
+    ),
   )
   .join("\n")}
-} satisfies Record<string, SceneImages>;
-
-export type SceneId = keyof typeof sceneImages;
-
-export const isSceneId = (id: string): id is SceneId => Object.hasOwn(sceneImages, id);
+} satisfies Record<string, GameImages>;
 `;
 
-const mobile = (scenes: Listed[]) => `${HEADER}
+const mobile = (games: ListedGame[]) => `${HEADER}
 
 import type { ImageSourcePropType } from "react-native";
 
-// The scenes' images, bundled with the app from content/scenes, like the
-// web site's (apps/web/scenes.ts): Metro needs each require spelled out.
+// The games' images, bundled with the app from content/games, like the web
+// site's (apps/web/images.ts): Metro needs each require spelled out.
 export type SceneImages = {
   background: ImageSourcePropType;
   characters: Record<string, ImageSourcePropType>;
   effects: Record<string, ImageSourcePropType[]>;
 };
+export type GameImages = {
+  scenes: Record<string, SceneImages>;
+  items: Record<string, ImageSourcePropType>;
+};
 
-export const sceneImages = {
-${scenes
-  .map(
-    ({ id, characters, effects }) =>
-      `  ${key(id)}: {\n    background: require("${asset(id, "fond")}"),\n    characters: {\n${characters
-        .map((c) => `      ${key(c)}: require("${asset(id, c)}"),`)
-        .join("\n")}\n    },\n    effects: {\n${effects
-        .map(
-          (e) =>
-            `      ${key(e.id)}: [${e.files.map((f) => `require("${asset(id, f)}")`).join(", ")}],`,
-        )
-        .join("\n")}\n    },\n  },`,
+export const gameImages = {
+${games
+  .map((g) =>
+    gameImages(
+      g,
+      (s, file) => `require("${sceneAsset(g.id, s, file)}")`,
+      (i) => `require("${itemAsset(g.id, i)}")`,
+    ),
   )
   .join("\n")}
-} satisfies Record<string, SceneImages>;
-
-export type SceneId = keyof typeof sceneImages;
-
-export const isSceneId = (id: string): id is SceneId => Object.hasOwn(sceneImages, id);
+} satisfies Record<string, GameImages>;
 `;
 
+// Writes the lists; returns the games listed, each with its scenes.
 export const writeRegistries = () => {
-  const scenes = listScenes();
+  const games = listGames();
   const files = {
-    [join(SCENES, "index.ts")]: content(scenes),
-    [join(ROOT, "apps/web/scenes.ts")]: web(scenes),
-    [join(ROOT, "apps/mobile/src/scenes.ts")]: mobile(scenes),
+    [join(GAMES, "index.ts")]: content(games),
+    [join(ROOT, "apps/web/images.ts")]: web(games),
+    [join(ROOT, "apps/mobile/src/images.ts")]: mobile(games),
   };
   for (const [file, code] of Object.entries(files)) writeFileSync(file, code);
-  // Long ids make long lines: Biome puts them as it wants them.
-  execFileSync(
-    join(ROOT, "node_modules/.bin/biome"),
-    ["format", "--write", ...Object.keys(files)],
-    {
-      stdio: "ignore",
-    },
-  );
-  return scenes.map((s) => s.id);
+  // Long ids make long lines, and imports have their order: Biome puts them
+  // as it wants them.
+  execFileSync(join(ROOT, "node_modules/.bin/biome"), ["check", "--write", ...Object.keys(files)], {
+    stdio: "ignore",
+  });
+  return games.map((g) => ({ id: g.id, scenes: g.scenes.map((s) => s.id) }));
 };

@@ -1,5 +1,5 @@
-// What the player can carry, by id, as a game's content lists it
-// (@esquisse/content's ITEMS): what an object holds (contents in scene.json)
+// What the player can carry, by id, as each game lists it
+// (content/games/<id>/items): what an object holds (contents in scene.json)
 // and what the inventory shows.
 
 // feminine: its name takes the feminine (« Pelle ajoutée »).

@@ -17,5 +17,5 @@ export async function generateMetadata({ params }: PageProps<"/game/[id]">): Pro
 export default async function GamePage({ params }: PageProps<"/game/[id]">) {
   const { id } = await params;
   if (!isGameId(id)) notFound();
-  return <Game game={games[id]} />;
+  return <Game id={id} game={games[id]} />;
 }
