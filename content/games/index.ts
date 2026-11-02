@@ -6,6 +6,9 @@ import { ITEMS as tristramItems } from "./tristram/items/index.ts";
 import tristramSceneAubergeAspects from "./tristram/scenes/auberge/characters.json";
 import tristramSceneAubergeObjects from "./tristram/scenes/auberge/objects.json";
 import tristramSceneAubergeScene from "./tristram/scenes/auberge/scene.json";
+import tristramSceneEtageAspects from "./tristram/scenes/etage/characters.json";
+import tristramSceneEtageObjects from "./tristram/scenes/etage/objects.json";
+import tristramSceneEtageScene from "./tristram/scenes/etage/scene.json";
 import tristramSceneTristramAspects from "./tristram/scenes/tristram/characters.json";
 import tristramSceneTristramObjects from "./tristram/scenes/tristram/objects.json";
 import tristramSceneTristramScene from "./tristram/scenes/tristram/scene.json";
@@ -19,6 +22,11 @@ export const games = {
         scene: tristramSceneAubergeScene,
         objects: tristramSceneAubergeObjects,
         aspects: tristramSceneAubergeAspects,
+      },
+      etage: {
+        scene: tristramSceneEtageScene,
+        objects: tristramSceneEtageObjects,
+        aspects: tristramSceneEtageAspects,
       },
       tristram: {
         scene: tristramSceneTristramScene,

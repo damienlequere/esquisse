@@ -22,6 +22,11 @@ export const gameImages = {
         characters: {},
         effects: {},
       },
+      etage: {
+        background: require("@esquisse/content/games/tristram/scenes/etage/fond.webp"),
+        characters: {},
+        effects: {},
+      },
       tristram: {
         background: require("@esquisse/content/games/tristram/scenes/tristram/fond.webp"),
         characters: {},

@@ -1,0 +1,21 @@
+{
+  "brief": "l'étage de l'auberge de Tristram : un couloir étroit sous les combles, éclairé d'une seule chandelle, des portes de chambres closes, le haut de l'escalier qui redescend vers la salle",
+  "title": "Sous les combles de l'auberge",
+  "intro": "Tu arrives à l'étage de l'auberge de Tristram, sous un toit si bas que les poutres frôlent ta tête, dans une odeur de suif et de bois humide. En bas, les voix de la salle se sont tues, et une seule chandelle tient encore la nuit à distance.",
+  "imageRatio": "9:16",
+  "back": "descendre",
+  "opening": false,
+  "safe": {
+    "x0": 0.09,
+    "y0": 0.14,
+    "x1": 0.91,
+    "y1": 0.86
+  },
+  "style": "Matte painting numérique de cinéma, réaliste et très détaillé, dans l'esprit d'un film de fantasy médiévale sombre. Les matières sont rendues avec précision : chêne noirci et fendu, plâtre jauni et craquelé entre les colombages, planches usées et creusées par les pas, fer rouillé des clous et des ferrures, poussière et suie déposées partout. Palette sourde de bruns profonds, d'ocres, de noirs veloutés et de gris cendrés, réchauffée par l'ambre d'une flamme unique, avec de rares touches de rouge sang éteint. Clair-obscur marqué : la lumière ne porte pas loin, les ombres sont longues et denses, les angles se perdent dans le noir. Atmosphère d'inquiétude contenue, d'un village sous une menace sourde, silence lourd, air chargé de fines particules. Proportions, perspective et anatomie justes. Aucun texte, lettre, chiffre, signature ni logo ; pas de style cartoon, bande dessinée, anime ni caricature, pas de contours encrés ni d'aplats ; pas de photographie ni de rendu 3D lisse ; pas de cadre ni de bordure.",
+  "light": "Une seule chandelle, flamme ambrée et vacillante, sur le mur de gauche à mi-hauteur ; lumière chaude et basse qui décline vite vers la droite et le fond, ombres longues portées vers la droite, fond du couloir presque noir.",
+  "background": {
+    "prompt": "Un couloir étroit sous les combles d'une vieille auberge médiévale, vu de face à hauteur d'homme, qui s'enfonce en perspective vers le fond, vide de toute personne et de tout animal. Le plafond est fait des pentes du toit : de lourds chevrons de chêne noirci et des voliges disjointes, si bas qu'ils pèsent sur le passage, avec des toiles d'araignée épaisses dans les angles. Les murs de gauche et de droite sont à colombages, poutres sombres fendues et rongées, remplissages de torchis et de plâtre jauni, craquelé, taché d'humidité, avec de longs pans de mur nus entre les poutres de chaque côté. Sur le mur de gauche, à mi-hauteur, un halo chaud d'ambre éclaire le plâtre, auréolé d'une trace de suie, sans que sa source soit visible ; quelques clous rouillés et un vieux crochet de fer sans rien dessus sortent des poutres. Au fond, le couloir se termine sur un mur aveugle presque noir, sous une minuscule lucarne aux volets de bois clos, d'où filtre à peine un fil de nuit. Des bouquets d'herbes séchées pendent d'un chevron près du fond, et des traînées de poussière courent le long des plinthes. Le sol occupe le tiers inférieur de l'image et reste dégagé : un plancher de larges planches de chêne usées, creusées au milieu par des générations de pas, aux nœuds lustrés, avec des taches de cire anciennes et des interstices sombres entre les lames, qui se perd dans l'ombre vers le fond."
+  },
+  "objects": [],
+  "characters": []
+}

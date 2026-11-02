@@ -16,6 +16,26 @@
   "background": {
     "prompt": "Intérieur exigu d'une auberge de village médiéval, vu de face à hauteur d'homme, vide de toute personne et de tout animal. Le plafond est bas : de lourdes poutres de chêne noircies par la fumée courent juste au-dessus de la hauteur d'un homme, près du haut de l'image, entre elles un plancher de bois sombre, et une fumée légère stagne dessous, quelques toiles d'araignée dans les angles. Le long du mur de droite, sans aucune fenêtre, un long comptoir de chêne massif court en profondeur depuis le premier plan jusqu'au fond, son plateau sombre et lustré par l'usage marqué d'entailles et de cercles laissés par les chopes, quelques chandelles coulantes posées dessus ; derrière lui, contre le mur de colombages, des étagères de bois ployées chargées de bouteilles de verre épais ambrées, de cruches de grès et de chopes d'étain ternies, et deux tonneaux cerclés de fer sur un chevalet. Le long du mur de gauche, un escalier de bois raide et étroit monte en longueur depuis le premier plan vers l'étage, ses marches creusées par les pas, sa rampe grossière polie par les mains, une lanterne de fer pendue au pied de l'escalier, le dessous des marches noyé d'ombre. Au centre du mur du fond, une cheminée de pierre grossière à la hotte basse noircie de suie, où brûle un feu vif dont la lueur orangée danse sur les poutres et les murs, une crémaillère et un chaudron de fonte au-dessus des braises, des bouquets d'herbes séchées et des chapelets d'ail pendus à la poutre voisine. Les murs sont en torchis et colombages, le plâtre fissuré et taché d'humidité. Le sol de grosses planches usées et inégales, parsemé de paille piétinée et de taches sombres, occupe le tiers inférieur de l'image ; entre le pied de l'escalier à gauche et le comptoir à droite, toute sa partie centrale reste entièrement dégagée, sans table, banc ni objet."
   },
-  "objects": [],
+  "objects": [
+    {
+      "id": "escalier",
+      "zone": {
+        "x0": 0.09,
+        "y0": 0.3,
+        "x1": 0.32,
+        "y1": 0.68
+      },
+      "paint": "L’escalier de bois raide et étroit le long du mur de gauche, qui monte depuis le premier plan vers l’étage, ses marches creusées par les pas, sa rampe grossière polie par les mains, une lanterne de fer pendue à son pied.",
+      "detect": "the steep wooden staircase on the left",
+      "label": "L’escalier",
+      "actions": [
+        {
+          "label": "Monter",
+          "exit": "etage",
+          "text": "Les marches grincent sous ton poids, chacune plus fort que la précédente. En haut, l’obscurité est complète, et quelque chose te dit de ne pas y monter seul."
+        }
+      ]
+    }
+  ],
   "characters": []
 }

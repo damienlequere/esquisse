@@ -3,6 +3,7 @@
   "start": "tristram",
   "links": {
     "tristram": { "auberge": "auberge" },
-    "auberge": { "rue": "tristram" }
+    "auberge": { "rue": "tristram", "etage": "etage" },
+    "etage": { "descendre": "auberge" }
   }
 }

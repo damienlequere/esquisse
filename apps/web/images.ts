@@ -4,6 +4,7 @@ import tristramItemCouteau from "@esquisse/content/games/tristram/items/couteau.
 import tristramItemLanterne from "@esquisse/content/games/tristram/items/lanterne.webp";
 import tristramItemPelle from "@esquisse/content/games/tristram/items/pelle.webp";
 import tristramSceneAubergeFond from "@esquisse/content/games/tristram/scenes/auberge/fond.webp";
+import tristramSceneEtageFond from "@esquisse/content/games/tristram/scenes/etage/fond.webp";
 import tristramSceneTristramCiel from "@esquisse/content/games/tristram/scenes/tristram/ciel.webp";
 import tristramSceneTristramCielDevant from "@esquisse/content/games/tristram/scenes/tristram/ciel-devant.webp";
 import tristramSceneTristramFeu from "@esquisse/content/games/tristram/scenes/tristram/feu.webp";
@@ -30,6 +31,11 @@ export const gameImages = {
     scenes: {
       auberge: {
         background: tristramSceneAubergeFond,
+        characters: {},
+        effects: {},
+      },
+      etage: {
+        background: tristramSceneEtageFond,
         characters: {},
         effects: {},
       },
