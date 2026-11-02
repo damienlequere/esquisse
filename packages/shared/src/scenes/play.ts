@@ -43,6 +43,7 @@ export type GameState = GameProgress & {
 export type GameAction =
   | { type: "endIntro" }
   | { type: "use"; object: SceneObject; action: ObjectAction }
+  | { type: "exit"; exit: string }
   | { type: "talk"; character: Character }
   | { type: "ask"; topic: Topic }
   | { type: "leave" }
@@ -69,6 +70,11 @@ export const TOAST = { duration: 2500, fade: 250 };
 
 // The arrow which enters the scene, pointing right: a stroke in a 24 × 24 viewBox.
 export const ENTER_ARROW = "M4,12 H20 M13,5 L20,12 L13,19";
+
+// The back button's arrow, the same way: a return arrow, pointing left, its
+// shaft curving round to the right and back under it. The button is the ring
+// menu's circle's size, in the bottom left corner, drawn as it is.
+export const BACK_ARROW = "M9,14 L4,9 L9,4 M4,9 H14.5 A5.5,5.5 0 0 1 14.5,20 H11";
 
 // From the opening to the button to enter.
 export const INTRO_HOLD = INTRO.textDelay + INTRO.textFade + INTRO.buttonDelay;
@@ -129,7 +135,7 @@ export const startGame = (game: GameData): GameState =>
 
 // Where an exit of the scene being played leads, if the game links it to one
 // of its scenes.
-const exitTo = ({ game, scenes }: GameData, state: GameState, exit: string) => {
+export const exitTo = ({ game, scenes }: GameData, state: GameState, exit: string) => {
   const to = game.links[state.at]?.[exit];
   return to !== undefined && Object.hasOwn(scenes, to) ? to : undefined;
 };
@@ -153,6 +159,10 @@ export const playGame =
         if (to !== undefined) return enter(game, raised, to);
         if (search) return { ...raised, searching: object };
         return { ...raised, narration: narrate(raised, label, text ?? "") };
+      }
+      case "exit": {
+        const to = exitTo(game, state, action.exit);
+        return to === undefined ? state : enter(game, state, to);
       }
       case "talk": {
         const { character } = action;
@@ -354,6 +364,8 @@ export const sceneText = {
   // An item in what an object holds, which goes to the inventory when pressed.
   take: (name: string) => `Prendre : ${name}`,
   close: "Fermer",
+  // The back button, which leaves the scene by its back exit.
+  back: "Retour en arrière",
   // The ring menu's circle, for screen readers.
   ringMenu: "Menu",
   // When the screen is not turned like the scene.

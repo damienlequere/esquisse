@@ -1,5 +1,8 @@
 {
   "title": "Tristram",
   "start": "tristram",
-  "links": {}
+  "links": {
+    "tristram": { "auberge": "auberge" },
+    "auberge": { "rue": "tristram" }
+  }
 }

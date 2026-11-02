@@ -77,6 +77,10 @@ export type Scene = {
   objects: SceneObject[];
   characters: Character[];
   effects?: Effect[];
+  // An exit offered by the back button, in the bottom left corner of the frame
+  // (see BACK_ARROW), as an object's action offers one; shown only where the
+  // game links it.
+  back?: string;
 };
 
 // Written by the generator: the detected boxes of the objects, by id, and the

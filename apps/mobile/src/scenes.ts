@@ -11,6 +11,11 @@ export type SceneImages = {
 };
 
 export const sceneImages = {
+  auberge: {
+    background: require("@esquisse/shared/assets/scenes/auberge/fond.webp"),
+    characters: {},
+    effects: {},
+  },
   tristram: {
     background: require("@esquisse/shared/assets/scenes/tristram/fond.webp"),
     characters: {},

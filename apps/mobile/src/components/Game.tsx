@@ -1,4 +1,4 @@
-import { type GameData, isLandscape, playGame, startGame } from "@esquisse/shared";
+import { exitTo, type GameData, isLandscape, playGame, startGame } from "@esquisse/shared";
 import { Stack } from "expo-router";
 import { useMemo, useReducer } from "react";
 import { isSceneId, sceneImages } from "../scenes.ts";
@@ -12,6 +12,12 @@ export const Game = ({ game }: { game: GameData }) => {
   const [state, dispatch] = useReducer(reducer, game, startGame);
   const data = game.scenes[state.at];
   if (data === undefined || !isSceneId(state.at)) throw new Error(`No scene « ${state.at} »`);
+  // The back button, where the game links the scene's back exit.
+  const { back } = data.scene;
+  const onBack =
+    back !== undefined && exitTo(game, state, back) !== undefined
+      ? () => dispatch({ type: "exit", exit: back })
+      : undefined;
   return (
     <>
       <Stack.Screen options={{ orientation: isLandscape(data.scene) ? "landscape" : "portrait" }} />
@@ -21,6 +27,7 @@ export const Game = ({ game }: { game: GameData }) => {
         images={sceneImages[state.at]}
         state={state}
         dispatch={dispatch}
+        onBack={onBack}
       />
     </>
   );

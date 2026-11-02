@@ -126,6 +126,10 @@ declares its **exits**: an object's action with `exit` (`{ "label": "Entrer",
 }
 ```
 
+A scene can also offer a way back: `"back": "rue"` in its `scene.json` names an
+exit, linked like the others, taken by the back button, a return arrow in the
+bottom left corner of the frame, shown only where the game links it.
+
 An exit the game does not link, as every exit of a scene played alone at
 `/scene/<id>`, stays closed: the action does what it would without `exit` (its
 text, or a search). A game is played at `/game/<id>` on the web site, and from

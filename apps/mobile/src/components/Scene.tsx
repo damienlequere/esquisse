@@ -1,4 +1,5 @@
 import {
+  BACK_ARROW,
   type Box,
   CONTAINER_COLUMNS,
   CONTAINER_SLOTS,
@@ -17,6 +18,7 @@ import {
   placeStyle,
   RING_ICONS,
   remainingTopics,
+  ringSizes,
   type SceneData,
   type SceneObject,
   sceneLayout,
@@ -134,11 +136,14 @@ export const Scene = ({
   images,
   state,
   dispatch,
+  onBack,
 }: {
   data: SceneData;
   images: SceneImages;
   state: GameState;
   dispatch(action: GameAction): void;
+  // Leaves the scene by its back exit, where the game links it.
+  onBack?(): void;
 }) => {
   const { scene } = data;
   const layout = sceneLayout(data);
@@ -308,6 +313,16 @@ export const Scene = ({
             );
           })}
         </View>
+      )}
+
+      {/* The back button, in the bottom left corner, where the scene has a
+          way back. */}
+      {onBack && screen && (
+        <BackButton
+          size={ringSizes(screen.width, screen.height).size}
+          onPress={onBack}
+          style={{ left: Math.max(16, insets.left), bottom: Math.max(16, insets.bottom) }}
+        />
       )}
 
       {/* The ring menu, in the bottom right corner: its pouch opens the
@@ -578,6 +593,65 @@ const EnterButton = ({
     </Fading>
   );
 };
+
+// The back button: the ring menu's circle's size, its arrow drawn as the
+// circle is, over a darker, wider stroke; half seen at rest, white and glowing
+// while pressed (the web's has the same).
+const BackButton = ({
+  size,
+  onPress,
+  style,
+}: {
+  size: number;
+  onPress(): void;
+  style: { left: number; bottom: number };
+}) => (
+  <Pressable
+    accessibilityRole="button"
+    accessibilityLabel={sceneText.back}
+    onPress={onPress}
+    className="items-center justify-center"
+    style={[{ position: "absolute", width: size, height: size }, style]}
+  >
+    {({ pressed }) => (
+      <>
+        {pressed && (
+          <View
+            pointerEvents="none"
+            className="absolute"
+            style={{
+              width: size,
+              height: size,
+              backgroundImage:
+                "radial-gradient(closest-side, rgba(255,255,255,0.35), rgba(255,255,255,0))",
+            }}
+          />
+        )}
+        <Svg
+          width={size * 0.8}
+          height={size * 0.8}
+          viewBox="0 0 24 24"
+          style={{ opacity: pressed ? 1 : 0.55, transform: [{ scale: pressed ? 0.9 : 1 }] }}
+        >
+          {[
+            { stroke: "rgba(0,0,0,0.5)", width: 3.5 },
+            { stroke: pressed ? "#ffffff" : "rgba(245,245,244,0.9)", width: 1.5 },
+          ].map(({ stroke, width }) => (
+            <Path
+              key={width}
+              d={BACK_ARROW}
+              fill="none"
+              stroke={stroke}
+              strokeWidth={width}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          ))}
+        </Svg>
+      </>
+    )}
+  </Pressable>
+);
 
 // A window in the middle of the screen, over the darkened scene, in both
 // orientations, showing `children`; `titled`, its label above them, otherwise

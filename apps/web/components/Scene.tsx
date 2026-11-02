@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  BACK_ARROW,
   type Character,
   CONTAINER_COLUMNS,
   CONTAINER_SLOTS,
@@ -19,6 +20,7 @@ import {
   placeStyle,
   RING_ICONS,
   remainingTopics,
+  ringSizes,
   type SceneData,
   type SceneObject,
   sceneLayout,
@@ -81,11 +83,14 @@ export const Scene = ({
   images,
   state,
   dispatch,
+  onBack,
 }: {
   data: SceneData;
   images: SceneImages;
   state: GameState;
   dispatch(action: GameAction): void;
+  // Leaves the scene by its back exit, where the game links it.
+  onBack?(): void;
 }) => {
   const { scene } = data;
   const layout = sceneLayout(data);
@@ -226,6 +231,10 @@ export const Scene = ({
           })}
         </div>
       </div>
+
+      {/* The back button, in the bottom left corner, where the scene has a
+          way back. */}
+      {onBack && <BackButton onPress={onBack} />}
 
       {/* The ring menu, in the bottom right corner: its pouch opens the
           inventory, its book the logbook, its cogwheel the general menu. */}
@@ -462,6 +471,38 @@ const SlotsWindow = ({
     </ul>
   </Window>
 );
+
+// The back button: the ring menu's circle's size (ringSizes, from the frame's),
+// its arrow drawn as the circle is, half seen at rest. The mobile app has the
+// same.
+const BackButton = ({ onPress }: { onPress(): void }) => {
+  const ref = useRef<HTMLButtonElement>(null);
+  const [frame, setFrame] = useState({ width: 400, height: 400 });
+  useLayoutEffect(() => {
+    const parent = ref.current?.parentElement;
+    if (!parent) return;
+    const measure = () => setFrame({ width: parent.clientWidth, height: parent.clientHeight });
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(parent);
+    return () => observer.disconnect();
+  }, []);
+  const size = ringSizes(frame.width, frame.height).size;
+  return (
+    <button
+      ref={ref}
+      type="button"
+      className={styles.back}
+      aria-label={sceneText.back}
+      style={{ width: size, height: size }}
+      onClick={onPress}
+    >
+      <svg className={styles.backArrow} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d={BACK_ARROW} />
+      </svg>
+    </button>
+  );
+};
 
 // An object's actions, in a menu to the right of where it was clicked, or to
 // its left (see objectMenuPlace).

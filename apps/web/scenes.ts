@@ -1,5 +1,6 @@
 // Written by packages/generator/src/generate-scene.ts: do not edit by hand.
 
+import aubergeFond from "@esquisse/shared/assets/scenes/auberge/fond.webp";
 import tristramCiel from "@esquisse/shared/assets/scenes/tristram/ciel.webp";
 import tristramCielDevant from "@esquisse/shared/assets/scenes/tristram/ciel-devant.webp";
 import tristramFeu from "@esquisse/shared/assets/scenes/tristram/feu.webp";
@@ -17,6 +18,11 @@ export type SceneImages = {
 };
 
 export const sceneImages = {
+  auberge: {
+    background: aubergeFond,
+    characters: {},
+    effects: {},
+  },
   tristram: {
     background: tristramFond,
     characters: {},
