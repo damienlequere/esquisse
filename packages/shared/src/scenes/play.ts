@@ -1,37 +1,51 @@
+import type { GameData } from "../games/types.ts";
 import { itemAdded } from "./items.ts";
 import type { Character, ObjectAction, SceneData, SceneObject, Topic } from "./types.ts";
 
-// What a scene shows as it is played, the same in both apps: the narration
-// band, the open conversation if any, what the player carries, and what an
-// object being searched holds, and the last toast. The apps only draw it, and turn their
-// own inputs (Escape, Android's back button…) into actions. The logbook
-// starts with the scene's intro.
+// A game as it is played, the same in both apps: where the player is, what
+// they carry and have found out, which they keep from scene to scene; and what
+// the scene shows: the narration band, the open conversation if any, what an
+// object being searched holds, and the last toast. The apps only draw it, and
+// turn their own inputs (Escape, Android's back button…) into actions. A scene
+// played alone is a game of its own (see sceneGame).
 
 export type Line = { text: string; player?: boolean };
 export type Conversation = { character: Character; lines: Line[]; asked: string[] };
 
-export type SceneState = {
+// What the player keeps from scene to scene, and what a save will hold: only
+// ids, nothing but JSON.
+export type GameProgress = {
+  // The scene being played.
+  at: string;
+  // The items carried, in the order taken, one per inventory slot.
+  inventory: string[];
+  // The logbook's entries, oldest first: each scene's intro, on the first visit.
+  logbook: string[];
+  // The flags raised (see ObjectAction), in the order raised.
+  flags: string[];
+  // The scenes visited, by id: what each of their objects still holds, by its
+  // id. A scene left and come back to is as it was left.
+  visits: Record<string, { contents: Record<string, string[]> }>;
+};
+
+export type GameState = GameProgress & {
+  // The scene's opening is shown, on its first visit only.
+  intro: boolean;
   // key changes with each narration, so the band plays its entrance again.
   narration: { title: string; text: string; key: number };
   conversation?: Conversation;
-  // The items carried, in the order taken, one per inventory slot.
-  inventory: string[];
-  // What each object still holds, by its id.
-  contents: Record<string, string[]>;
   // The object whose contents are shown, if any.
   searching?: SceneObject;
   // What the last toast says; key changes with each one, so it shows again.
   toast?: { text: string; key: number };
-  // The logbook's entries, oldest first.
-  logbook: string[];
 };
 
-export type SceneAction =
-  | { type: "look"; title: string; text: string }
+export type GameAction =
+  | { type: "endIntro" }
+  | { type: "use"; object: SceneObject; action: ObjectAction }
   | { type: "talk"; character: Character }
   | { type: "ask"; topic: Topic }
   | { type: "leave" }
-  | { type: "search"; object: SceneObject }
   | { type: "take"; item: string }
   | { type: "stopSearching" };
 
@@ -59,90 +73,147 @@ export const ENTER_ARROW = "M4,12 H20 M13,5 L20,12 L13,19";
 // From the opening to the button to enter.
 export const INTRO_HOLD = INTRO.textDelay + INTRO.textFade + INTRO.buttonDelay;
 
-export const initialSceneState = ({ scene }: SceneData): SceneState => ({
-  narration: { title: scene.title, text: scene.intro, key: 0 },
-  inventory: [],
-  logbook: [scene.intro],
-  contents: Object.fromEntries(
+// What each object of a scene holds when it is first visited.
+const initialContents = ({ scene }: SceneData) =>
+  Object.fromEntries(
     scene.objects.flatMap(({ id, contents }) =>
       contents ? [[id, contents.slice(0, CONTAINER_SLOTS.length)]] : [],
     ),
-  ),
-});
+  );
 
-const toastOf = (state: SceneState, text: string) => ({
+const toastOf = (state: GameState, text: string) => ({
   text,
   key: (state.toast?.key ?? 0) + 1,
 });
 
-const narrate = (state: SceneState, title: string, text: string) => ({
+const narrate = (state: GameState, title: string, text: string) => ({
   title,
   text,
   key: state.narration.key + 1,
 });
 
-export const playScene = (state: SceneState, action: SceneAction): SceneState => {
-  const c = state.conversation;
-  switch (action.type) {
-    case "look":
-      return { ...state, narration: narrate(state, action.title, action.text) };
-    case "talk": {
-      const { character } = action;
-      return {
-        ...state,
-        conversation: { character, lines: [{ text: character.dialogue.greeting }], asked: [] },
-      };
-    }
-    case "ask": {
-      if (c === undefined) return state;
-      const { ask, answer } = action.topic;
-      return {
-        ...state,
-        conversation: {
-          ...c,
-          lines: [...c.lines, { text: `— ${ask}`, player: true }, { text: answer }],
-          asked: [...c.asked, ask],
-        },
-      };
-    }
-    case "leave":
-      // The character's farewell stays in the narration band.
-      if (c === undefined) return state;
-      return {
-        ...state,
-        conversation: undefined,
-        narration: narrate(state, c.character.name, c.character.dialogue.farewell),
-      };
-    case "search":
-      return { ...state, searching: action.object };
-    case "take": {
-      // From the object searched, while the inventory has room.
-      const object = state.searching;
-      const held = object && state.contents[object.id];
-      const at = held?.indexOf(action.item) ?? -1;
-      if (object === undefined || held === undefined || at < 0) return state;
-      if (state.inventory.length >= INVENTORY_SLOTS.length) return state;
-      return {
-        ...state,
-        inventory: [...state.inventory, action.item],
-        contents: { ...state.contents, [object.id]: held.filter((_, i) => i !== at) },
-        toast: toastOf(state, itemAdded(action.item)),
-      };
-    }
-    case "stopSearching":
-      return { ...state, searching: undefined };
-  }
+// Entering a scene: its opening and its intro in the logbook the first time,
+// as it was left the next ones. What the last one showed is gone, its toast
+// too.
+const enter = ({ scenes }: GameData, state: GameState, id: string): GameState => {
+  const data = scenes[id];
+  if (data === undefined) return state;
+  const visited = Object.hasOwn(state.visits, id);
+  return {
+    ...state,
+    at: id,
+    intro: !visited,
+    narration: narrate(state, data.scene.title, data.scene.intro),
+    conversation: undefined,
+    searching: undefined,
+    toast: undefined,
+    logbook: visited ? state.logbook : [...state.logbook, data.scene.intro],
+    visits: visited ? state.visits : { ...state.visits, [id]: { contents: initialContents(data) } },
+  };
 };
 
-// What an object's action does: shows what it holds, or tells its text.
-export const objectAction = (object: SceneObject, action: ObjectAction): SceneAction =>
-  action.search
-    ? { type: "search", object }
-    : { type: "look", title: action.label, text: action.text ?? "" };
+export const startGame = (game: GameData): GameState =>
+  enter(
+    game,
+    {
+      at: "",
+      inventory: [],
+      logbook: [],
+      flags: [],
+      visits: {},
+      intro: true,
+      narration: { title: "", text: "", key: 0 },
+    },
+    game.game.start,
+  );
 
-// The actions an object's menu offers: its own, or its label and its text.
-export const objectActions = (object: SceneObject): ObjectAction[] =>
-  object.actions ?? [{ label: object.label, text: object.text ?? "" }];
+// Where an exit of the scene being played leads, if the game links it to one
+// of its scenes.
+const exitTo = ({ game, scenes }: GameData, state: GameState, exit: string) => {
+  const to = game.links[state.at]?.[exit];
+  return to !== undefined && Object.hasOwn(scenes, to) ? to : undefined;
+};
+
+// The game's reducer, for useReducer.
+export const playGame =
+  (game: GameData) =>
+  (state: GameState, action: GameAction): GameState => {
+    const c = state.conversation;
+    switch (action.type) {
+      case "endIntro":
+        return { ...state, intro: false };
+      case "use": {
+        const { object } = action;
+        const { label, text, search, exit, sets } = action.action;
+        const raised =
+          sets === undefined || state.flags.includes(sets)
+            ? state
+            : { ...state, flags: [...state.flags, sets] };
+        const to = exit === undefined ? undefined : exitTo(game, raised, exit);
+        if (to !== undefined) return enter(game, raised, to);
+        if (search) return { ...raised, searching: object };
+        return { ...raised, narration: narrate(raised, label, text ?? "") };
+      }
+      case "talk": {
+        const { character } = action;
+        return {
+          ...state,
+          conversation: { character, lines: [{ text: character.dialogue.greeting }], asked: [] },
+        };
+      }
+      case "ask": {
+        if (c === undefined) return state;
+        const { ask, answer } = action.topic;
+        return {
+          ...state,
+          conversation: {
+            ...c,
+            lines: [...c.lines, { text: `— ${ask}`, player: true }, { text: answer }],
+            asked: [...c.asked, ask],
+          },
+        };
+      }
+      case "leave":
+        // The character's farewell stays in the narration band.
+        if (c === undefined) return state;
+        return {
+          ...state,
+          conversation: undefined,
+          narration: narrate(state, c.character.name, c.character.dialogue.farewell),
+        };
+      case "take": {
+        // From the object searched, while the inventory has room.
+        const object = state.searching;
+        const contents = state.visits[state.at]?.contents;
+        const held = object && contents?.[object.id];
+        const at = held?.indexOf(action.item) ?? -1;
+        if (object === undefined || held === undefined || at < 0) return state;
+        if (state.inventory.length >= INVENTORY_SLOTS.length) return state;
+        return {
+          ...state,
+          inventory: [...state.inventory, action.item],
+          visits: {
+            ...state.visits,
+            [state.at]: { contents: { ...contents, [object.id]: held.filter((_, i) => i !== at) } },
+          },
+          toast: toastOf(state, itemAdded(action.item)),
+        };
+      }
+      case "stopSearching":
+        return { ...state, searching: undefined };
+    }
+  };
+
+// What an object searched in the scene being played still holds.
+export const heldBy = (state: GameState, object: SceneObject) =>
+  state.visits[state.at]?.contents[object.id] ?? [];
+
+// The actions an object's menu offers: its own, those the flags raised allow,
+// or its label and its text. An object with none is not clickable.
+export const objectActions = (object: SceneObject, flags: string[]): ObjectAction[] =>
+  (object.actions ?? [{ label: object.label, text: object.text ?? "" }]).filter(
+    ({ requires }) => requires === undefined || flags.includes(requires),
+  );
 
 // Where an object's menu goes, in px from the frame's top left corner: to the
 // right of the point where the object was clicked, or to its left if there is

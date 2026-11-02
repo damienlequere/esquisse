@@ -7,8 +7,19 @@ export type Topic = { ask: string; answer: string };
 
 // What can be done with an object, offered in its menu: the action's label, and
 // what the player then finds out; with search, it shows what the object holds
-// instead (see contents).
-export type ObjectAction = { label: string; text?: string; search?: boolean };
+// instead (see contents). With exit, it leaves the scene, for wherever the game
+// links that exit (see Game); not linked, as when the scene is played alone, it
+// does what it would without it. With sets, it raises that flag; with
+// requires, it is offered only once that flag is raised. The flags are the
+// game's: raised in one scene, they stay raised in the others.
+export type ObjectAction = {
+  label: string;
+  text?: string;
+  search?: boolean;
+  exit?: string;
+  sets?: string;
+  requires?: string;
+};
 
 export type SceneObject = {
   id: string;

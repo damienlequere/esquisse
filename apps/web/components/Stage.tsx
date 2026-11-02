@@ -2,7 +2,7 @@
 
 import { type CSSProperties, type ReactNode, useEffect, useState } from "react";
 
-// The stage of a scene's layout (see app/scene/[id]/layout.tsx), shown only once
+// The stage of a scene's frame (see SceneFrame.tsx), shown only once
 // the scene's images are loaded and decoded: the background blurred around the
 // frame, and the scene, whose opening starts then. Until then, the stage stays
 // hidden (see globals.css) and the frame empty. An image that fails to load does

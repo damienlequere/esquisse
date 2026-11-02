@@ -60,13 +60,13 @@ overexposed while it is open (not when pointed at) (`actions` in `scene.json`; w
 `label` and `text` are its only action; an action with `search` shows
 instead what the object holds, `contents`, up to nine items listed in `ITEMS`
 in packages/shared, each of which goes to the inventory when pressed), and the characters, clickable too, open
-a dialogue. An action's text goes to the text panel, which it does not open. On the web, the frame adapts to the screen, like any page under
-`app/scene/`; in the mobile app, the scene takes the whole screen. A scene opens
+a dialogue. An action's text goes to the text panel, which it does not open. On the web, the frame adapts to the screen (see The device frame); in the mobile app, the scene takes the whole screen. A scene opens
 on its title, in the middle, on black; its intro fades in under it, and once it
 has had time to be read (35 ms per character), an arrow to enter fades in, in
 the bottom right corner of the frame; the scene waits for it to be pressed, then both fade out to show the
 scene. It cannot be skipped. On the web, while a touch screen asks to be turned, it
-waits, and starts over if the screen is turned away before its end.
+waits, and starts over if the screen is turned away before its end. In a game, it
+plays on a scene's first visit only.
 
 - **The scene is written by Claude** (Opus 5.5) from a brief: the texts, the
   dialogues, the prompts for the images and the composition. The script checks
@@ -107,6 +107,37 @@ waits, and starts over if the screen is turned away before its end.
 | `packages/shared/assets/scenes/<id>/` | Converted images, for both apps |
 | `apps/web/scenes.ts`, `apps/mobile/src/scenes.ts` | Each app's list of the images (generated): Next and Metro each need every import spelled out |
 | `apps/web/components/Scene.tsx`, `apps/mobile/src/components/Scene.tsx` | The scene, in each app |
+| `packages/shared/src/games/<id>/game.json`, `games/index.ts` | The games: their scenes, linked by their exits (written by hand) |
+| `packages/shared/src/scenes/play.ts` | How a game is played (`playGame`), the same in both apps |
+| `apps/web/components/Game.tsx`, `apps/mobile/src/components/Game.tsx` | A game, from scene to scene, in each app; a scene alone is a game of its own |
+
+## Games
+
+A game links scenes, each one still generated and adjusted alone. A scene
+declares its **exits**: an object's action with `exit` (`{ "label": "Entrer",
+"exit": "auberge" }`), a name of its own. The game, in
+`packages/shared/src/games/<id>/game.json`, says where each one leads:
+
+```json
+{
+  "title": "Tristram",
+  "start": "tristram",
+  "links": { "tristram": { "auberge": "auberge" }, "auberge": { "rue": "tristram" } }
+}
+```
+
+An exit the game does not link, as every exit of a scene played alone at
+`/scene/<id>`, stays closed: the action does what it would without `exit` (its
+text, or a search). A game is played at `/game/<id>` on the web site, and from
+the home screen in both apps, and is listed in `games/index.ts`, which fails
+on a scene it does not know.
+
+What the player keeps from scene to scene is the game's (`GameProgress` in
+`play.ts`): the inventory, the logbook (each scene's intro, on its first
+visit), the **flags**, and each visited scene as it was left (what its objects
+still hold). An action with `sets` raises a flag; one with `requires` is offered
+only once it is raised, and an object left with no action is not clickable. A
+scene comes back without its opening.
 | `packages/generator/src/generate-scene.ts` | The session: the background, then each element, then each character's dialogue line by line, validated one at a time, saved and listed for both apps |
 | `packages/generator/src/write-scene.ts`, `paint.ts`, `check-scene.ts`, `registry.ts` | The writing with Claude, the images with Gemini and the renders, the checks, the generated lists |
 
@@ -309,11 +340,12 @@ The scenes are shown in a device frame: on a large screen with a mouse, a
 phone (9:19.5), or a tablet (3:4) from 1024 px wide; on a phone or a touch
 tablet, the whole screen. Everything lives in two places:
 
-- `apps/web/app/scene/[id]/layout.tsx`: the `#stage` and `#device` elements;
+- `apps/web/components/SceneFrame.tsx`: the `#stage` and `#device` elements,
+  turned like the scene being played;
 - `apps/web/app/globals.css`: their styles, under a media query.
 
-Any route under `app/scene/` gets the frame. Dialogs and menus must open in
-`#device` (positioned), not on `body`.
+Each scene of a game gets its own frame, which waits for its images. Dialogs
+and menus must open in `#device` (positioned), not on `body`.
 
 ## Notes
 

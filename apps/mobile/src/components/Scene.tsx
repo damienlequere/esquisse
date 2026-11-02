@@ -3,18 +3,18 @@ import {
   CONTAINER_COLUMNS,
   CONTAINER_SLOTS,
   ENTER_ARROW,
+  type GameAction,
+  type GameState,
+  heldBy,
   INTRO,
   INTRO_HOLD,
   INVENTORY_COLUMNS,
   INVENTORY_SLOTS,
-  initialSceneState,
   itemName,
   type ObjectAction,
-  objectAction,
   objectActions,
   objectMenuPlace,
   placeStyle,
-  playScene,
   RING_ICONS,
   remainingTopics,
   type SceneData,
@@ -25,7 +25,7 @@ import {
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { cssInterop } from "nativewind";
-import { type ReactNode, useEffect, useReducer, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import {
   BackHandler,
   Image,
@@ -56,8 +56,8 @@ import { Toast } from "./Toast.tsx";
 // Same scene as the web one (apps/web/components/Scene.tsx): the background
 // covers the screen, each object is one action, each character opens a dialogue.
 // Everything is placed in % of the image (see sceneLayout in packages/shared),
-// so it follows the cropping. What it shows as it is played is playScene's,
-// shared with the web site.
+// so it follows the cropping. What it shows as it is played is the game's (see
+// Game), as playGame plays it, shared with the web site.
 
 // In landscape, a conversation is a panel on the right, 256 wide but never more
 // than 30% of the screen (the web's Scene.module.css has the same).
@@ -129,7 +129,17 @@ const Tip = ({ label }: { label: string }) => (
   </View>
 );
 
-export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }) => {
+export const Scene = ({
+  data,
+  images,
+  state,
+  dispatch,
+}: {
+  data: SceneData;
+  images: SceneImages;
+  state: GameState;
+  dispatch(action: GameAction): void;
+}) => {
   const { scene } = data;
   const layout = sceneLayout(data);
   const insets = useSafeAreaInsets();
@@ -142,11 +152,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
     height: Math.max(screen.height, screen.width / layout.ratio),
   };
 
-  const [{ conversation, inventory, contents, searching, toast, logbook }, dispatch] = useReducer(
-    playScene,
-    data,
-    initialSceneState,
-  );
+  const { conversation, inventory, flags, searching, toast, logbook } = state;
 
   // Leaving the scene, from the general menu, for the home screen.
   const router = useRouter();
@@ -179,7 +185,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
       return true;
     });
     return () => sub.remove();
-  }, [inConversation]);
+  }, [inConversation, dispatch]);
 
   // The inventory's window, opened by the ring menu's pouch, the logbook's,
   // opened by its book, the general menu's, opened by its cogwheel, and the
@@ -195,8 +201,8 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
   // Opening the scene: its title on black, then its intro fading in under it;
   // shortly after it has appeared, the arrow to enter fades in, in the bottom
   // right corner, and the scene waits for it. Pressed, everything fades out to
-  // show the scene (the web's Scene.module.css has the same). It cannot be skipped.
-  const [intro, setIntro] = useState(true);
+  // show the scene (the web's Scene.module.css has the same). It cannot be
+  // skipped. Only on the scene's first visit.
   const [introReady, setIntroReady] = useState(false);
   useEffect(() => {
     const timer = setTimeout(() => setIntroReady(true), INTRO_HOLD);
@@ -240,32 +246,35 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
             />
           )}
 
-          {layout.objects.map(({ object, box }) => (
-            <Pressable
-              key={object.id}
-              accessibilityRole="button"
-              accessibilityLabel={object.label}
-              onPress={(event) =>
-                setMenu({ object, x: event.nativeEvent.pageX, y: event.nativeEvent.pageY })
-              }
-              style={place(box)}
-            >
-              {({ pressed }) => (
-                <>
-                  {/* Pressed, or its menu open, a slight overexposure, fading
+          {layout.objects.map(
+            ({ object, box }) =>
+              objectActions(object, flags).length > 0 && (
+                <Pressable
+                  key={object.id}
+                  accessibilityRole="button"
+                  accessibilityLabel={object.label}
+                  onPress={(event) =>
+                    setMenu({ object, x: event.nativeEvent.pageX, y: event.nativeEvent.pageY })
+                  }
+                  style={place(box)}
+                >
+                  {({ pressed }) => (
+                    <>
+                      {/* Pressed, or its menu open, a slight overexposure, fading
                       towards its edges. */}
-                  {(pressed || menu?.object === object) && (
-                    <Animated.View
-                      entering={FadeIn.duration(200)}
-                      exiting={FadeOut.duration(300)}
-                      className="absolute inset-0"
-                      style={{ backgroundImage: OVEREXPOSED }}
-                    />
+                      {(pressed || menu?.object === object) && (
+                        <Animated.View
+                          entering={FadeIn.duration(200)}
+                          exiting={FadeOut.duration(300)}
+                          className="absolute inset-0"
+                          style={{ backgroundImage: OVEREXPOSED }}
+                        />
+                      )}
+                    </>
                   )}
-                </>
-              )}
-            </Pressable>
-          ))}
+                </Pressable>
+              ),
+          )}
 
           {/* Characters: layers placed by their feet. */}
           {layout.characters.map(({ character, box }) => {
@@ -320,12 +329,13 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
       {menu && screen && (
         <ObjectMenu
           object={menu.object}
+          actions={objectActions(menu.object, flags)}
           x={menu.x}
           y={menu.y}
           screen={screen}
           onClose={() => setMenu(undefined)}
           onAction={(action) => {
-            dispatch(objectAction(menu.object, action));
+            dispatch({ type: "use", object: menu.object, action });
             setMenu(undefined);
           }}
         />
@@ -398,7 +408,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
           onClose={() => dispatch({ type: "stopSearching" })}
         >
           {CONTAINER_SLOTS.map((slot, i) => {
-            const item = contents[searching.id]?.[i];
+            const item = heldBy(state, searching)[i];
             return item === undefined ? (
               <View
                 key={slot}
@@ -483,7 +493,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
       {/* What was just done, as taking an item: over the rest. */}
       <Toast message={toast} />
 
-      {intro && (
+      {state.intro && (
         <Animated.View
           exiting={FadeOut.duration(INTRO.fade)}
           className="absolute inset-0 items-center justify-center bg-black"
@@ -509,7 +519,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
           </View>
           <EnterButton
             ready={introReady}
-            onPress={() => setIntro(false)}
+            onPress={() => dispatch({ type: "endIntro" })}
             style={{
               right: Math.max(20, insets.right),
               bottom: Math.max(20, insets.bottom),
@@ -654,6 +664,7 @@ const SlotsWindow = ({
 // its left (see objectMenuPlace; the web's ObjectMenu has the same). A touch out of it closes it.
 const ObjectMenu = ({
   object,
+  actions,
   x,
   y,
   screen,
@@ -661,6 +672,7 @@ const ObjectMenu = ({
   onAction,
 }: {
   object: SceneObject;
+  actions: ObjectAction[];
   x: number;
   y: number;
   screen: LayoutRectangle;
@@ -681,7 +693,7 @@ const ObjectMenu = ({
           size ? objectMenuPlace({ x, y }, size, screen) : { left: x, top: y, opacity: 0 },
         ]}
       >
-        {objectActions(object).map((action) => (
+        {actions.map((action) => (
           <Choice
             key={action.label}
             label={action.label}

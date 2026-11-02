@@ -1,10 +1,11 @@
-import { scenes } from "@esquisse/shared";
+import { sceneGame, scenes } from "@esquisse/shared";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Scene } from "../../../components/Scene.tsx";
+import { Game } from "../../../components/Game.tsx";
 import { isSceneId, sceneImages } from "../../../scenes.ts";
 
-// One page per scene, built ahead of time; any other id is a 404.
+// One page per scene, played alone (its exits stay closed), built ahead of
+// time; any other id is a 404.
 export const dynamicParams = false;
 
 export const generateStaticParams = () => Object.keys(sceneImages).map((id) => ({ id }));
@@ -17,5 +18,5 @@ export async function generateMetadata({ params }: PageProps<"/scene/[id]">): Pr
 export default async function ScenePage({ params }: PageProps<"/scene/[id]">) {
   const { id } = await params;
   if (!isSceneId(id)) notFound();
-  return <Scene data={scenes[id]} images={sceneImages[id]} />;
+  return <Game game={sceneGame(id, scenes[id])} />;
 }

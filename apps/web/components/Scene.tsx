@@ -5,18 +5,18 @@ import {
   CONTAINER_COLUMNS,
   CONTAINER_SLOTS,
   ENTER_ARROW,
+  type GameAction,
+  type GameState,
+  heldBy,
   INTRO,
   INTRO_HOLD,
   INVENTORY_COLUMNS,
   INVENTORY_SLOTS,
-  initialSceneState,
   itemName,
   type ObjectAction,
-  objectAction,
   objectActions,
   objectMenuPlace,
   placeStyle,
-  playScene,
   RING_ICONS,
   remainingTopics,
   type SceneData,
@@ -35,7 +35,6 @@ import {
   useEffect,
   useId,
   useLayoutEffect,
-  useReducer,
   useRef,
   useState,
   useSyncExternalStore,
@@ -56,7 +55,8 @@ const ITEM_IMAGES: Record<string, string> = {
 // Clickable scene: the background covers the frame, each object is one action,
 // each character opens a dialogue. Everything is placed in % of the image (see
 // sceneLayout in packages/shared), so it follows the cropping. What it shows as
-// it is played is playScene's, shared with the mobile app.
+// it is played is the game's (see Game), as playGame plays it, shared with the
+// mobile app.
 
 // A touch screen held the other way than the scene, which then asks to turn it
 // (see .turn in the CSS). A computer's frame is already turned like the scene.
@@ -76,14 +76,20 @@ const useNotTurned = (landscape: boolean) =>
     () => false,
   );
 
-export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }) => {
+export const Scene = ({
+  data,
+  images,
+  state,
+  dispatch,
+}: {
+  data: SceneData;
+  images: SceneImages;
+  state: GameState;
+  dispatch(action: GameAction): void;
+}) => {
   const { scene } = data;
   const layout = sceneLayout(data);
-  const [{ conversation, inventory, contents, searching, toast, logbook }, dispatch] = useReducer(
-    playScene,
-    data,
-    initialSceneState,
-  );
+  const { conversation, inventory, flags, searching, toast, logbook } = state;
   const router = useRouter();
 
   // The general menu's window, opened by the ring menu's cogwheel.
@@ -96,10 +102,9 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
   const [logbookOpen, setLogbookOpen] = useState(false);
 
   // The title on black, then the intro under it, then the button to enter,
-  // until it is pressed and they have faded out (see Intro). It waits for the
-  // screen to be turned like the scene, and starts over if it is turned away
-  // before the end: it is never missed.
-  const [intro, setIntro] = useState(true);
+  // until it is pressed and they have faded out (see Intro), on the scene's
+  // first visit. It waits for the screen to be turned like the scene, and
+  // starts over if it is turned away before the end: it is never missed.
   const notTurned = useNotTurned(layout.landscape);
 
   // ── An object's menu: its actions, where it was clicked ──────────────────────
@@ -185,19 +190,22 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
           <Effects effects={scene.effects} background={images.background} files={images.effects} />
         )}
         <div className={styles.layer}>
-          {layout.objects.map(({ object, box }) => (
-            <button
-              key={object.id}
-              type="button"
-              className={styles.hotspot}
-              aria-label={object.label}
-              aria-haspopup="menu"
-              aria-expanded={menu?.object === object}
-              data-open={menu?.object === object || undefined}
-              style={placeStyle(box)}
-              onClick={(event) => openMenu(object, event)}
-            />
-          ))}
+          {layout.objects.map(
+            ({ object, box }) =>
+              objectActions(object, flags).length > 0 && (
+                <button
+                  key={object.id}
+                  type="button"
+                  className={styles.hotspot}
+                  aria-label={object.label}
+                  aria-haspopup="menu"
+                  aria-expanded={menu?.object === object}
+                  data-open={menu?.object === object || undefined}
+                  style={placeStyle(box)}
+                  onClick={(event) => openMenu(object, event)}
+                />
+              ),
+          )}
 
           {/* Characters: layers placed by their feet. */}
           {layout.characters.map(({ character, box }) => {
@@ -237,17 +245,20 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
       {menu && (
         <ObjectMenu
           object={menu.object}
+          actions={objectActions(menu.object, flags)}
           x={menu.x}
           y={menu.y}
           onClose={closeMenu}
           onAction={(action) => {
-            dispatch(objectAction(menu.object, action));
+            dispatch({ type: "use", object: menu.object, action });
             closeMenu();
           }}
         />
       )}
 
-      {intro && !notTurned && <Intro scene={scene} onEnd={() => setIntro(false)} />}
+      {state.intro && !notTurned && (
+        <Intro scene={scene} onEnd={() => dispatch({ type: "endIntro" })} />
+      )}
 
       {/* Over everything when the screen is not turned like the scene (see the CSS). */}
       <div className={styles.turn}>
@@ -314,7 +325,7 @@ export const Scene = ({ data, images }: { data: SceneData; images: SceneImages }
           onClose={() => dispatch({ type: "stopSearching" })}
         >
           {CONTAINER_SLOTS.map((slot, i) => {
-            const item = contents[searching.id]?.[i];
+            const item = heldBy(state, searching)[i];
             return item === undefined ? (
               <li key={slot} aria-label={sceneText.emptySlot} />
             ) : (
@@ -457,12 +468,14 @@ const SlotsWindow = ({
 // A click out of it, or Escape, closes it.
 const ObjectMenu = ({
   object,
+  actions,
   x,
   y,
   onClose,
   onAction,
 }: {
   object: SceneObject;
+  actions: ObjectAction[];
   x: number;
   y: number;
   onClose(): void;
@@ -501,7 +514,7 @@ const ObjectMenu = ({
         className={styles.menu}
         style={place ?? { left: x, top: y, visibility: "hidden" }}
       >
-        {objectActions(object).map((action) => (
+        {actions.map((action) => (
           <button key={action.label} type="button" role="menuitem" onClick={() => onAction(action)}>
             {action.label}
           </button>
