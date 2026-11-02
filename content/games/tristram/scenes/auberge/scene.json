@@ -4,6 +4,7 @@
   "intro": "Tu pousses la lourde porte de l'auberge de Tristram et te retrouves sous des poutres si basses qu'elles frôlent les chapeaux, dans la chaleur du feu et l'odeur de bière tiède et de suie. Dehors, la cathédrale veille dans la nuit, et personne ici ne parle trop fort.",
   "imageRatio": "9:16",
   "back": "rue",
+  "opening": false,
   "safe": {
     "x0": 0.09,
     "y0": 0.14,

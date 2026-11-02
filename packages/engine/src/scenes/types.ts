@@ -81,6 +81,9 @@ export type Scene = {
   // (see BACK_ARROW), as an object's action offers one; shown only where the
   // game links it.
   back?: string;
+  // false: the scene shows at once, without its opening (its title and its
+  // intro on black), its intro going only to the logbook.
+  opening?: boolean;
 };
 
 // Written by the generator: the detected boxes of the objects, by id, and the

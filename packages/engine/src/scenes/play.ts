@@ -29,7 +29,8 @@ export type GameProgress = {
 };
 
 export type GameState = GameProgress & {
-  // The scene's opening is shown, on its first visit only.
+  // The scene's opening is shown, on its first visit only, unless the scene
+  // has none (opening: false).
   intro: boolean;
   // key changes with each narration, so the band plays its entrance again.
   narration: { title: string; text: string; key: number };
@@ -108,7 +109,7 @@ const enter = ({ scenes }: GameData, state: GameState, id: string): GameState =>
   return {
     ...state,
     at: id,
-    intro: !visited,
+    intro: !visited && data.scene.opening !== false,
     narration: narrate(state, data.scene.title, data.scene.intro),
     conversation: undefined,
     searching: undefined,

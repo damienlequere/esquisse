@@ -75,7 +75,8 @@ has had time to be read (35 ms per character), an arrow to enter fades in, in
 the bottom right corner of the frame; the scene waits for it to be pressed, then both fade out to show the
 scene. It cannot be skipped. On the web, while a touch screen asks to be turned, it
 waits, and starts over if the screen is turned away before its end. In a game, it
-plays on a scene's first visit only.
+plays on a scene's first visit only. A scene with `"opening": false` in its
+`scene.json` has none: it shows at once, its intro going only to the logbook.
 
 - **The scene is written by Claude** (Opus 5.5) from a brief: the texts, the
   dialogues, the prompts for the images and the composition. The script checks
