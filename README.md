@@ -35,8 +35,9 @@ pnpm lint            # pnpm format to fix
 pnpm generate <id> portrait|landscape "brief"  # a new scene, built step by step (see Generating a scene)
 pnpm remove-scene <id> # removes a scene, its texts and its images
 pnpm show-scene <id> # the scene's background with what is clickable outlined, in the image viewer
+pnpm check-game [<id>] # checks a game's links, exits and flags against its scenes (every game without an id)
 pnpm loc             # lines of code per app and package (source / tests)
-pnpm deploy:preview  # lint, typecheck, then deploy the web site to a Vercel preview URL
+pnpm deploy:preview  # lint, typecheck, check the games, then deploy the web site to a Vercel preview URL
 pnpm deploy:prod     # same, to production
 ```
 
@@ -142,6 +143,22 @@ visit), the **flags**, and each visited scene as it was left (what its objects
 still hold). An action with `sets` raises a flag; one with `requires` is offered
 only once it is raised, and an object left with no action is not clickable. A
 scene comes back without its opening.
+
+`pnpm check-game [<id>]` checks a game against its scenes, as they are on disk,
+without calling an API (`packages/generator/src/check-game.ts`). Errors, which
+make it fail (and stop a deploy): a `game.json` badly shaped, a scene that does
+not exist or that the apps do not list, a link from an exit its scene does not
+have, a flag required that nothing in the game raises, a game not listed in
+`games/index.ts`. Warnings: an exit left closed, a scene no exit leads to from
+the first, a flag raised that nothing requires. Run it after writing a
+`game.json`, and after changing or removing a scene a game goes through.
+
+```text
+$ pnpm check-game
+✗ tristram
+  ✗ tristram: no exit « cave » to link to « cave » (an action's exit, or back)
+  ⚠ auberge: the exit « rue » (the back button) is not linked: it stays closed
+```
 | `packages/generator/src/generate-scene.ts` | The session: the background, then each element, then each character's dialogue line by line, validated one at a time, saved and listed for both apps |
 | `packages/generator/src/write-scene.ts`, `paint.ts`, `check-scene.ts`, `registry.ts` | The writing with Claude, the images with Gemini and the renders, the checks, the generated lists |
 

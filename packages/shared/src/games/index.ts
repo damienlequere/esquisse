@@ -1,5 +1,6 @@
 // The games, for both apps, written by hand for now: each one's game.json
-// names its scenes, which must be in scenes/index.ts.
+// names its scenes, which must be in scenes/index.ts (pnpm check-game checks
+// it all, in packages/generator).
 
 import { scenes } from "../scenes/index.ts";
 import type { SceneData } from "../scenes/types.ts";

@@ -6,6 +6,7 @@
     "generate": "node --experimental-strip-types --disable-warning=ExperimentalWarning src/generate-scene.ts",
     "remove-scene": "node --experimental-strip-types --disable-warning=ExperimentalWarning src/remove-scene.ts",
     "show-scene": "node --experimental-strip-types --disable-warning=ExperimentalWarning src/show-scene.ts",
+    "check-game": "node --experimental-strip-types --disable-warning=ExperimentalWarning src/check-game.ts",
     "typecheck": "tsc"
   },
   "dependencies": {
