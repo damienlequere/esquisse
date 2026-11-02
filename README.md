@@ -144,8 +144,8 @@ bottom left corner of the frame, shown only where the game links it.
 An exit the game does not link, as every exit of a scene played alone at
 `/game/<game>/scene/<id>`, stays closed: the action does what it would without
 `exit` (its text, or a search). A game is played at `/game/<game>` on the web
-site, and from the home screen in both apps, which lists each game with its
-scenes. It is listed once its first scene is.
+site, and from the home screen in both apps, which lists the games only (a
+scene alone has no link there). It is listed once its first scene is.
 
 What the player keeps from scene to scene is the game's (`GameProgress` in
 `play.ts`): the inventory, the logbook (each scene's intro, on its first
@@ -325,8 +325,8 @@ What is validated is saved at once (`scene.json`, `objects.json`,
 `characters.json`, the images) and the scene is listed for both apps
 (`content/games/index.ts`, `apps/web/images.ts`,
 `apps/mobile/src/images.ts`): the session can stop at any time, and `pnpm dev`
-shows the scene on the home page, under its game, and at
-`/game/<game>/scene/<id>`.
+shows the scene at `/game/<game>/scene/<id>`, and in its game once its first
+scene is complete.
 
 | What | Where |
 | --- | --- |
