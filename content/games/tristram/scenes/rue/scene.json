@@ -13,7 +13,10 @@
   "light": "Crépuscule froid bleu-gris venant du ciel couvert, en haut à gauche ; lueurs orangées des torches et des fenêtres au niveau des maisons ; rougeoiement sourd venant de la cathédrale au fond, au centre, qui teinte la brume par en dessous.",
   "background": {
     "prompt": "Vue générale de face, à hauteur d'homme, de la place centrale d'un village médiéval ténébreux à la tombée du soir, entièrement vide de toute personne et de tout animal. Au premier plan, le tiers inférieur de l'image est un sol dégagé de terre boueuse et de vieux pavés disjoints, creusé d'ornières et de flaques sombres qui reflètent le ciel, sans aucun objet posé. De part et d'autre, des maisons à colombages de chêne noirci, au torchis écaillé et aux toits de chaume affaissé et pourri, aux volets de bois clos et fendus ; à gauche, une bâtisse plus large à étage, aux fenêtres à petits carreaux éclairées d'un orangé chaud, avec une enseigne de fer vide qui pend à une potence rouillée ; à droite, un appentis de pierre au toit de bardeaux, dont la cheminée crache une fumée grise. Le long des murs, une torche fichée dans un anneau de fer, des tonneaux éventrés serrés contre les façades, une palissade de pieux penchés et un arbre mort aux branches tordues. Au fond, au centre, au sommet d'une colline rocailleuse sur laquelle monte un chemin creux, se dresse une cathédrale gothique en ruine, à la flèche brisée et aux vitraux crevés, d'où filtre une lueur rouge sourde qui teinte la brume. Ciel lourd et couvert, gris ardoise, traversé de nuées sombres ; brume basse qui rampe entre les maisons ; quelques tombes de guingois et une croix de pierre penchée dans un petit cimetière à flanc de colline, à mi-distance.",
-    "retouches": ["enlève la maison à droite"]
+    "retouches": [
+      "enlève la maison à droite",
+      "déplace le grand tonneau debout du premier plan à droite : enlève-le de devant la palissade, où il ne reste que la boue, les flaques, les pavés et le bas de la palissade, et peins-le, plus petit selon la perspective, debout contre le pied de la maison qui suit l’auberge, juste après l’angle de l’auberge, à gauche de la rue, de 29 % à 37 % de la largeur, de 59 % à 67 % de la hauteur, éclairé comme ce qui l’entoure."
+    ]
   },
   "objects": [
     {
@@ -38,13 +41,13 @@
     {
       "id": "tonneau",
       "zone": {
-        "x0": 0.73,
-        "y0": 0.69,
-        "x1": 0.89,
-        "y1": 0.82
+        "x0": 0.26,
+        "y0": 0.66,
+        "x1": 0.35,
+        "y1": 0.73
       },
-      "paint": "Le tonneau debout dans la moitié droite de la rue, devant la palissade : un vieux tonneau de chêne noirci, cerclé de fer rouillé, aux douves fendues.",
-      "detect": "the large upright wooden barrel standing in the muddy street on the right, in front of the wooden fence (not the small barrels under the porch in the background)",
+      "paint": "Le tonneau debout à gauche de la rue, juste après l'auberge, contre le pied de la maison suivante : un vieux tonneau de chêne noirci, cerclé de fer rouillé, aux douves fendues, plus petit que s'il était au premier plan, selon la perspective.",
+      "detect": "the upright wooden barrel standing on the left side of the street, just past the corner of the inn, at the foot of the next house (not the small barrel lying on its side by the inn's door)",
       "label": "Le tonneau",
       "actions": [
         {
