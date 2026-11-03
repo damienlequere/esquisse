@@ -27,16 +27,16 @@ export const gameImages = {
         characters: {},
         effects: {},
       },
-      tristram: {
-        background: require("@esquisse/content/games/tristram/scenes/tristram/fond.webp"),
+      rue: {
+        background: require("@esquisse/content/games/tristram/scenes/rue/fond.webp"),
         characters: {},
         effects: {
           ciel: [
-            require("@esquisse/content/games/tristram/scenes/tristram/ciel.webp"),
-            require("@esquisse/content/games/tristram/scenes/tristram/ciel-devant.webp"),
+            require("@esquisse/content/games/tristram/scenes/rue/ciel.webp"),
+            require("@esquisse/content/games/tristram/scenes/rue/ciel-devant.webp"),
           ],
-          lueur: [require("@esquisse/content/games/tristram/scenes/tristram/lueur.webp")],
-          feu: [require("@esquisse/content/games/tristram/scenes/tristram/feu.webp")],
+          lueur: [require("@esquisse/content/games/tristram/scenes/rue/lueur.webp")],
+          feu: [require("@esquisse/content/games/tristram/scenes/rue/feu.webp")],
           pluie: [],
         },
       },

@@ -1,9 +1,9 @@
 {
   "title": "Tristram",
-  "start": "tristram",
+  "start": "rue",
   "links": {
-    "tristram": { "auberge": "auberge" },
-    "auberge": { "rue": "tristram", "etage": "etage" },
+    "rue": { "auberge": "auberge" },
+    "auberge": { "rue": "rue", "etage": "etage" },
     "etage": { "descendre": "auberge" }
   }
 }

@@ -5,11 +5,11 @@ import tristramItemLanterne from "@esquisse/content/games/tristram/items/lantern
 import tristramItemPelle from "@esquisse/content/games/tristram/items/pelle.webp";
 import tristramSceneAubergeFond from "@esquisse/content/games/tristram/scenes/auberge/fond.webp";
 import tristramSceneEtageFond from "@esquisse/content/games/tristram/scenes/etage/fond.webp";
-import tristramSceneTristramCiel from "@esquisse/content/games/tristram/scenes/tristram/ciel.webp";
-import tristramSceneTristramCielDevant from "@esquisse/content/games/tristram/scenes/tristram/ciel-devant.webp";
-import tristramSceneTristramFeu from "@esquisse/content/games/tristram/scenes/tristram/feu.webp";
-import tristramSceneTristramFond from "@esquisse/content/games/tristram/scenes/tristram/fond.webp";
-import tristramSceneTristramLueur from "@esquisse/content/games/tristram/scenes/tristram/lueur.webp";
+import tristramSceneRueCiel from "@esquisse/content/games/tristram/scenes/rue/ciel.webp";
+import tristramSceneRueCielDevant from "@esquisse/content/games/tristram/scenes/rue/ciel-devant.webp";
+import tristramSceneRueFeu from "@esquisse/content/games/tristram/scenes/rue/feu.webp";
+import tristramSceneRueFond from "@esquisse/content/games/tristram/scenes/rue/fond.webp";
+import tristramSceneRueLueur from "@esquisse/content/games/tristram/scenes/rue/lueur.webp";
 import type { StaticImageData } from "next/image";
 
 // The games' images, served from content/games, like the mobile app's
@@ -39,13 +39,13 @@ export const gameImages = {
         characters: {},
         effects: {},
       },
-      tristram: {
-        background: tristramSceneTristramFond,
+      rue: {
+        background: tristramSceneRueFond,
         characters: {},
         effects: {
-          ciel: [tristramSceneTristramCiel, tristramSceneTristramCielDevant],
-          lueur: [tristramSceneTristramLueur],
-          feu: [tristramSceneTristramFeu],
+          ciel: [tristramSceneRueCiel, tristramSceneRueCielDevant],
+          lueur: [tristramSceneRueLueur],
+          feu: [tristramSceneRueFeu],
           pluie: [],
         },
       },

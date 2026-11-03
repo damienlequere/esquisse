@@ -132,8 +132,8 @@ declares its **exits**: an object's action with `exit` (`{ "label": "Entrer",
 ```json
 {
   "title": "Tristram",
-  "start": "tristram",
-  "links": { "tristram": { "auberge": "auberge" }, "auberge": { "rue": "tristram" } }
+  "start": "rue",
+  "links": { "rue": { "auberge": "auberge" }, "auberge": { "rue": "rue" } }
 }
 ```
 
@@ -167,7 +167,7 @@ no link names (only played alone), a flag raised that nothing requires. Run it a
 ```text
 $ pnpm check-game
 ✗ tristram
-  ✗ tristram: no exit « cave » to link to « cave » (an action's exit, or back)
+  ✗ rue: no exit « cave » to link to « cave » (an action's exit, or back)
   ⚠ auberge: the exit « rue » (the back button) is not linked: it stays closed
 ```
 | `packages/generator/src/generate-scene.ts` | The session: the background, then each element, then each character's dialogue line by line, validated one at a time, saved and listed for both apps |
