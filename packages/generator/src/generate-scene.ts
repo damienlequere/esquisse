@@ -60,7 +60,7 @@ import {
   show,
   where,
 } from "./paint.ts";
-import { gameDir, ID, sceneDir, writeRegistries } from "./registry.ts";
+import { format, gameDir, ID, sceneDir, writeRegistries } from "./registry.ts";
 import { skyMatte, stillWithSky } from "./sky.ts";
 import {
   type Base,
@@ -171,9 +171,13 @@ const appSize = (scene: Scene) => (isLandscape(scene) ? { width: 2560 } : { widt
 const save = async ({ data, background, backgroundChanged, character, files }: Candidate) => {
   const { scene } = data;
   for (const dir of [DIR, SOURCES, MEDIA]) mkdirSync(dir, { recursive: true });
-  writeFileSync(SCENE, json(scene));
-  writeFileSync(join(DIR, "objects.json"), json(data.objects));
-  writeFileSync(join(DIR, "characters.json"), json(data.aspects));
+  const texts = {
+    [SCENE]: scene,
+    [join(DIR, "objects.json")]: data.objects,
+    [join(DIR, "characters.json")]: data.aspects,
+  };
+  for (const [file, value] of Object.entries(texts)) writeFileSync(file, json(value));
+  format(Object.keys(texts));
   if (backgroundChanged) writeFileSync(join(SOURCES, "fond.jpg"), background);
 
   // A retouch may move what the animations move: it is found again.
@@ -609,7 +613,8 @@ if (orientation !== undefined && brief !== undefined) {
   // A new game starts in its first scene; its title is to be written by hand.
   if (!existsSync(GAME)) {
     mkdirSync(gameDir(game), { recursive: true });
-    writeFileSync(GAME, `${JSON.stringify({ title: game, start: id, links: {} }, null, 2)}\n`);
+    writeFileSync(GAME, json({ title: game, start: id, links: {} }));
+    format([GAME]);
     console.log(`New game "${game}", starting in "${id}": its title is in ${GAME}`);
   }
   ({ state, suggestions } = await createBackground(brief, FORMATS[orientation]));

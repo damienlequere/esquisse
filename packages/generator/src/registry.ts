@@ -225,6 +225,13 @@ ${games
 };
 `;
 
+// What the generator writes, put as Biome wants it, like the rest of the
+// repository (pnpm lint): the lists, and the scenes' and games' JSON.
+export const format = (files: string[]) =>
+  execFileSync(join(ROOT, "node_modules/.bin/biome"), ["check", "--write", ...files], {
+    stdio: "ignore",
+  });
+
 // Writes the lists; returns the games listed, each with its scenes.
 export const writeRegistries = () => {
   const games = listGames();
@@ -233,10 +240,7 @@ export const writeRegistries = () => {
     [join(GAMES, "images.ts")]: images(games),
   };
   for (const [file, code] of Object.entries(files)) writeFileSync(file, code);
-  // Long ids make long lines, and imports have their order: Biome puts them
-  // as it wants them.
-  execFileSync(join(ROOT, "node_modules/.bin/biome"), ["check", "--write", ...Object.keys(files)], {
-    stdio: "ignore",
-  });
+  // Long ids make long lines, and imports have their order.
+  format(Object.keys(files));
   return games.map((g) => ({ id: g.id, scenes: g.scenes.map((s) => s.id) }));
 };
