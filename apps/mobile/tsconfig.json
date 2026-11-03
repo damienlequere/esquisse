@@ -5,5 +5,5 @@
     "noUncheckedIndexedAccess": true,
     "allowImportingTsExtensions": true
   },
-  "include": ["**/*.ts", "**/*.tsx", "nativewind-env.d.ts", "css.d.ts"]
+  "include": ["**/*.ts", "**/*.tsx", "nativewind-env.d.ts", "css.d.ts", "webp.d.ts"]
 }

@@ -1,12 +1,13 @@
 "use client";
 
+import { type GameImages, gameImages } from "@esquisse/content/games/images.ts";
 import { exitTo, type GameData, isLandscape, playGame, startGame } from "@esquisse/engine";
+import type { StaticImageData } from "next/image";
 import { useMemo, useReducer } from "react";
-import { type GameImages, gameImages } from "../images.ts";
 import { Scene } from "./Scene.tsx";
 import { SceneFrame } from "./SceneFrame.tsx";
 
-const IMAGES: Record<string, GameImages> = gameImages;
+const IMAGES: Record<string, GameImages<StaticImageData>> = gameImages;
 
 // A game, from scene to scene, as playGame in packages/engine plays it: each
 // scene in its own frame, which waits for its images, then shows it. A scene

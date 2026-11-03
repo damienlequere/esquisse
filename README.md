@@ -116,7 +116,7 @@ plays on a scene's first visit only. A scene with `"opening": false` in its
 | `content/games/<game>/scenes/<id>/sources/` | Original images, never bundled |
 | `content/games/<game>/items/index.ts`, `items/<id>.webp` | The game's items (`ITEMS`): their names, their images |
 | `content/games/index.ts` | The games, with their scenes and items, for both apps (generated) |
-| `apps/web/images.ts`, `apps/mobile/src/images.ts` | Each app's list of the games' images (generated): Next and Metro each need every import spelled out |
+| `content/games/images.ts` | The games' images, for both apps (generated): Next and Metro each need every import spelled out, and each makes it what it shows |
 | `apps/web/components/Scene.tsx`, `apps/mobile/src/components/Scene.tsx` | The scene, in each app |
 | `content/games/<game>/game.json` | A game: its first scene, and its scenes' links (written by hand) |
 | `packages/engine/src/scenes/play.ts` | How a game is played (`playGame`), the same in both apps |
@@ -323,8 +323,7 @@ Que veux-tu ajouter ? (une description, un numéro d'idée, d pour des détails 
 
 What is validated is saved at once (`scene.json`, `objects.json`,
 `characters.json`, the images) and the scene is listed for both apps
-(`content/games/index.ts`, `apps/web/images.ts`,
-`apps/mobile/src/images.ts`): the session can stop at any time, and `pnpm dev`
+(`content/games/index.ts`, `content/games/images.ts`): the session can stop at any time, and `pnpm dev`
 shows the scene at `/game/<game>/scene/<id>`, and in its game once its first
 scene is complete.
 

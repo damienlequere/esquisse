@@ -93,6 +93,6 @@ export type CharacterAspects = Record<string, number>;
 
 // A scene and what the generator found in its images (see
 // packages/generator/src/generate-scene.ts). Each one is in its game's folder,
-// content/games/<game>/scenes/<id>, with its images, listed by each app
-// (apps/web/images.ts, apps/mobile/src/images.ts).
+// content/games/<game>/scenes/<id>, with its images, listed for both apps
+// (content/games/images.ts).
 export type SceneData = { scene: Scene; objects: ObjectBoxes; aspects: CharacterAspects };

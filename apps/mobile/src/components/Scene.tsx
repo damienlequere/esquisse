@@ -1,3 +1,4 @@
+import type { SceneImages } from "@esquisse/content/games/images.ts";
 import {
   BACK_ARROW,
   type Box,
@@ -51,7 +52,6 @@ import Animated, {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
-import type { SceneImages } from "../images.ts";
 import { Effects } from "./Effects.tsx";
 import { RingMenu } from "./RingMenu.tsx";
 import { Toast } from "./Toast.tsx";
@@ -135,7 +135,7 @@ export const Scene = ({
   itemImages,
 }: {
   data: SceneData;
-  images: SceneImages;
+  images: SceneImages<ImageSourcePropType>;
   // The game's items, and their images, by id.
   items: Items;
   itemImages: Record<string, ImageSourcePropType>;

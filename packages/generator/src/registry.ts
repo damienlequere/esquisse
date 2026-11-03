@@ -1,6 +1,6 @@
 // Writes the lists of the games that Next and Metro need spelled out, one
-// import per file: content/games/index.ts, apps/web/images.ts and
-// apps/mobile/src/images.ts. A game is listed once its first scene is; a scene
+// import per file: content/games/index.ts, and content/games/images.ts, which
+// both apps share. A game is listed once its first scene is; a scene
 // once all its files are there; an item once its image is.
 
 import { execFileSync } from "node:child_process";
@@ -150,9 +150,8 @@ export const isGameId = (id: string): id is GameId => Object.hasOwn(games, id);
 `;
 
 const sceneAsset = (game: string, scene: string, file: string) =>
-  `@esquisse/content/games/${game}/scenes/${scene}/${file}.webp`;
-const itemAsset = (game: string, item: string) =>
-  `@esquisse/content/games/${game}/items/${item}.webp`;
+  `./${game}/scenes/${scene}/${file}.webp`;
+const itemAsset = (game: string, item: string) => `./${game}/items/${item}.webp`;
 
 const sceneFiles = ({ characters, effects }: ListedScene) => [
   "fond",
@@ -160,8 +159,8 @@ const sceneFiles = ({ characters, effects }: ListedScene) => [
   ...effects.flatMap((e) => e.files),
 ];
 
-// A game's images, as an object literal, from how each one is written (an
-// import's name on the web, a require on mobile).
+// A game's images, as an object literal, from how each one is written (its
+// import's name).
 const gameImages = (
   { id, scenes, items }: ListedGame,
   scene: (s: string, file: string) => string,
@@ -180,7 +179,7 @@ const gameImages = (
     .map((i) => `      ${key(i)}: ${item(i)},`)
     .join("\n")}\n    },\n  },`;
 
-const web = (games: ListedGame[]) => `${HEADER}
+const images = (games: ListedGame[]) => `${HEADER}
 
 ${imports(
   games.flatMap((g) => [
@@ -196,20 +195,21 @@ ${imports(
     }),
   ]),
 )}
-import type { StaticImageData } from "next/image";
 
-// The games' images, served from content/games, like the mobile app's
-// (apps/mobile/src/images.ts): each scene's background, its characters'
+// The games' images, for both apps: each scene's background, its characters'
 // layers, and the images of its background's animations, by effect (see
-// effectFiles); and the items', by id.
-export type SceneImages = {
-  background: StaticImageData;
-  characters: Record<string, StaticImageData>;
-  effects: Record<string, StaticImageData[]>;
+// effectFiles); and the items', by id. Each app's bundler makes each import
+// what it shows: Next a StaticImageData, Metro an ImageSourcePropType. Each
+// app gives that type as Image, and its own declaration of *.webp checks it
+// (next/image-types/global, apps/mobile/webp.d.ts).
+export type SceneImages<Image> = {
+  background: Image;
+  characters: Record<string, Image>;
+  effects: Record<string, Image[]>;
 };
-export type GameImages = {
-  scenes: Record<string, SceneImages>;
-  items: Record<string, StaticImageData>;
+export type GameImages<Image> = {
+  scenes: Record<string, SceneImages<Image>>;
+  items: Record<string, Image>;
 };
 
 export const gameImages = {
@@ -222,36 +222,7 @@ ${games
     ),
   )
   .join("\n")}
-} satisfies Record<string, GameImages>;
-`;
-
-const mobile = (games: ListedGame[]) => `${HEADER}
-
-import type { ImageSourcePropType } from "react-native";
-
-// The games' images, bundled with the app from content/games, like the web
-// site's (apps/web/images.ts): Metro needs each require spelled out.
-export type SceneImages = {
-  background: ImageSourcePropType;
-  characters: Record<string, ImageSourcePropType>;
-  effects: Record<string, ImageSourcePropType[]>;
 };
-export type GameImages = {
-  scenes: Record<string, SceneImages>;
-  items: Record<string, ImageSourcePropType>;
-};
-
-export const gameImages = {
-${games
-  .map((g) =>
-    gameImages(
-      g,
-      (s, file) => `require("${sceneAsset(g.id, s, file)}")`,
-      (i) => `require("${itemAsset(g.id, i)}")`,
-    ),
-  )
-  .join("\n")}
-} satisfies Record<string, GameImages>;
 `;
 
 // Writes the lists; returns the games listed, each with its scenes.
@@ -259,8 +230,7 @@ export const writeRegistries = () => {
   const games = listGames();
   const files = {
     [join(GAMES, "index.ts")]: content(games),
-    [join(ROOT, "apps/web/images.ts")]: web(games),
-    [join(ROOT, "apps/mobile/src/images.ts")]: mobile(games),
+    [join(GAMES, "images.ts")]: images(games),
   };
   for (const [file, code] of Object.entries(files)) writeFileSync(file, code);
   // Long ids make long lines, and imports have their order: Biome puts them

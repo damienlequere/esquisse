@@ -1,5 +1,6 @@
 "use client";
 
+import type { SceneImages } from "@esquisse/content/games/images.ts";
 import {
   BACK_ARROW,
   type Character,
@@ -40,7 +41,6 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
-import type { SceneImages } from "../images.ts";
 import { Effects } from "./Effects.tsx";
 import { RingMenu } from "./RingMenu.tsx";
 import styles from "./Scene.module.css";
@@ -80,7 +80,7 @@ export const Scene = ({
   itemImages,
 }: {
   data: SceneData;
-  images: SceneImages;
+  images: SceneImages<StaticImageData>;
   // The game's items, and their images, by id.
   items: Items;
   itemImages: Record<string, StaticImageData>;

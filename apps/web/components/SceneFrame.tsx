@@ -1,6 +1,7 @@
+import type { SceneImages } from "@esquisse/content/games/images.ts";
+import type { StaticImageData } from "next/image";
 import type { CSSProperties, ReactNode } from "react";
 import { preload } from "react-dom";
-import type { SceneImages } from "../images.ts";
 import { Stage } from "./Stage.tsx";
 
 // A scene's frame, the phone's, in a device frame when the screen allows it
@@ -13,7 +14,7 @@ export const SceneFrame = ({
   landscape,
   children,
 }: {
-  images: SceneImages;
+  images: SceneImages<StaticImageData>;
   landscape: boolean;
   children: ReactNode;
 }) => {
