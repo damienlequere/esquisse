@@ -73,7 +73,9 @@ export type Scene = {
   style: string;
   // The scene's light, for the characters' layers to match the background.
   light: string;
-  background: { prompt: string; details?: Detail[] };
+  // The decor, the details for realism, and the changes the author asked for
+  // since, in words, each retouched into it.
+  background: { prompt: string; details?: Detail[]; retouches?: string[] };
   objects: SceneObject[];
   characters: Character[];
   effects?: Effect[];

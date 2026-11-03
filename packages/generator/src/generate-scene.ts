@@ -19,7 +19,9 @@
 // validated background, a character as a layer), and the author validates it
 // on the new render, has it redone, changes it, or drops it. A character's
 // dialogue is then written one line at a time, each validated the same way:
-// its greeting, the questions the author wants, its farewell. Each render opens
+// its greeting, the questions the author wants, its farewell. At any time, the
+// author can also have the background retouched, in words, without adding
+// anything clickable (f). Each render opens
 // in the image viewer. The animations of the background (see Effect) are not
 // made here; when the background is retouched, what they move is found again.
 //
@@ -54,6 +56,7 @@ import {
   paintBackground,
   paintCharacter,
   render,
+  retouchBackground,
   show,
   where,
 } from "./paint.ts";
@@ -543,6 +546,52 @@ const addRealism = async (state: State): Promise<State> => {
   }
 };
 
+// ── The retouches ────────────────────────────────────────────────────────────
+
+// A change to the background the author describes, without any object: the
+// objects are found again, and what the animations move (see save).
+const withRetouch = async (state: State, change: string): Promise<Candidate> => {
+  const { scene } = state.data;
+  console.log("Retouching the background…");
+  const background = await retouchBackground(geminiKey, scene, state.background, change);
+  const boxes = await findObjects(scene, background, scene.objects);
+  const retouches = [...(scene.background.retouches ?? []), change];
+  return {
+    data: {
+      ...state.data,
+      scene: { ...scene, background: { ...scene.background, retouches } },
+      objects: boxes,
+    },
+    background,
+    layers: state.layers,
+    backgroundChanged: true,
+  };
+};
+
+// Returns the new state if the retouch is validated, the same one otherwise.
+const retouch = async (state: State): Promise<State> => {
+  let change = (
+    await rl.question("Que changer dans l'image ? (une description, ou Entrée pour revenir)\n> ")
+  ).trim();
+  if (change === "") return state;
+  for (;;) {
+    const candidate = await withRetouch(state, change);
+    await showState(candidate);
+    const answer = await choose("La retouche :", {
+      v: "valider",
+      r: "refaire",
+      m: "modifier",
+      a: "abandonner",
+    });
+    if (answer === "v") {
+      await save(candidate);
+      return candidate;
+    }
+    if (answer === "a") return state;
+    if (answer === "m") change = (await rl.question("Quelle retouche, à la place ?\n> ")).trim();
+  }
+};
+
 // ── Run ──────────────────────────────────────────────────────────────────────
 
 const exists = existsSync(SCENE);
@@ -583,12 +632,16 @@ for (;;) {
   }
   const answer = (
     await rl.question(
-      "\nQue veux-tu ajouter ? (une description, un numéro d'idée, d pour des détails de réalisme, p pour le dialogue d'un personnage, ou Entrée pour finir)\n> ",
+      "\nQue veux-tu ajouter ? (une description, un numéro d'idée, d pour des détails de réalisme, f pour retoucher le fond, p pour le dialogue d'un personnage, ou Entrée pour finir)\n> ",
     )
   ).trim();
   if (answer === "") break;
   if (answer.toLowerCase() === "d") {
     state = await addRealism(state);
+    continue;
+  }
+  if (answer.toLowerCase() === "f") {
+    state = await retouch(state);
     continue;
   }
   if (answer.toLowerCase() === "p") {

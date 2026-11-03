@@ -336,7 +336,9 @@ scene is complete.
 ### Going on, starting over
 
 - **Add to a scene** later: `pnpm generate <game> <id>`, without a brief, shows the
-  current render and asks what to add, or `p` for a character's dialogue.
+  current render and asks what to add, `f` to retouch the background as
+  described (« un ciel plus orageux »), without adding an object, or `p` for a
+  character's dialogue.
 - **Start over**: `pnpm generate <game> <id> portrait|landscape "<brief>"` on an existing scene asks, then
   deletes it and starts again from the background.
 - **Edit by hand**: everything in `scene.json` can be changed (a text, a

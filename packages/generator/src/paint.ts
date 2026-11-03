@@ -70,6 +70,21 @@ export const addDetails = (key: string, scene: Scene, background: Buffer, detail
     [background],
   );
 
+// A change the author asks for, in words, retouched into the background as
+// asked: the rest must not move.
+export const retouchBackground = (key: string, scene: Scene, background: Buffer, change: string) =>
+  paint(
+    key,
+    scene.imageRatio,
+    [
+      scene.style,
+      `Retouche l'image jointe ainsi : ${change}`,
+      `Ce qui change s'intègre au décor comme s'il avait toujours été ainsi : même technique de peinture, même touche, même perspective, et même lumière (${scene.light}), sauf si la retouche demande de la changer.`,
+      "Ne change rien d'autre que ce qui est demandé : le cadrage, le décor et tout ce qui s'y trouve restent identiques, à la même place. N'ajoute aucun texte, ni aucune personne si la retouche n'en demande pas.",
+    ].join("\n"),
+    [background],
+  );
+
 export const detectObjects = (key: string, background: Buffer, objects: SceneObject[]) =>
   objects.length === 0
     ? Promise.resolve<Record<string, Box>>({})
