@@ -75,7 +75,7 @@ A scene can be shown on another site, where this line is put:
 `data-scene` is `<game>/<id>`; `data-size`, the square's side in px, is 350 unless
 said; `data-title` names the iframe for screen readers.
 
-It first shows as a square, in the page, with rounded corners and a border, the
+It first shows as a square, in the page, with rounded corners, the
 scene cropped to fill it. The icon in its corner spreads it over the whole page,
 above its menus and whatever contains the square, framed in the middle as on this
 site, with the same sizes (`#device` in `globals.css`): on a phone, the whole

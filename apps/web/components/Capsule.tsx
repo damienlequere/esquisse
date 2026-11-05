@@ -47,15 +47,10 @@ const unpin = (device: HTMLElement) => {
 };
 
 // The square's look, which the frame's has nothing of.
-type Look = { borderRadius: string; borderWidth: string; borderColor: string };
-const lookOf = (device: HTMLElement): Look => {
-  const style = getComputedStyle(device);
-  return {
-    borderRadius: style.borderRadius,
-    borderWidth: style.borderTopWidth,
-    borderColor: style.borderTopColor,
-  };
-};
+type Look = { borderRadius: string };
+const lookOf = (device: HTMLElement): Look => ({
+  borderRadius: getComputedStyle(device).borderRadius,
+});
 
 // From the square, where it is on the page, to the frame as it is laid out, or
 // back: over the iframe already spread, the frame's own place and look reached in
@@ -67,8 +62,6 @@ const move = (from: Rect, look: Look, back: boolean) => {
   const frame = {
     ...place(device.getBoundingClientRect()),
     borderRadius: style.borderRadius,
-    borderWidth: "0px",
-    borderColor: look.borderColor,
     boxShadow: style.boxShadow,
   };
   const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;

@@ -4,7 +4,7 @@
 // rectangle by itself: this script makes it. The iframe stays where it is in the
 // page, so it is not loaded again: its dialog, shown as modal, goes above the
 // page without moving. All of it is in a closed shadow root, out of reach of the
-// site's styles. The capsule draws its own border, and the movement from one to the
+// site's styles. The capsule draws its own corners, and the movement from one to the
 // other (see Capsule.tsx): this only tells it where the square is, spreads it, and
 // fades in the site's background color behind it, over the page, in as long.
 (() => {
