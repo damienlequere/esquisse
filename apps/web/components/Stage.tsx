@@ -10,10 +10,14 @@ import { type CSSProperties, type ReactNode, useEffect, useState } from "react";
 export const Stage = ({
   images,
   style,
+  capsule,
+  reduced,
   children,
 }: {
   images: string[];
   style?: CSSProperties;
+  capsule?: boolean;
+  reduced?: boolean;
   children: ReactNode;
 }) => {
   const [ready, setReady] = useState(false);
@@ -34,7 +38,13 @@ export const Stage = ({
   }, [key]);
 
   return (
-    <div id="stage" style={style} data-ready={ready || undefined}>
+    <div
+      id="stage"
+      style={style}
+      data-ready={ready || undefined}
+      data-capsule={capsule || undefined}
+      data-reduced={reduced || undefined}
+    >
       {ready ? children : null}
     </div>
   );

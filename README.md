@@ -59,6 +59,42 @@ scripts then upload from the root. The region is set in `apps/web/vercel.json`
 
 The scripts are not named `deploy`: `pnpm deploy` is a built-in pnpm command.
 
+## Capsules
+
+A scene can be shown on another site, where this line is put:
+
+```html
+<script
+  src="https://<the site>/capsule.js"
+  data-scene="tristram/rue"
+  data-title="Tristram, à la tombée du soir"
+  async
+></script>
+```
+
+`data-scene` is `<game>/<id>`; `data-size`, the square's side in px, is 350 unless
+said; `data-title` names the iframe for screen readers.
+
+It first shows as a square, in the page, with rounded corners and a border, the
+scene cropped to fill it. The icon in its corner spreads it over the whole page,
+above its menus and whatever contains the square, framed in the middle as on this
+site, with the same sizes (`#device` in `globals.css`): on a phone, the whole
+screen. The square grows into the frame, from where it is, as the site's background color
+(its `body`'s, or its `html`'s) fades in over the page, around the frame (at once
+for whom asks for less motion). The same icon, Escape, or a press
+around the frame takes it back. The scene is not loaded again.
+
+`public/capsule.js` makes this: an iframe of `/embed/<game>/<id>`, in a dialog
+shown as modal, which goes above the page without moving in it, and which tells
+`components/Capsule.tsx` where the square is, by `postMessage`; the capsule draws
+the rest. A site with a Content Security Policy must allow this site in
+`script-src` and `frame-src`. In an iframe alone, a capsule is a square without
+its icon.
+
+A capsule is only looked at: no opening, no ring menu, no clickable object, no
+character (`capsuleGame` in `packages/engine`). Its animations play. Any site may
+embed one. It is the deployed scene, not a copy: it changes with each deploy.
+
 ## Clickable scenes
 
 Each scene of a game, played alone at `/game/<game>/scene/<id>` on the web site, or in its game, and in the mobile app, is a

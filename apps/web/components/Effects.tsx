@@ -107,12 +107,18 @@ export const Effects = ({
       let frame = 0;
       // Each frame, the canvas takes its size on screen (the screen's pixels,
       // but never more than the image's) then is drawn at once: resizing the
-      // window never shows it empty.
+      // window never shows it empty. While a capsule moves (see Capsule.tsx), it
+      // keeps its size, stretched: a new surface each frame would make it stutter.
       const draw = () => {
         frame = requestAnimationFrame(draw);
         const dpr = Math.min(window.devicePixelRatio, MAX_DPR);
-        const w = Math.max(1, Math.min(Math.round(element.clientWidth * dpr), W));
-        const h = Math.max(1, Math.min(Math.round(element.clientHeight * dpr), H));
+        const kept = surface !== null && element.closest("[data-moving]") !== null;
+        const w = kept
+          ? element.width
+          : Math.max(1, Math.min(Math.round(element.clientWidth * dpr), W));
+        const h = kept
+          ? element.height
+          : Math.max(1, Math.min(Math.round(element.clientHeight * dpr), H));
         if (w !== element.width || h !== element.height || surface === null) resize(w, h);
         if (surface === null) return;
         const time = (performance.now() - start) / 1000;

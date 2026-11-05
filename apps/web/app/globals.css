@@ -117,3 +117,34 @@ body {
     }
   }
 }
+
+/* A capsule (see components/Capsule.tsx) has no backdrop: around it, its iframe is
+   transparent, over the other site's background color (see public/capsule.js).
+   Reduced, it fills its iframe, a square with
+   rounded corners and a border, without the device frame. Expanded, its frame is the
+   one above. */
+body:has(#stage[data-capsule]) {
+  background: transparent;
+}
+
+#stage[data-capsule] {
+  background: none;
+}
+
+#stage[data-capsule]::before {
+  content: none;
+}
+
+#stage[data-reduced] {
+  display: block;
+  min-height: 0;
+}
+
+#stage[data-reduced] #device {
+  width: 100%;
+  height: 100dvh;
+  aspect-ratio: auto;
+  border: 1px solid var(--color-stone-500);
+  border-radius: 16px;
+  box-shadow: none;
+}

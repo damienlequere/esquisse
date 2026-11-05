@@ -70,7 +70,11 @@ const useNotTurned = (landscape: boolean) =>
     () => false,
   );
 
+// A capsule's size, and what its icon does to it, if it can change (see Capsule).
+export type CapsuleView = { expanded: boolean; onToggle?(): void };
+
 export const Scene = ({
+  capsule,
   data,
   images,
   state,
@@ -79,6 +83,9 @@ export const Scene = ({
   items,
   itemImages,
 }: {
+  // On another site: its icon instead of the ring menu, and it never asks to turn
+  // the screen, as a square cannot be turned.
+  capsule?: CapsuleView;
   data: SceneData;
   images: SceneImages<StaticImageData>;
   // The game's items, and their images, by id.
@@ -235,18 +242,22 @@ export const Scene = ({
 
       {/* The ring menu, in the bottom right corner: its pouch opens the
           inventory, its book the logbook, its cogwheel the general menu. */}
-      <RingMenu
-        items={[
-          { id: "inventory", label: sceneText.inventory, icon: RING_ICONS.inventory },
-          { id: "logbook", label: sceneText.logbook, icon: RING_ICONS.logbook },
-          { id: "gameMenu", label: sceneText.gameMenu, icon: RING_ICONS.gameMenu },
-        ]}
-        onChoose={(item) => {
-          if (item === "inventory") setInventoryOpen(true);
-          if (item === "logbook") setLogbookOpen(true);
-          if (item === "gameMenu") setGameMenuOpen(true);
-        }}
-      />
+      {capsule?.onToggle && <CapsuleIcon expanded={capsule.expanded} onToggle={capsule.onToggle} />}
+
+      {!capsule && (
+        <RingMenu
+          items={[
+            { id: "inventory", label: sceneText.inventory, icon: RING_ICONS.inventory },
+            { id: "logbook", label: sceneText.logbook, icon: RING_ICONS.logbook },
+            { id: "gameMenu", label: sceneText.gameMenu, icon: RING_ICONS.gameMenu },
+          ]}
+          onChoose={(item) => {
+            if (item === "inventory") setInventoryOpen(true);
+            if (item === "logbook") setLogbookOpen(true);
+            if (item === "gameMenu") setGameMenuOpen(true);
+          }}
+        />
+      )}
 
       {menu && (
         <ObjectMenu
@@ -267,12 +278,14 @@ export const Scene = ({
       )}
 
       {/* Over everything when the screen is not turned like the scene (see the CSS). */}
-      <div className={styles.turn}>
-        <span className={styles.turnIcon} aria-hidden="true">
-          ⟳
-        </span>
-        <p>{layout.landscape ? sceneText.turnLandscape : sceneText.turnPortrait}</p>
-      </div>
+      {!capsule && (
+        <div className={styles.turn}>
+          <span className={styles.turnIcon} aria-hidden="true">
+            ⟳
+          </span>
+          <p>{layout.landscape ? sceneText.turnLandscape : sceneText.turnPortrait}</p>
+        </div>
+      )}
 
       {/* The inventory, opened by the ring menu's pouch: the items carried. */}
       {inventoryOpen && (
@@ -467,6 +480,24 @@ const SlotsWindow = ({
       {children}
     </ul>
   </Window>
+);
+
+// A capsule's icon: four corners spreading out to expand it, or closing in to
+// reduce it, in the bottom right corner, where the ring menu is.
+const EXPAND_ICON = "M4,9 V4 H9 M15,4 H20 V9 M20,15 V20 H15 M9,20 H4 V15";
+const REDUCE_ICON = "M9,4 V9 H4 M20,9 H15 V4 M15,20 V15 H20 M4,15 H9 V20";
+
+const CapsuleIcon = ({ expanded, onToggle }: { expanded: boolean; onToggle(): void }) => (
+  <button
+    type="button"
+    className={styles.capsuleIcon}
+    aria-label={expanded ? sceneText.reduce : sceneText.expand}
+    onClick={onToggle}
+  >
+    <svg className={styles.capsuleStroke} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d={expanded ? REDUCE_ICON : EXPAND_ICON} />
+    </svg>
+  </button>
 );
 
 // The back button: the ring menu's circle's size (ringSizes, from the frame's),

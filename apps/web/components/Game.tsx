@@ -4,7 +4,7 @@ import { type GameImages, gameImages } from "@esquisse/content/games/images.ts";
 import { exitTo, type GameData, isLandscape, playGame, startGame } from "@esquisse/engine";
 import type { StaticImageData } from "next/image";
 import { useMemo, useReducer } from "react";
-import { Scene } from "./Scene.tsx";
+import { type CapsuleView, Scene } from "./Scene.tsx";
 import { SceneFrame } from "./SceneFrame.tsx";
 
 const IMAGES: Record<string, GameImages<StaticImageData>> = gameImages;
@@ -13,8 +13,17 @@ const IMAGES: Record<string, GameImages<StaticImageData>> = gameImages;
 // scene in its own frame, which waits for its images, then shows it. A scene
 // played alone is a game of its own (see sceneGame), with the images of the
 // game it is in, `id`. The mobile app has the same
-// (apps/mobile/src/components/Game.tsx).
-export const Game = ({ id, game }: { id: string; game: GameData }) => {
+// (apps/mobile/src/components/Game.tsx). `capsule`, it is on another site (see
+// Capsule).
+export const Game = ({
+  id,
+  game,
+  capsule,
+}: {
+  id: string;
+  game: GameData;
+  capsule?: CapsuleView;
+}) => {
   const reducer = useMemo(() => playGame(game), [game]);
   const [state, dispatch] = useReducer(reducer, game, startGame);
   const data = game.scenes[state.at];
@@ -27,8 +36,15 @@ export const Game = ({ id, game }: { id: string; game: GameData }) => {
       ? () => dispatch({ type: "exit", exit: back })
       : undefined;
   return (
-    <SceneFrame key={state.at} images={images} landscape={isLandscape(data.scene)}>
+    <SceneFrame
+      key={state.at}
+      images={images}
+      landscape={isLandscape(data.scene)}
+      capsule={capsule !== undefined}
+      reduced={capsule !== undefined && !capsule.expanded}
+    >
       <Scene
+        capsule={capsule}
         data={data}
         images={images}
         state={state}

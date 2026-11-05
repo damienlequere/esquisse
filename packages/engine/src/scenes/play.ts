@@ -367,6 +367,9 @@ export const sceneText = {
   close: "Fermer",
   // The back button, which leaves the scene by its back exit.
   back: "Retour en arrière",
+  // A capsule's icon, for screen readers.
+  expand: "Agrandir",
+  reduce: "Réduire",
   // The ring menu's circle, for screen readers.
   ringMenu: "Menu",
   // When the screen is not turned like the scene.
