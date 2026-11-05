@@ -1,0 +1,78 @@
+{
+  "brief": "Antarctique, 1931 : au sommet d'un col, au-dessus du campement d'une expédition universitaire américaine ravagé et déserté, la vue s'ouvre sur un immense plateau où s'étend à perte de vue une cité de pierre noire cyclopéenne et non humaine, plus ancienne que toute vie connue : cubes, cônes, terrasses et tours aux angles faux, à demi prise dans les glaces, au pied d'une chaîne de pics noirs démesurés, plus hauts que l'Himalaya, sous un ciel polaire bas, un soleil rasant et des brumes irisées. Inspiration : Les Montagnes hallucinées de H. P. Lovecraft, en gardant l'horreur cosmique, l'échelle écrasante, le silence et le froid. AUCUN personnage dans cette scène : ni humain, ni créature, ni silhouette, ni cadavre ; on ne voit que des traces de ceux qui sont passés. Style peinture réaliste, sombre et froide, sans texte.",
+  "title": "Le col des Montagnes hallucinées",
+  "intro": "Tu atteins enfin le sommet du col, le souffle coupé par le vent et par ce qui s'étend en contrebas : une cité de pierre noire, démesurée, qui n'a jamais été bâtie par des mains humaines. Derrière toi, le campement est dévasté et muet, et le seul bruit est le crissement de la neige sous tes bottes.",
+  "imageRatio": "16:9",
+  "safe": {
+    "x0": 0.14,
+    "y0": 0.14,
+    "x1": 0.86,
+    "y1": 0.86
+  },
+  "style": "Matte painting numérique de cinéma, réaliste, sombre et froid, d'un niveau de détail extrême, dans l'esprit des grands décors peints des films d'expédition et d'horreur cosmique. Perspective juste et profonde, échelle écrasante : les premiers plans sont minuscules face à l'immensité du plateau et des pics. Les matières se lisent : neige tassée et croûtée par le vent, glace bleutée veinée de bulles, roche basaltique noire fracturée et givrée, toile de coton raidie par le gel, bois de frêne verni et écaillé, cuir craquelé, métal piqué de rouille et couvert de givre. Palette restreinte et glaciale : noirs bleutés, gris d'ardoise, blancs sales, bleus de glace, rehaussés seulement par l'or pâle et rasant d'un soleil polaire bas et par les reflets irisés, nacrés, presque malsains, des brumes et des cristaux de glace en suspension. Lumière crédible et directionnelle, longues ombres bleues, clair-obscur oppressant ; atmosphère de silence absolu, de froid mordant et de menace ancienne, avec une perspective atmosphérique marquée qui fait disparaître les lointains dans la brume. Aucun texte, lettre, chiffre, signature ni logo ; pas de style cartoon, bande dessinée, anime ni caricature, pas de contours encrés ni d'aplats ; pas de photographie ni de rendu 3D lisse ; pas de cadre ni de bordure.",
+  "light": "Soleil polaire très bas sur l'horizon à gauche, lumière dorée pâle et rasante venant de la gauche, longues ombres bleues étirées vers la droite ; ciel bas gris-plomb diffusant une lumière froide et bleutée ; reflets irisés nacrés dans les brumes et la glace.",
+  "background": {
+    "prompt": "Vue de face, à hauteur d'homme, depuis le sommet d'un col de haute montagne en Antarctique, en 1931, totalement vide de toute personne, de toute créature et de tout animal. La moitié inférieure de l'image est le sol du col, large replat de neige durcie et sculptée par le vent en vagues basses et en sastrugi, percé çà et là de petites arêtes de roche basaltique noire givrée et de plaques de glace bleutée, dégagé et presque plat pour recevoir ensuite des objets ; quelques traînées de neige poudreuse soufflée glissent à sa surface, et sur les bords gauche et droit s'élèvent des blocs de roche noire fracturés, couverts de givre, qui encadrent le passage. Au-delà de la ligne du col, le terrain plonge brutalement et la vue s'ouvre sur un plateau immense qui s'étend à perte de vue : une cité de pierre noire cyclopéenne et non humaine, faite de cubes massifs, de cônes, de terrasses étagées, de tours tronquées et de ponts monolithiques aux angles faux et aux perspectives qui semblent ne pas se raccorder, à demi engloutie dans la glace, ses blocs gigantesques fendus, polis par les éons, couverts d'une fine pellicule de givre, ses rues profondes noyées d'ombre bleue ; plus loin, la cité se fond dans des brumes irisées aux reflets nacrés, roses et verdâtres. Au fond, une chaîne de pics noirs démesurés, plus hauts que l'Himalaya, aux parois vertigineuses et aux sommets étrangement réguliers, se dresse jusque dans le ciel, leurs crêtes accrochées par la lumière dorée rasante du soleil bas à gauche. Le ciel polaire est bas, lourd, gris-plomb, avec une mince bande de clarté pâle à l'horizon et des halos de cristaux de glace autour du soleil. Échelle écrasante, silence absolu, froid mordant ; aucun personnage, aucune silhouette, aucun corps, aucun texte.",
+    "details": [
+      {
+        "paint": "De longues traces parallèles de patins de traîneau et une file d'empreintes de bottes à demi comblées par la neige soufflée, à peine creusées et plates, qui traversent le replat du col au centre vers la ligne de crête et s'arrêtent net au bord de la pente, dans la lumière rasante qui en souligne le relief.",
+        "zone": {
+          "x0": 0.36,
+          "y0": 0.7,
+          "x1": 0.6,
+          "y1": 0.84
+        }
+      },
+      {
+        "paint": "Un fin panache de neige poudreuse arraché par le vent au sommet d'une tour lointaine de la cité, au centre droit, qui s'étire vers la droite en voile nacré et irisé dans la brume.",
+        "zone": {
+          "x0": 0.6,
+          "y0": 0.27,
+          "x1": 0.74,
+          "y1": 0.37
+        }
+      },
+      {
+        "paint": "Un lambeau de toile de coton déchirée et grisâtre, raidi par le gel, coincé à plat dans une fissure de la roche noire à droite, ses bords effilochés figés comme s'il claquait encore au vent.",
+        "zone": {
+          "x0": 0.74,
+          "y0": 0.63,
+          "x1": 0.82,
+          "y1": 0.69
+        }
+      }
+    ],
+    "retouches": [
+      "Enlève entièrement le théodolite et son trépied de bois, à droite des traces de patins, ainsi que l'ombre qu'il projette sur la neige. À sa place, la neige durcie et les plaques de glace bleutée continuent naturellement, comme tout autour. Ne touche à rien d'autre : le traîneau, les traces de patins, les empreintes de bottes, la cité et les pics restent identiques."
+    ]
+  },
+  "objects": [
+    {
+      "id": "traineau-renverse",
+      "zone": {
+        "x0": 0.21,
+        "y0": 0.735,
+        "x1": 0.345,
+        "y1": 0.825
+      },
+      "paint": "Vu de loin, à une vingtaine de mètres, un minuscule traîneau polaire à lattes de frêne écaillé, couché de tout son long dans la neige durcie à gauche des traces, bien sous la ligne du col, à moitié enseveli sous la neige soufflée, silhouette longue et très basse trois fois plus large que haute, pas plus haute qu'une petite pierre du premier plan, légèrement inclinée d'un côté avec un seul patin ferré, rouillé et givré, qui dépasse à peine de la neige, accompagné tout contre lui d'une seule petite caisse de bois fendue et d'un petit sac de toile raidi par le gel, éclairés par la lumière dorée rasante venant de la gauche avec une courte ombre bleue vers la droite, rien ne s'élevant au-dessus de la neige ni ne touchant la cité.",
+      "detect": "the small half-buried sledge lying in the snow",
+      "label": "Le traîneau renversé",
+      "actions": [
+        {
+          "label": "Examiner",
+          "text": "Le patin qui dépasse de la neige porte encore, gravé au fer, l'écusson de l'université Miskatonic. Le traîneau n'a pas glissé dans une pente : il a été soulevé et couché sur place, d'un seul geste. Les sangles de cuir ne sont pas arrachées, mais tranchées net, d'une coupe trop lisse pour un couteau."
+        },
+        {
+          "label": "Fouiller",
+          "text": "Le sac de toile ne contient plus que du pemmican, intact, comme dédaigné. Dans la caisse éventrée, la paille est encore tassée autour d'un creux vide en forme d'étoile à cinq branches. Quelqu'un, ou quelque chose, savait exactement ce qu'il cherchait."
+        },
+        {
+          "label": "Dégager",
+          "text": "En creusant la neige sous les lattes, tu trouves un carnet de terrain dont toutes les pages ont été soigneusement découpées, sauf la dernière. On y a dessiné, d'une main tremblante, la silhouette de la cité en contrebas, et une flèche qui désigne une tour précise. Sous la flèche, la mine du crayon a percé le papier."
+        }
+      ]
+    }
+  ],
+  "characters": []
+}

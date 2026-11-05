@@ -1,6 +1,10 @@
 // Written by packages/generator/src/generate-scene.ts: do not edit by hand.
 
 import type { GameData } from "@esquisse/engine";
+import montagnesGame from "./montagnes/game.json";
+import montagnesScenePlateauAspects from "./montagnes/scenes/plateau/characters.json";
+import montagnesScenePlateauObjects from "./montagnes/scenes/plateau/objects.json";
+import montagnesScenePlateauScene from "./montagnes/scenes/plateau/scene.json";
 import tristramGame from "./tristram/game.json";
 import { ITEMS as tristramItems } from "./tristram/items/index.ts";
 import tristramSceneAubergeAspects from "./tristram/scenes/auberge/characters.json";
@@ -15,6 +19,17 @@ import tristramSceneRueScene from "./tristram/scenes/rue/scene.json";
 
 // The games, by id: each one with all its scenes, by id, and its items.
 export const games = {
+  montagnes: {
+    game: montagnesGame,
+    scenes: {
+      plateau: {
+        scene: montagnesScenePlateauScene,
+        objects: montagnesScenePlateauObjects,
+        aspects: montagnesScenePlateauAspects,
+      },
+    },
+    items: {},
+  },
   tristram: {
     game: tristramGame,
     scenes: {

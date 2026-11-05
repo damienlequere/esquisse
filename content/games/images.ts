@@ -1,5 +1,6 @@
 // Written by packages/generator/src/generate-scene.ts: do not edit by hand.
 
+import montagnesScenePlateauFond from "./montagnes/scenes/plateau/fond.webp";
 import tristramItemCouteau from "./tristram/items/couteau.webp";
 import tristramItemLanterne from "./tristram/items/lanterne.webp";
 import tristramItemPelle from "./tristram/items/pelle.webp";
@@ -28,6 +29,16 @@ export type GameImages<Image> = {
 };
 
 export const gameImages = {
+  montagnes: {
+    scenes: {
+      plateau: {
+        background: montagnesScenePlateauFond,
+        characters: {},
+        effects: {},
+      },
+    },
+    items: {},
+  },
   tristram: {
     scenes: {
       auberge: {
