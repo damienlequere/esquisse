@@ -90,7 +90,7 @@ export const checkGame = (
   for (const id of named) {
     if (!(id in scenes)) errors.push(`No scene « ${id} » in the game (scenes/${id})`);
     else if (!listed.has(id))
-      errors.push(`« ${id} » is not complete: the apps do not list it (pnpm generate)`);
+      errors.push(`« ${id} » is not complete: the apps do not list it (pnpm generate-scene)`);
   }
   for (const id of Object.keys(scenes))
     if (!named.has(id)) warnings.push(`« ${id} » is in no link: it is only played alone`);

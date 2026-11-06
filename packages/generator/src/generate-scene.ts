@@ -1,7 +1,7 @@
 // Builds a scene step by step, with its author, in the terminal:
 //
-//   pnpm generate <game> <id> portrait|landscape "brief"   a new scene, from its brief
-//   pnpm generate <game> <id>                              an existing scene, to add to it
+//   pnpm generate-scene <game> <id> portrait|landscape "brief"   a new scene, from its brief
+//   pnpm generate-scene <game> <id>                              an existing scene, to add to it
 //
 // A scene belongs to a game (content/games/<game>): a new game is made with its
 // first scene, which it starts in; its game.json then says where the exits of
@@ -77,7 +77,7 @@ import {
   type Orientation,
 } from "./write-scene.ts";
 
-const USAGE = 'Usage: pnpm generate <game> <id> [portrait|landscape "brief"]';
+const USAGE = 'Usage: pnpm generate-scene <game> <id> [portrait|landscape "brief"]';
 const [game, id, ...args] = process.argv.slice(2);
 if (game === undefined || id === undefined) throw new Error(USAGE);
 // Both ids are folders, URLs and names in the registries' imports.
@@ -622,7 +622,7 @@ if (orientation !== undefined && brief !== undefined) {
 } else {
   if (!exists)
     throw new Error(
-      `No scene "${id}" in "${game}": pnpm generate ${game} ${id} portrait|landscape "brief"`,
+      `No scene "${id}" in "${game}": pnpm generate-scene ${game} ${id} portrait|landscape "brief"`,
     );
   state = load();
   console.log(
@@ -670,7 +670,7 @@ for (const c of state.data.scene.characters) {
   ].filter(Boolean);
   if (missing.length > 0) {
     console.log(
-      `⚠ ${c.name} n'a pas encore ${missing.join(" ni ")} : pnpm generate ${game} ${id}, puis p`,
+      `⚠ ${c.name} n'a pas encore ${missing.join(" ni ")} : pnpm generate-scene ${game} ${id}, puis p`,
     );
   }
 }

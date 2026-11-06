@@ -40,7 +40,7 @@ pnpm dev:all         # both, through Turborepo
 pnpm build           # production builds
 pnpm typecheck
 pnpm lint            # pnpm format to fix
-pnpm generate <game> <id> portrait|landscape "brief"  # a new scene of a game, built step by step (see Generating a scene)
+pnpm generate-scene <game> <id> portrait|landscape "brief"  # a new scene of a game, built step by step (see Generating a scene)
 pnpm remove-scene <game> <id> # removes a scene, its texts and its images
 pnpm show-scene <game> <id> # the scene's background with what is clickable outlined, in the image viewer
 pnpm check-game [<id>] # checks a game's links, exits and flags against its scenes (every game without an id)
@@ -235,7 +235,7 @@ Node as they are (`--experimental-strip-types`, from Node 22.6).
 ### A new scene
 
 ```bash
-pnpm generate <game> <id> portrait|landscape "<brief>"
+pnpm generate-scene <game> <id> portrait|landscape "<brief>"
 ```
 
 - **`<game>`** is the game the scene belongs to, its folder in
@@ -252,7 +252,7 @@ pnpm generate <game> <id> portrait|landscape "<brief>"
   rest.
 
 ```bash
-pnpm generate bois foret portrait "l'orée d'une forêt au crépuscule, un bivouac abandonné"
+pnpm generate-scene bois foret portrait "l'orée d'une forêt au crépuscule, un bivouac abandonné"
 ```
 
 The session goes in four stages. Each render is saved in the system's temporary
@@ -303,7 +303,7 @@ outlined in orange and the characters in blue.
 A session looks like this (Claude's texts shortened):
 
 ```text
-$ pnpm generate bois foret portrait "l'orée d'une forêt au crépuscule, un bivouac abandonné"
+$ pnpm generate-scene bois foret portrait "l'orée d'une forêt au crépuscule, un bivouac abandonné"
 New game "bois", starting in "foret": its title is in content/games/bois/game.json
 Writing with claude-opus-5-5…
 
@@ -371,11 +371,11 @@ scene is complete.
 
 ### Going on, starting over
 
-- **Add to a scene** later: `pnpm generate <game> <id>`, without a brief, shows the
+- **Add to a scene** later: `pnpm generate-scene <game> <id>`, without a brief, shows the
   current render and asks what to add, `f` to retouch the background as
   described (« un ciel plus orageux »), without adding an object, or `p` for a
   character's dialogue.
-- **Start over**: `pnpm generate <game> <id> portrait|landscape "<brief>"` on an existing scene asks, then
+- **Start over**: `pnpm generate-scene <game> <id> portrait|landscape "<brief>"` on an existing scene asks, then
   deletes it and starts again from the background.
 - **Edit by hand**: everything in `scene.json` can be changed (a text, a
   dialogue, a prompt); a position changed by hand is not repainted.
