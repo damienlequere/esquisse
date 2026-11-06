@@ -43,7 +43,6 @@ import type {
   SceneData,
   SceneObject,
 } from "@esquisse/engine";
-import { isLandscape } from "@esquisse/engine/layout";
 import sharp from "sharp";
 import { inside } from "./check-scene.ts";
 import { apiKey } from "./env.ts";
@@ -51,6 +50,7 @@ import { glowMask, lightsMask } from "./lights.ts";
 import {
   addDetails,
   addObject,
+  appSize,
   detectEvery,
   detectObjects,
   paintBackground,
@@ -163,10 +163,6 @@ const find = (e: Effect, background: Buffer) => {
   if (!Object.hasOwn(FOUND, e.kind)) throw new Error(`Unknown kind of effect: ${e.kind}`);
   return FOUND[e.kind as EffectKind](background, e);
 };
-
-// The size the apps get the background at, and its animations' images but the
-// painted sky: 1440 × 2560 or 2560 × 1440.
-const appSize = (scene: Scene) => (isLandscape(scene) ? { width: 2560 } : { width: 1440 });
 
 const save = async ({ data, background, backgroundChanged, character, files }: Candidate) => {
   const { scene } = data;
