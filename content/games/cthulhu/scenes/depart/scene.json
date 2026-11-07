@@ -1,0 +1,19 @@
+{
+  "brief": "univers du Mythe de Cthulhu de hp lovecraft",
+  "title": "Le quai d'Innsmouth",
+  "intro": "Tu arrives sur le vieux quai d'Innsmouth à la tombée de la nuit, quand le brouillard monte de la mer et que l'odeur de poisson pourri colle à la gorge. Au loin, sur le Récif du Diable, une lueur verdâtre palpite comme un cœur, et toutes les fenêtres du port restent obstinément sombres.",
+  "imageRatio": "9:16",
+  "safe": {
+    "x0": 0.09,
+    "y0": 0.14,
+    "x1": 0.91,
+    "y1": 0.86
+  },
+  "style": "Matte painting numérique de cinéma, réaliste et très détaillé, dans l'esprit des décors peints des grands films d'horreur gothique : une Nouvelle-Angleterre portuaire des années 1920, rongée par le sel et l'abandon. Les matières sont rendues avec précision : planches gorgées d'eau et noircies, bardeaux de cèdre délavés, briques effritées couvertes de salpêtre, fer forgé piqué de rouille, cordages pourrissants, verre sale et fêlé, varech luisant, algues sèches et coquillages incrustés. Palette froide et maladive : gris ardoise, bleu-vert d'eau profonde, ocre délavé, brun goudron, avec une seule note de vert phosphorescent venue du large et quelques touches de jaune sale des lampes. Atmosphère lourde, humide, oppressante : brouillard bas qui avale les lointains, bruine en suspension, humidité qui fait briller chaque surface, impression d'être observé depuis des fenêtres vides. Proportions et perspective justes, clair-obscur dense, profondeur atmosphérique marquée. Aucun texte, lettre, chiffre, signature ni logo ; pas de style cartoon, bande dessinée, anime ni caricature, pas de contours encrés ni d'aplats ; pas de photographie ni de rendu 3D lisse ; pas de cadre ni de bordure.",
+  "light": "Crépuscule tardif bleu-gris diffus filtré par le brouillard, venant du fond ; lueur verte pulsante et lointaine depuis le récif au centre-droit de l'horizon ; un réverbère à gaz jaune pâle à gauche qui projette un halo dans la brume et des reflets mouillés sur le sol.",
+  "background": {
+    "prompt": "Un vieux quai de port de pêche de Nouvelle-Angleterre vers 1925, vu de face à hauteur d'homme, désert, sans aucune personne ni aucun animal. Le tiers inférieur de l'image est le sol du quai, large et dégagé : de grosses planches de chêne noircies, gonflées d'humidité, disjointes par endroits, luisantes de bruine, avec des traînées de sel blanchâtre, quelques écailles de poisson et des filaments de varech collés entre les lattes, sans aucun objet posé dessus. À gauche, la façade d'un entrepôt à poisson en bardeaux gris délavés, au toit en croupe affaissé, aux fenêtres à petits carreaux crasseux dont plusieurs sont brisées et bouchées de planches, une enseigne de bois vierge et effacée, sans aucune inscription, pendue de travers à une potence rouillée ; un réverbère à gaz en fonte au fût écaillé diffuse un halo jaune pâle dans la brume. À droite, au bord du quai, de vieux pilotis couverts de bernacles et d'algues plongent vers une eau noire et immobile, un bollard de fer rongé de rouille entouré d'un cordage pourri. Au fond, à travers le brouillard, les silhouettes serrées de maisons georgiennes à toits en gambrel et cheminées effondrées s'étagent sur la colline, toutes aux fenêtres éteintes, dominées par le clocher trapu d'une ancienne église maçonnique aux colonnes doriques. Plus loin encore, sur la mer grise et plate, la ligne basse et noire d'un récif d'où émane une faible lueur verte, tandis qu'une épave de goélette aux mâts brisés gît à demi-immergée près de la jetée. Le ciel est bas, couleur d'ardoise, chargé de brume."
+  },
+  "objects": [],
+  "characters": []
+}

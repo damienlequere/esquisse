@@ -1,10 +1,18 @@
 // Written by packages/generator/src/generate-scene.ts: do not edit by hand.
 
 import type { GameData } from "@esquisse/engine";
+import cthulhuGame from "./cthulhu/game.json";
+import cthulhuSceneDepartAspects from "./cthulhu/scenes/depart/characters.json";
+import cthulhuSceneDepartObjects from "./cthulhu/scenes/depart/objects.json";
+import cthulhuSceneDepartScene from "./cthulhu/scenes/depart/scene.json";
 import montagnesGame from "./montagnes/game.json";
 import montagnesScenePlateauAspects from "./montagnes/scenes/plateau/characters.json";
 import montagnesScenePlateauObjects from "./montagnes/scenes/plateau/objects.json";
 import montagnesScenePlateauScene from "./montagnes/scenes/plateau/scene.json";
+import terreDuMilieuGame from "./terre-du-milieu/game.json";
+import terreDuMilieuSceneMaraisDesMortsAspects from "./terre-du-milieu/scenes/marais-des-morts/characters.json";
+import terreDuMilieuSceneMaraisDesMortsObjects from "./terre-du-milieu/scenes/marais-des-morts/objects.json";
+import terreDuMilieuSceneMaraisDesMortsScene from "./terre-du-milieu/scenes/marais-des-morts/scene.json";
 import tristramGame from "./tristram/game.json";
 import { ITEMS as tristramItems } from "./tristram/items/index.ts";
 import tristramSceneAubergeAspects from "./tristram/scenes/auberge/characters.json";
@@ -19,6 +27,17 @@ import tristramSceneRueScene from "./tristram/scenes/rue/scene.json";
 
 // The games, by id: each one with all its scenes, by id, and its items.
 export const games = {
+  cthulhu: {
+    game: cthulhuGame,
+    scenes: {
+      depart: {
+        scene: cthulhuSceneDepartScene,
+        objects: cthulhuSceneDepartObjects,
+        aspects: cthulhuSceneDepartAspects,
+      },
+    },
+    items: {},
+  },
   montagnes: {
     game: montagnesGame,
     scenes: {
@@ -26,6 +45,17 @@ export const games = {
         scene: montagnesScenePlateauScene,
         objects: montagnesScenePlateauObjects,
         aspects: montagnesScenePlateauAspects,
+      },
+    },
+    items: {},
+  },
+  "terre-du-milieu": {
+    game: terreDuMilieuGame,
+    scenes: {
+      "marais-des-morts": {
+        scene: terreDuMilieuSceneMaraisDesMortsScene,
+        objects: terreDuMilieuSceneMaraisDesMortsObjects,
+        aspects: terreDuMilieuSceneMaraisDesMortsAspects,
       },
     },
     items: {},
