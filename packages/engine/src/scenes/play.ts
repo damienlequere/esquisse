@@ -151,7 +151,7 @@ export const playGame =
         return { ...state, intro: false };
       case "use": {
         const { object } = action;
-        const { label, text, search, exit, sets } = action.action;
+        const { text, search, exit, sets } = action.action;
         const raised =
           sets === undefined || state.flags.includes(sets)
             ? state
@@ -159,7 +159,8 @@ export const playGame =
         const to = exit === undefined ? undefined : exitTo(game, raised, exit);
         if (to !== undefined) return enter(game, raised, to);
         if (search) return { ...raised, searching: object };
-        return { ...raised, narration: narrate(raised, label, text ?? "") };
+        // What the player finds out is a toast, as an item taken.
+        return text ? { ...raised, toast: toastOf(raised, text) } : raised;
       }
       case "exit": {
         const to = exitTo(game, state, action.exit);
