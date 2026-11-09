@@ -4,7 +4,7 @@
 
 import { z } from "zod";
 import { ID } from "./registry.ts";
-import { ART_DIRECTION, conversation, STYLE_LIMITS } from "./write-scene.ts";
+import { ART_DIRECTION, conversation, STYLE_LIMITS, TEXT_MODEL } from "./write-scene.ts";
 
 const plan = z.object({
   title: z.string(),
@@ -57,8 +57,8 @@ export const planErrors = ({ scenes }: Plan) => {
   return errors;
 };
 
-export const gameWriter = (apiKey: string) => {
-  const ask = conversation(plan, apiKey, system);
+export const gameWriter = (apiKey: string, model = TEXT_MODEL) => {
+  const ask = conversation(plan, apiKey, system, model);
   return {
     write: (brief: string) => ask(`Écris le plan du jeu : ${brief}`),
     revise: (change: string) => ask(`Modifie le plan ainsi : ${change}`),

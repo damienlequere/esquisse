@@ -40,7 +40,7 @@ pnpm dev:all         # both, through Turborepo
 pnpm build           # production builds
 pnpm typecheck
 pnpm lint            # pnpm format to fix
-pnpm generate-game <game> "brief"  # a new game, its plan then its scenes' backgrounds, kept in its game.json (see A new game)
+pnpm generate-game <game> "brief" [--model <id>]  # a new game, its plan then its scenes' backgrounds, kept in its game.json (see A new game)
 pnpm generate-scene <game> <id> portrait|landscape "brief"  # a new scene of a game, its background only (see Generating a scene)
 pnpm remove-scene <game> <id> # removes a scene, its texts and its images
 pnpm remove-game <game> # removes a game, all its scenes and its items
@@ -237,7 +237,7 @@ Node as they are (`--experimental-strip-types`, from Node 22.6).
 ### A new game
 
 ```bash
-pnpm generate-game <game> "<brief>"
+pnpm generate-game <game> "<brief>" [--model <id>]
 ```
 
 The brief says what the whole game is about, and may fix its scenes: how many,
@@ -245,6 +245,14 @@ their names, their orientations, what each shows or does not, which ones open on
 their title. Claude writes the plan: the game's title, one style for all its
 images, and its scenes, each with its id, its orientation, its opening and its
 own brief. Then `v` validate, `m` describe a change, `q` quit.
+
+`--model` chooses the Claude model that writes the plan and every scene, for
+the whole run: `claude-opus-5-5` by default, or another id the API knows, such
+as `claude-fable-5-1`, `claude-sonnet-5-5` or `claude-haiku-5-5`. It is checked
+before anything is paid for (an unknown id lists those the API knows), and kept
+in `generation.textModel`. A refused request goes to another model by itself
+only on Fable 5.1, Opus 5.5, Opus 5 and Sonnet 5.5. `pnpm generate-scene`
+always writes with `claude-opus-5-5`.
 
 Each scene is then made as `pnpm generate-scene` makes one, from its brief,
 written within the game (Claude reads the game's brief, and the style is the

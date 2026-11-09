@@ -1,6 +1,9 @@
 // Makes a new game with its author, in the terminal, from one brief:
 //
-//   pnpm generate-game <game> "brief"
+//   pnpm generate-game <game> "brief" [--model <id>]
+//
+// --model is the Claude model that writes the plan and the scenes, claude-opus-5-5
+// by default; it is checked before anything is paid for.
 //
 // Claude writes the game's plan from the brief: its title, one style for all
 // its images, and its scenes, each with its id, its orientation, whether it has
@@ -26,10 +29,17 @@ import { IMAGE_MODEL } from "./paint.ts";
 import { format, gameDir, ID } from "./registry.ts";
 import { json, paintScene, session } from "./session.ts";
 import { gameWriter, type Plan, planErrors } from "./write-game.ts";
-import { baseWriter, FORMATS, TEXT_MODEL } from "./write-scene.ts";
+import { baseWriter, checkModel, FORMATS, TEXT_MODEL } from "./write-scene.ts";
 
-const USAGE = 'Usage: pnpm generate-game <game> "brief"';
-const [game, brief, ...rest] = process.argv.slice(2);
+const USAGE = 'Usage: pnpm generate-game <game> "brief" [--model <id>]';
+const argv = process.argv.slice(2);
+// --model <id>, anywhere.
+const flag = argv.indexOf("--model");
+const model = flag === -1 ? TEXT_MODEL : argv[flag + 1];
+if (model === undefined || model.startsWith("--"))
+  throw new Error(`--model needs an id.\n${USAGE}`);
+if (flag !== -1) argv.splice(flag, 2);
+const [game, brief, ...rest] = argv;
 if (game === undefined || brief === undefined) throw new Error(USAGE);
 if (!ID.test(game)) throw new Error(`Invalid id: ${game} (kebab-case)`);
 if (rest.length > 0) throw new Error(`Only one brief, in quotes.\n${USAGE}`);
@@ -44,6 +54,7 @@ if (existsSync(gameDir(game))) {
 // Both are checked before anything is paid for.
 const anthropicKey = apiKey("ANTHROPIC_API_KEY");
 const geminiKey = apiKey("GEMINI_API_KEY");
+await checkModel(anthropicKey, model);
 
 const author = session();
 
@@ -57,7 +68,7 @@ const showPlan = (p: Plan) => {
 };
 
 // The plan, until the author validates it.
-const planner = gameWriter(anthropicKey);
+const planner = gameWriter(anthropicKey, model);
 const planChanges: string[] = [];
 let plan = await planner.write(brief);
 for (;;) {
@@ -80,7 +91,7 @@ for (;;) {
 const generation: Generation = {
   command: "generate-game",
   date: new Date().toISOString().slice(0, 10),
-  textModel: TEXT_MODEL,
+  textModel: model,
   imageModel: IMAGE_MODEL,
   ...(planChanges.length > 0 ? { changes: planChanges } : {}),
   scenes: plan.scenes.map(({ id, orientation, opening, brief }) => ({
@@ -104,7 +115,7 @@ for (const [i, planned] of generation.scenes.entries()) {
   const { id, brief: sceneBrief } = planned;
   console.log(`\n── ${i + 1}/${generation.scenes.length} : ${id} (${planned.orientation})`);
   const FORMAT = FORMATS[planned.orientation as keyof typeof FORMATS];
-  const writer = baseWriter(anthropicKey, FORMAT, { brief, style: plan.style });
+  const writer = baseWriter(anthropicKey, FORMAT, { brief, style: plan.style }, model);
   const painted = await paintScene({
     session: author,
     geminiKey,

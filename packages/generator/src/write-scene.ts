@@ -6,7 +6,30 @@ import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import type { Box } from "@esquisse/engine";
 import { z } from "zod";
 
+// The default; pnpm generate-game takes another with --model.
 export const TEXT_MODEL = "claude-opus-5-5";
+
+// The models the API can hand a refused request over to another, by itself.
+const FALLBACKS = new Set([
+  "claude-fable-5-1",
+  "claude-opus-5-5",
+  "claude-opus-5",
+  "claude-sonnet-5-5",
+]);
+
+// Fails, before anything is paid for, if the API does not know the model, and
+// lists those it knows.
+export const checkModel = async (apiKey: string, model: string) => {
+  const client = new Anthropic({ apiKey });
+  try {
+    await client.models.retrieve(model);
+  } catch (error) {
+    if (!(error instanceof Anthropic.NotFoundError)) throw error;
+    const known: string[] = [];
+    for await (const m of client.models.list()) known.push(m.id);
+    throw new Error(`Unknown model: ${model}. The API knows: ${known.join(", ")}`);
+  }
+};
 
 // A scene is portrait (9:16) or landscape (16:9), chosen when it is created.
 // Each has its safe zone, from the frames it is played in (see the README).
@@ -88,17 +111,19 @@ export const conversation = <T extends z.ZodType>(
   schema: T,
   apiKey: string,
   instructions: string,
+  model = TEXT_MODEL,
 ) => {
   const client = new Anthropic({ apiKey });
   const messages: Message[] = [];
   return async (content: Content): Promise<z.infer<T>> => {
     messages.push({ role: "user", content });
-    console.log(`Writing with ${TEXT_MODEL}…`);
+    console.log(`Writing with ${model}…`);
     const response = await client.beta.messages.parse({
-      model: TEXT_MODEL,
+      model,
       max_tokens: 16000,
-      betas: ["server-side-fallback-2026-07-01"],
-      fallbacks: "default",
+      ...(FALLBACKS.has(model)
+        ? { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" as const }
+        : {}),
       cache_control: { type: "ephemeral" },
       system: instructions,
       output_config: { effort: "high", format: betaZodOutputFormat(schema) },
@@ -125,8 +150,13 @@ export const conversation = <T extends z.ZodType>(
 // scene to fit in it, and its style, the same for all its scenes.
 export type GameContext = { brief: string; style: string };
 
-export const baseWriter = (apiKey: string, format: Format, game?: GameContext) => {
-  const ask = conversation(base, apiKey, system(format));
+export const baseWriter = (
+  apiKey: string,
+  format: Format,
+  game?: GameContext,
+  model = TEXT_MODEL,
+) => {
+  const ask = conversation(base, apiKey, system(format), model);
   // The game's style is kept as it is, whatever Claude sends back.
   const write = async (content: string) => {
     const output = await ask(content);
