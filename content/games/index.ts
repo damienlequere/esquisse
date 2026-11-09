@@ -24,6 +24,13 @@ import tristramSceneEtageScene from "./tristram/scenes/etage/scene.json";
 import tristramSceneRueAspects from "./tristram/scenes/rue/characters.json";
 import tristramSceneRueObjects from "./tristram/scenes/rue/objects.json";
 import tristramSceneRueScene from "./tristram/scenes/rue/scene.json";
+import tristram2Game from "./tristram2/game.json";
+import tristram2ScenePlaceDuVillageAspects from "./tristram2/scenes/place-du-village/characters.json";
+import tristram2ScenePlaceDuVillageObjects from "./tristram2/scenes/place-du-village/objects.json";
+import tristram2ScenePlaceDuVillageScene from "./tristram2/scenes/place-du-village/scene.json";
+import tristram2SceneRueAspects from "./tristram2/scenes/rue/characters.json";
+import tristram2SceneRueObjects from "./tristram2/scenes/rue/objects.json";
+import tristram2SceneRueScene from "./tristram2/scenes/rue/scene.json";
 
 // The games, by id: each one with all its scenes, by id, and its items.
 export const games = {
@@ -80,6 +87,22 @@ export const games = {
       },
     },
     items: tristramItems,
+  },
+  tristram2: {
+    game: tristram2Game,
+    scenes: {
+      "place-du-village": {
+        scene: tristram2ScenePlaceDuVillageScene,
+        objects: tristram2ScenePlaceDuVillageObjects,
+        aspects: tristram2ScenePlaceDuVillageAspects,
+      },
+      rue: {
+        scene: tristram2SceneRueScene,
+        objects: tristram2SceneRueObjects,
+        aspects: tristram2SceneRueAspects,
+      },
+    },
+    items: {},
   },
 } satisfies Record<string, GameData>;
 
