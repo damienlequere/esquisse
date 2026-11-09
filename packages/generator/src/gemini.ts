@@ -1,8 +1,5 @@
 // Gemini client for the scene generator: images through the Interactions API
-// (Nano Banana), boxes through generateContent in vision. The key comes from
-// GEMINI_API_KEY.
-
-import type { Box } from "@esquisse/engine";
+// (Nano Banana). The key comes from GEMINI_API_KEY.
 
 export type ImageRequest = {
   model: string;
@@ -96,87 +93,3 @@ export const generateImage = (
   request: ImageRequest,
   log: (line: string) => void = console.log,
 ) => withRetries(() => imageCall(apiKey, request), log);
-
-type ContentResponse = {
-  error?: { message?: string };
-  candidates?: { content?: { parts?: { text?: string }[] } }[];
-};
-
-// Gemini returns the boxes as [ymin, xmin, ymax, xmax], from 0 to 1000; an
-// element seen several times (lit windows) has as many boxes.
-const detectCall = async (
-  apiKey: string,
-  model: string,
-  jpg: Buffer,
-  elements: { id: string; detect: string }[],
-): Promise<{ id: string; box: Box }[]> => {
-  const prompt = [
-    "Detect these elements in the image and return their bounding boxes as JSON:",
-    ...elements.map((e) => `- id "${e.id}": ${e.detect}`),
-    'Answer only with a JSON array of {"id": string, "box_2d": [ymin, xmin, ymax, xmax]}, coordinates normalized to 0-1000.',
-  ].join("\n");
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
-    {
-      method: "POST",
-      headers: { "x-goog-api-key": apiKey, "content-type": "application/json" },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              { inline_data: { mime_type: "image/jpeg", data: jpg.toString("base64") } },
-              { text: prompt },
-            ],
-          },
-        ],
-        generationConfig: {
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: "ARRAY",
-            items: {
-              type: "OBJECT",
-              properties: {
-                id: { type: "STRING", enum: elements.map((e) => e.id) },
-                box_2d: { type: "ARRAY", items: { type: "INTEGER" } },
-              },
-              required: ["id", "box_2d"],
-            },
-          },
-          temperature: 0,
-        },
-      }),
-    },
-  );
-  const body = (await response.json().catch(() => undefined)) as ContentResponse | undefined;
-  if (!response.ok) throw new GeminiError(response, body?.error?.message ?? "error");
-  const text = body?.candidates?.[0]?.content?.parts?.find((p) => p.text)?.text;
-  if (text === undefined) throw new Error("Gemini: no text in the response");
-  const found: { id: string; box_2d: [number, number, number, number] }[] = JSON.parse(text);
-  return found.map(({ id, box_2d: [y0, x0, y1, x1] }) => ({
-    id,
-    box: { x0: x0 / 1000, y0: y0 / 1000, x1: x1 / 1000, y1: y1 / 1000 },
-  }));
-};
-
-export const detectBoxes = (
-  apiKey: string,
-  model: string,
-  jpg: Buffer,
-  elements: { id: string; detect: string }[],
-  log: (line: string) => void = console.log,
-) =>
-  withRetries(() => detectCall(apiKey, model, jpg, elements), log).then(
-    (found): Record<string, Box> => Object.fromEntries(found.map(({ id, box }) => [id, box])),
-  );
-
-// Every box of what is described, however many times it is seen.
-export const detectAll = (
-  apiKey: string,
-  model: string,
-  jpg: Buffer,
-  detect: string,
-  log: (line: string) => void = console.log,
-) =>
-  withRetries(() => detectCall(apiKey, model, jpg, [{ id: "all", detect }]), log).then((found) =>
-    found.map(({ box }) => box),
-  );

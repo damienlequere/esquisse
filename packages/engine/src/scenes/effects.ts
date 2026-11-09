@@ -64,8 +64,8 @@ half4 main(float2 xy) {
 // in front of it, and loops. It covers the top SKY_HEIGHT of the image, its
 // width SKY_ASPECT times its height; below, its last row goes on, under the
 // mist. Its images: the sky, and the background without its sky (its front),
-// transparent where the sky shows. The generator paints the still background
-// with this sky as it is at the start (see packages/generator/src/sky.ts).
+// transparent where the sky shows. The still background (fond.webp) shows this
+// sky as it is at the start.
 export const SKY_HEIGHT = 0.36;
 export const SKY_ASPECT = 1.9;
 // Its drift, in image heights per second.

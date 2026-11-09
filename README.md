@@ -40,7 +40,7 @@ pnpm dev:all         # both, through Turborepo
 pnpm build           # production builds
 pnpm typecheck
 pnpm lint            # pnpm format to fix
-pnpm generate-scene <game> <id> portrait|landscape "brief"  # a new scene of a game, built step by step (see Generating a scene)
+pnpm generate-scene <game> <id> portrait|landscape "brief"  # a new scene of a game, its background only (see Generating a scene)
 pnpm remove-scene <game> <id> # removes a scene, its texts and its images
 pnpm remove-game <game> # removes a game, all its scenes and its items
 pnpm show-scene <game> <id> # the scene's background with what is clickable outlined, in the image viewer
@@ -115,10 +115,9 @@ waits, and starts over if the screen is turned away before its end. In a game, i
 plays on a scene's first visit only. A scene with `"opening": false` in its
 `scene.json` has none: it shows at once, its intro going only to the logbook.
 
-- **The scene is written by Claude** (Opus 5.5) from a brief: the texts, the
-  dialogues, the prompts for the images and the composition. The script checks
-  the composition (`packages/generator/src/check-scene.ts`) and sends what does not hold back to
-  the model, up to three times.
+- **The background is written by Claude** (Opus 5.5) from a brief: the title,
+  the intro, the style, the light and the decor, painted by Gemini. The objects,
+  the characters, their texts and dialogues are written by hand.
 - **The image is portrait (9:16) or landscape (16:9)**, chosen per scene
   (`imageRatio` in `scene.json`), in `cover`. In portrait, a phone crops its
   sides (9% each), a tablet its top and bottom (12.5% each), and the text is a
@@ -134,21 +133,16 @@ plays on a scene's first visit only. A scene with `"opening": false` in its
   to its orientation (the home screen stays portrait). The web site cannot turn a
   phone: on a touch screen held the other way, the scene asks to turn it. On a
   computer, the device frame is portrait or landscape.
-- **The composition is imposed** at generation by a guide sent with the prompt
-  (`sources/guide.png`): one colored rectangle per object, "VIDE" zones where
-  the characters will stand.
-- **The objects are detected afterwards** by Gemini in vision (`objects.json`),
-  then checked against the safe zone.
-- **The characters are layers**: generated alone on a green background, with the
-  background image sent for style and light, then keyed out. They are placed by
-  their feet (`anchor`) at a given height, so they can come and go without
-  changing the background.
+- **The objects are zones of the background** (`objects.json`), checked
+  against the safe zone.
+- **The characters are layers**, placed by their feet (`anchor`) at a given
+  height, so they can come and go without changing the background.
 - Everything placed on the image is in % of the image, so it follows the cropping.
 
 | File | Role |
 | --- | --- |
 | `content/games/<game>/scenes/<id>/scene.json` | The scene: safe zone, prompts, positions, texts and dialogues |
-| `content/games/<game>/scenes/<id>/objects.json`, `characters.json` | Detected boxes, layers' proportions (generated) |
+| `content/games/<game>/scenes/<id>/objects.json`, `characters.json` | The objects' boxes, the layers' proportions |
 | `content/games/<game>/scenes/<id>/*.webp` | Converted images, for both apps |
 | `content/games/<game>/scenes/<id>/sources/` | Original images, never bundled |
 | `content/games/<game>/items/index.ts`, `items/<id>.webp` | The game's items (`ITEMS`): their names, their images |
@@ -207,14 +201,14 @@ $ pnpm check-game
   ✗ rue: no exit « cave » to link to « cave » (an action's exit, or back)
   ⚠ auberge: the exit « rue » (the back button) is not linked: it stays closed
 ```
-| `packages/generator/src/generate-scene.ts` | The session: the background, then each element, then each character's dialogue line by line, validated one at a time, saved and listed for both apps |
-| `packages/generator/src/write-scene.ts`, `paint.ts`, `check-scene.ts`, `registry.ts` | The writing with Claude, the images with Gemini and the renders, the checks, the generated lists |
+| `packages/generator/src/generate-scene.ts` | The background, written, painted, validated, saved and listed for both apps |
+| `packages/generator/src/write-scene.ts`, `paint.ts`, `registry.ts` | The writing with Claude, the image with Gemini and the renders, the generated lists |
 
 ## Generating a scene
 
-A scene is built step by step, in the terminal, from a short description (the
-brief): Claude writes it, Gemini paints it, you validate each step on the
-render, and it shows up in both apps.
+A scene's background is made in the terminal, from a short description (the
+brief): Claude writes it, Gemini paints it, you validate it on the render, and
+it shows up in both apps.
 
 ### Once: the API keys
 
@@ -256,52 +250,11 @@ pnpm generate-scene <game> <id> portrait|landscape "<brief>"
 pnpm generate-scene bois foret portrait "l'orée d'une forêt au crépuscule, un bivouac abandonné"
 ```
 
-The session goes in four stages. Each render is saved in the system's temporary
-folder and opens in the image viewer, with the safe zone dashed, the objects
-outlined in orange and the characters in blue.
-
-1. **The background.** Claude (Opus 5.5) writes the title, the intro, the style,
-   the light and the decor, and Gemini (Nano Banana 2.1) paints it, empty. Then:
-   `v` validate, `r` paint it again, `m` describe a change (Claude rewrites the
-   decor, Gemini repaints it), `q` quit.
-2. **The details, for realism.** Claude looks at the validated background and
-   suggests 4 to 6 small details that make the place credible and lived in
-   (wear, moss, puddles, cobwebs, smoke, distant birds), kept discreet, off the
-   floor and away from what is clickable. Each has a zone, which must lie in the
-   safe zone: one outside is sent back to Claude, up to three times, then
-   dropped. Type their numbers (`1 3 4`), `tous`, or describe your own (Claude
-   places them the same way); Enter skips. Gemini retouches them all into the
-   background at once; they are never clickable, and are listed in
-   `background.details`. Then: `v` validate, `r` redo, `m` describe a change
-   (Claude rewrites the kept details), `a` drop them. Each retouch degrades the
-   image a little, so this pass is best done before the objects; `d` at the
-   question of the next stage runs it again.
-3. **The elements, one at a time.** Claude suggests a few ideas; type one's
-   number, or describe what to add (`un cheval à l'arrière-plan`, `une vieille
-   gardienne près de la porte`). Claude writes the element from the current
-   render: an object (something clickable that shows a text) or a character
-   (someone to talk to). Its position is checked and sent back to fix, up to
-   three times.
-   - An **object** is painted into the background by retouching the validated
-     one, then every object is found again in the image (the retouch can move
-     them a little).
-   - A **character** is painted on green, matching the background, and the
-     green is keyed out; the layer is placed by its feet.
-
-   Then: `v` validate, `r` redo it (an object is retouched again from the
-   validated background, never from a rejected one), `m` describe a change, `a`
-   drop it. Press Enter at the question to finish.
-4. **A character's dialogue, one line at a time**, right after the character is
-   validated. Claude writes its greeting; then, as many times as you want, a
-   question the player can ask and its answer (type the question you want, or
-   `n` for Claude to suggest one; Enter when there are enough); then its
-   farewell. Each line is shown before the next: `v` validate, `r` rewrite it,
-   `m` describe a change, `a` drop it (for the greeting and the farewell, keep
-   it for later). Each validated line is saved at once. `p`, at the question of
-   the elements, goes back to a character's dialogue: it asks for what it still
-   lacks, and more questions.
-
-A session looks like this (Claude's texts shortened):
+Claude (Opus 5.5) writes the title, the intro, the style, the light and the
+decor, and Gemini (Nano Banana 2.1) paints the background, empty. The render is
+saved in the system's temporary folder and opens in the image viewer, with the
+safe zone dashed. Then: `v` validate, `r` paint it again, `m` describe a change
+(Claude rewrites the decor, Gemini repaints it), `q` quit.
 
 ```text
 $ pnpm generate-scene bois foret portrait "l'orée d'une forêt au crépuscule, un bivouac abandonné"
@@ -316,83 +269,21 @@ Painting the background…
 Le fond :  [v] valider  [r] repeindre  [m] modifier  [q] quitter
 > v
 ✓ Saved: /game/bois/scene/foret in both apps
-Writing with claude-opus-5-5…
-
-Détails de réalisme :
-  1. de la mousse sur les racines au pied du grand chêne, à gauche
-     de 10 % à 30 % de la largeur, de 58 % à 68 % de la hauteur
-  2. une fine brume entre les troncs, au fond
-     de 20 % à 85 % de la largeur, de 30 % à 45 % de la hauteur
-  …
-Lesquels ajouter ? (des numéros, « tous », une description, ou Entrée pour passer)
-> 1 2
-
-Les détails : …
-
-Adding the details to the background…
-  Render: /tmp/esquisse-bois-foret-2.jpg
-Les détails :  [v] valider  [r] refaire  [m] modifier  [a] abandonner
-> v
-✓ Saved: /game/bois/scene/foret in both apps
-
-Idées :
-  1. un feu de camp au premier plan
-  2. un cheval attaché entre les arbres
-Que veux-tu ajouter ? (une description, un numéro d'idée, d pour des détails de réalisme, ou Entrée pour finir)
-> 1
-Writing with claude-opus-5-5…
-
-Objet « feu-de-camp », de 55 % à 88 % de la largeur, de 58 % à 70 % de la hauteur
-Adding feu-de-camp to the background…
-Detecting the objects…
-  Render: /tmp/esquisse-bois-foret-3.jpg
-« feu-de-camp » :  [v] valider  [r] refaire  [m] modifier  [a] abandonner
-> m
-Que changer ?
-> plus petit, et à gauche
-…
-> v
-✓ Saved: /game/bois/scene/foret in both apps
-Que veux-tu ajouter ? (une description, un numéro d'idée, d pour des détails de réalisme, ou Entrée pour finir)
->
-✓ Le bivouac abandonné: /game/bois/scene/foret, run pnpm dev to play it
+✓ Le bivouac abandonné: /game/bois/scene/foret, run pnpm dev to see it
 ```
 
-What is validated is saved at once (`scene.json`, `objects.json`,
-`characters.json`, the images) and the scene is listed for both apps
-(`content/games/index.ts`, `content/games/images.ts`): the session can stop at any time, and `pnpm dev`
-shows the scene at `/game/<game>/scene/<id>`, and in its game once its first
-scene is complete.
+What is validated is saved (`scene.json`, an empty `objects.json` and
+`characters.json`, `fond.webp`, the original in `sources/fond.jpg`) and the scene
+is listed for both apps (`content/games/index.ts`, `content/games/images.ts`).
 
-| What | Where |
-| --- | --- |
-| The scene, its texts and the positions | `content/games/<game>/scenes/<id>/scene.json`, `objects.json`, `characters.json` |
-| The converted images | `content/games/<game>/scenes/<id>/fond.webp`, `<character>.webp` |
-| The originals | `content/games/<game>/scenes/<id>/sources/fond.jpg`, `<character>.jpg` |
+The objects, the characters and the animations are not generated: they are
+written in `scene.json` (and the objects' boxes in `objects.json`) by hand.
+`pnpm show-scene` shows where they fall on the background.
 
-### Going on, starting over
+Running it again on an existing scene asks, then deletes it and starts over.
 
-- **Add to a scene** later: `pnpm generate-scene <game> <id>`, without a brief, shows the
-  current render and asks what to add, `f` to retouch the background as
-  described (« un ciel plus orageux »), without adding an object, or `p` for a
-  character's dialogue.
-- **Start over**: `pnpm generate-scene <game> <id> portrait|landscape "<brief>"` on an existing scene asks, then
-  deletes it and starts again from the background.
-- **Edit by hand**: everything in `scene.json` can be changed (a text, a
-  dialogue, a prompt); a position changed by hand is not repainted.
-
-When something goes wrong:
-
-- *"The composition still does not hold"*: after three rounds, Claude's position
-  still breaks the rules. The element is shown anyway: `m` to ask for another
-  place, or `a` to drop it.
-- *"⚠ <object>: outside the safe zone"* or *"not found"*: the retouch did not
-  put the object where planned. `r` to retouch again.
-
-Each step calls the APIs, which are paid: one Claude request per writing or
-change (a dialogue's line, its rewriting or its change included) (more if the composition is sent back), one Gemini request per painting
-or retouch, and one per detection after an object or after details on a scene
-that has objects.
+Each painting calls the APIs, which are paid: one Claude request per writing
+or change, one Gemini request per painting.
 
 ### Removing a scene
 

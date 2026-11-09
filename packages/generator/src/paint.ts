@@ -1,135 +1,31 @@
-// The scene's images, with Gemini: the background painted from its decor, an
-// object added by retouching it, a character painted on green and keyed out.
-// Then the render shown at each step: the background, the characters placed on
-// it, and the outlines of what is clickable.
+// The scene's background, painted by Gemini from its decor, and the render shown
+// to the author: the background, the characters placed on it, and the outlines
+// of what is clickable.
 
 import { spawn } from "node:child_process";
 import { writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { Box, Character, Detail, Scene, SceneData, SceneObject } from "@esquisse/engine";
+import type { Box, Scene, SceneData } from "@esquisse/engine";
 import { characterBox, isLandscape, sceneRatio } from "@esquisse/engine/layout";
 import sharp from "sharp";
-import { pct } from "./check-scene.ts";
-import { detectAll, detectBoxes, generateImage } from "./gemini.ts";
+import { generateImage } from "./gemini.ts";
 
 const IMAGE_MODEL = "gemini-nano-banana-2.1";
-const VISION_MODEL = "gemini-3.8-flash";
 
-export const where = (b: Box) =>
-  `de ${pct(b.x0)} à ${pct(b.x1)} de la largeur, de ${pct(b.y0)} à ${pct(b.y1)} de la hauteur`;
-
-// The background is painted in the scene's format (9:16 or 16:9); a character
-// always stands in a 9:16 frame, which its layer is cropped from once keyed out.
-const paint = (key: string, aspectRatio: string, prompt: string, references: Buffer[]) =>
+// The background is painted in the scene's format (9:16 or 16:9).
+export const paintBackground = (key: string, scene: Scene) =>
   generateImage(key, {
     model: IMAGE_MODEL,
-    prompt,
-    references: references.map((data) => ({ mimeType: "image/jpeg", data })),
-    aspectRatio,
-    imageSize: "2K",
-  });
-
-export const paintBackground = (key: string, scene: Scene) =>
-  paint(
-    key,
-    scene.imageRatio,
-    [
+    prompt: [
       scene.style,
       scene.background.prompt,
       isLandscape(scene) ? "Format paysage." : "Format portrait.",
     ].join("\n"),
-    [],
-  );
-
-// The object is painted into the background as it is: the rest must not move.
-export const addObject = (key: string, scene: Scene, background: Buffer, o: SceneObject) =>
-  paint(
-    key,
-    scene.imageRatio,
-    [
-      scene.style,
-      `Retouche l'image jointe : ajoute-y ${o.paint}, ${where(o.zone)}.`,
-      `Il s'intègre au décor comme s'il y avait toujours été : même technique de peinture, même touche, même lumière (${scene.light}), même perspective, avec ses ombres et ses reflets.`,
-      "Ne change rien d'autre : le cadrage, le décor et tout ce qui s'y trouve restent identiques, à la même place. N'ajoute aucune personne ni aucun texte.",
-    ].join("\n"),
-    [background],
-  );
-
-// The details, all in one retouch: each one degrades the image a little.
-export const addDetails = (key: string, scene: Scene, background: Buffer, details: Detail[]) =>
-  paint(
-    key,
-    scene.imageRatio,
-    [
-      scene.style,
-      `Retouche l'image jointe pour rendre le lieu plus crédible et plus vécu : ajoute-y ces détails, chacun entier dans sa zone, sans en déborder.\n- ${details.map((d) => `${d.paint}, ${where(d.zone)}`).join("\n- ")}`,
-      `Ils s'intègrent au décor comme s'ils y avaient toujours été : même technique de peinture, même touche, même lumière (${scene.light}), même perspective. Ils restent discrets : ils enrichissent le décor sans attirer l'œil plus que ce qui s'y trouve déjà.`,
-      "Ne change rien d'autre : le cadrage, le décor et tout ce qui s'y trouve restent identiques, à la même place. N'ajoute aucune personne ni aucun texte.",
-    ].join("\n"),
-    [background],
-  );
-
-// A change the author asks for, in words, retouched into the background as
-// asked: the rest must not move.
-export const retouchBackground = (key: string, scene: Scene, background: Buffer, change: string) =>
-  paint(
-    key,
-    scene.imageRatio,
-    [
-      scene.style,
-      `Retouche l'image jointe ainsi : ${change}`,
-      `Ce qui change s'intègre au décor comme s'il avait toujours été ainsi : même technique de peinture, même touche, même perspective, et même lumière (${scene.light}), sauf si la retouche demande de la changer.`,
-      "Ne change rien d'autre que ce qui est demandé : le cadrage, le décor et tout ce qui s'y trouve restent identiques, à la même place. N'ajoute aucun texte, ni aucune personne si la retouche n'en demande pas.",
-    ].join("\n"),
-    [background],
-  );
-
-export const detectObjects = (key: string, background: Buffer, objects: SceneObject[]) =>
-  objects.length === 0
-    ? Promise.resolve<Record<string, Box>>({})
-    : detectBoxes(key, VISION_MODEL, background, objects);
-
-// Every box of what is described, to animate it (see lights.ts).
-export const detectEvery = (key: string, background: Buffer, detect: string) =>
-  detectAll(key, VISION_MODEL, background, detect);
-
-const characterPrompt = (scene: Scene, c: Character) =>
-  [
-    scene.style,
-    `Un seul personnage : ${c.paint}.`,
-    "Il est représenté en pied, entier de la tête aux pieds, centré, sur un fond uni vert chroma pur (#00FF00), sans aucun décor, sans sol et sans ombre portée. Aucun vert dans ses vêtements ni dans ce qu'il tient.",
-    `L'image jointe est le décor où il se tiendra : même style de peinture, même touche et même lumière (${scene.light}), vu à la même hauteur que le décor.`,
-  ].join("\n");
-
-// Green screen keying: transparent above a "greenness" threshold, faded below,
-// and the green spilling on the edges brought back to the other channels.
-const chromaKey = async (jpg: Buffer) => {
-  const { data, info } = await sharp(jpg).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
-  for (let i = 0; i < data.length; i += 4) {
-    const r = data[i] as number;
-    const g = data[i + 1] as number;
-    const b = data[i + 2] as number;
-    const green = g - Math.max(r, b);
-    if (green > 25) {
-      data[i + 3] = Math.round(255 * Math.max(0, Math.min(1, (70 - green) / 45)));
-      data[i + 1] = Math.max(r, b);
-    }
-  }
-  return sharp(data, { raw: info }).png().trim().toBuffer({ resolveWithObject: true });
-};
-
-// The original, its keyed layer (PNG), and the layer's width / height.
-export const paintCharacter = async (
-  key: string,
-  scene: Scene,
-  background: Buffer,
-  c: Character,
-) => {
-  const jpg = await paint(key, "9:16", characterPrompt(scene, c), [background]);
-  const { data, info } = await chromaKey(jpg);
-  return { jpg, layer: data, aspect: info.width / info.height };
-};
+    references: [],
+    aspectRatio: scene.imageRatio,
+    imageSize: "2K",
+  });
 
 // ── The render ───────────────────────────────────────────────────────────────
 
