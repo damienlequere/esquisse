@@ -40,6 +40,7 @@ pnpm dev:all         # both, through Turborepo
 pnpm build           # production builds
 pnpm typecheck
 pnpm lint            # pnpm format to fix
+pnpm generate-game <game> "brief"  # a new game, its plan then its scenes' backgrounds, kept in its game.json (see A new game)
 pnpm generate-scene <game> <id> portrait|landscape "brief"  # a new scene of a game, its background only (see Generating a scene)
 pnpm remove-scene <game> <id> # removes a scene, its texts and its images
 pnpm remove-game <game> # removes a game, all its scenes and its items
@@ -169,7 +170,8 @@ declares its **exits**: an object's action with `exit` (`{ "label": "Entrer",
 ```
 
 A game may also keep, in `"brief"`, the text its scenes were asked for, in its
-author's words, as each scene keeps its own; neither app shows it.
+author's words, as each scene keeps its own, and, in `"generation"`, how they
+were first generated (see A new game); neither app shows them.
 
 A scene can also offer a way back: `"back": "rue"` in its `scene.json` names an
 exit, linked like the others, taken by the back button, a return arrow in the
@@ -205,6 +207,8 @@ $ pnpm check-game
   ⚠ auberge: the exit « rue » (the back button) is not linked: it stays closed
 ```
 | `packages/generator/src/generate-scene.ts` | The background, written, painted, validated, saved and listed for both apps |
+| `packages/generator/src/generate-game.ts` | A new game: its plan, then each of its scenes as generate-scene makes one, kept in its `game.json` |
+| `packages/generator/src/write-game.ts`, `session.ts` | The game's plan with Claude; what both commands share (the questions, a background painted until validated, saved) |
 | `packages/generator/src/write-scene.ts`, `paint.ts`, `registry.ts` | The writing with Claude, the image with Gemini and the renders, the generated lists |
 
 ## Generating a scene
@@ -229,6 +233,51 @@ cp packages/generator/.env.example packages/generator/.env.local
 `.env.local`, which wins over `.env`. Both files are ignored by git; never put
 keys in `.env.example`, which is committed. The scripts are TypeScript, run by
 Node as they are (`--experimental-strip-types`, from Node 22.6).
+
+### A new game
+
+```bash
+pnpm generate-game <game> "<brief>"
+```
+
+The brief says what the whole game is about, and may fix its scenes: how many,
+their names, their orientations, what each shows or does not, which ones open on
+their title. Claude writes the plan: the game's title, one style for all its
+images, and its scenes, each with its id, its orientation, its opening and its
+own brief. Then `v` validate, `m` describe a change, `q` quit.
+
+Each scene is then made as `pnpm generate-scene` makes one, from its brief,
+written within the game (Claude reads the game's brief, and the style is the
+plan's, the same for every scene), and saved once validated. The game starts
+in the first scene; its scenes are not linked.
+
+```text
+$ pnpm generate-game tristram4 "un village rappelant Tristram à la tombée du soir…"
+Writing with claude-opus-5-5…
+
+Tristram
+Style : Matte painting numérique de cinéma…
+
+1. rue (portrait, avec ouverture) : une rue montante…
+2. place-du-village (landscape) : la place ronde…
+Le plan :  [v] valider  [m] modifier  [q] quitter
+> v
+New game "tristram4", starting in "rue": content/games/tristram4/game.json
+
+── 1/2 : rue (portrait)
+…
+```
+
+The game's `game.json` keeps how it was generated, once, in `"generation"`:
+the command, the date, the models, the changes asked to the plan, and for each
+scene its plan, then, once validated, its title, intro, style, light and
+background, with the changes asked to it. Gemini got, one per line, the style,
+the background and `Format portrait.` or `Format paysage.`. It never changes
+after: the scenes' `scene.json` do. Quitting keeps the scenes validated; the
+others stay in the plan, to make with `pnpm generate-scene`.
+
+The game must not exist: `pnpm remove-game` first. Each plan and each change to
+it is one Claude request, on top of the scenes'.
 
 ### A new scene
 

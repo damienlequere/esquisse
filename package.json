@@ -10,6 +10,7 @@
     "dev": "turbo run dev --filter=@esquisse/web",
     "dev:mobile": "pnpm --filter @esquisse/mobile start",
     "dev:all": "turbo run dev",
+    "generate-game": "pnpm --filter @esquisse/generator generate-game",
     "generate-scene": "pnpm --filter @esquisse/generator generate-scene",
     "remove-scene": "pnpm --filter @esquisse/generator remove-scene",
     "remove-game": "pnpm --filter @esquisse/generator remove-game",

@@ -6,7 +6,7 @@ import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import type { Box } from "@esquisse/engine";
 import { z } from "zod";
 
-const TEXT_MODEL = "claude-opus-5-5";
+export const TEXT_MODEL = "claude-opus-5-5";
 
 // A scene is portrait (9:16) or landscape (16:9), chosen when it is created.
 // Each has its safe zone, from the frames it is played in (see the README).
@@ -39,12 +39,8 @@ const base = z.object({
 
 export type Base = z.infer<typeof base>;
 
-const system = (format: Format) =>
-  `Tu crées des scènes cliquables pour Esquisse : une image peinte au format ${format.words}, où chaque objet du décor, cliquable, propose quelques actions qui affichent chacune un court texte, et où chaque personnage ouvre un dialogue. Les images sont générées par un modèle d'image à partir de tes descriptions, puis les objets sont repérés par un modèle de vision.
-
-Tu écris ici le fond de la scène, que son auteur valide ; les objets et les personnages y sont ajoutés ensuite, à part.
-
-## La direction artistique
+// The images' direction, the same for a scene and for a game (see write-game.ts).
+export const ART_DIRECTION = `## La direction artistique
 
 Les images sont du matte painting numérique de cinéma : des décors peints numériquement, réalistes et très détaillés, comme ceux d'un film, pas une illustration jeunesse ni une bande dessinée.
 
@@ -52,7 +48,18 @@ Les images sont du matte painting numérique de cinéma : des décors peints num
 - La lumière est crédible : des sources précises, des ombres qui en découlent, un clair-obscur qui sert l'atmosphère.
 - Les matières se voient : bois, métal, pierre, tissu, verre, avec leur usure, leur patine, leur poussière.
 - Le lieu est riche en détails secondaires qui racontent son histoire, sans prendre le pas sur les éléments cliquables.
-- Le ton est sérieux. Une scène comique ou légère le reste dans ses textes et ses dialogues ; ses images gardent cette direction.
+- Le ton est sérieux. Une scène comique ou légère le reste dans ses textes et ses dialogues ; ses images gardent cette direction.`;
+
+// How a style ends.
+export const STYLE_LIMITS =
+  "Il finit toujours par les interdits : aucun texte, lettre, chiffre, signature ni logo ; pas de style cartoon, bande dessinée, anime ni caricature, pas de contours encrés ni d'aplats ; pas de photographie ni de rendu 3D lisse ; pas de cadre ni de bordure.";
+
+const system = (format: Format) =>
+  `Tu crées des scènes cliquables pour Esquisse : une image peinte au format ${format.words}, où chaque objet du décor, cliquable, propose quelques actions qui affichent chacune un court texte, et où chaque personnage ouvre un dialogue. Les images sont générées par un modèle d'image à partir de tes descriptions, puis les objets sont repérés par un modèle de vision.
+
+Tu écris ici le fond de la scène, que son auteur valide ; les objets et les personnages y sont ajoutés ensuite, à part.
+
+${ART_DIRECTION}
 
 ## Le fond
 
@@ -60,7 +67,7 @@ Les images sont du matte painting numérique de cinéma : des décors peints num
 
 - title : le titre de la scène, court.
 - intro : 1 à 2 phrases, à la deuxième personne (« tu »), au présent, qui posent le lieu et l'ambiance quand le joueur arrive.
-- style : un paragraphe de direction artistique commun à toutes les images de la scène (matte painting numérique, rendu des matières, palette, lumière, atmosphère), qui suit la direction artistique ci-dessus. Il finit toujours par les interdits : aucun texte, lettre, chiffre, signature ni logo ; pas de style cartoon, bande dessinée, anime ni caricature, pas de contours encrés ni d'aplats ; pas de photographie ni de rendu 3D lisse ; pas de cadre ni de bordure.
+- style : un paragraphe de direction artistique commun à toutes les images de la scène (matte painting numérique, rendu des matières, palette, lumière, atmosphère), qui suit la direction artistique ci-dessus. ${STYLE_LIMITS}
 - light : la lumière de la scène en quelques mots (sources, couleur, direction), pour que les éléments ajoutés ensuite soient éclairés comme le décor.
 - background.prompt : le décor seul, vu de face à hauteur d'homme, vide de toute personne et de tout animal. Le sol occupe ${format.floor} et reste dégagé, pour recevoir ensuite des objets et des personnages. Il décrit le lieu en détail : ses matières, leur état, et les détails secondaires aux murs et au fond qui le font vivre. Les objets et les personnages que la demande cite n'y sont pas : ils seront ajoutés ensuite.
 
@@ -77,7 +84,11 @@ type Content = Message["content"];
 
 // One conversation with Claude, one structured answer per turn: what was
 // written stays in the conversation, for the changes asked next.
-const conversation = <T extends z.ZodType>(schema: T, apiKey: string, format: Format) => {
+export const conversation = <T extends z.ZodType>(
+  schema: T,
+  apiKey: string,
+  instructions: string,
+) => {
   const client = new Anthropic({ apiKey });
   const messages: Message[] = [];
   return async (content: Content): Promise<z.infer<T>> => {
@@ -89,7 +100,7 @@ const conversation = <T extends z.ZodType>(schema: T, apiKey: string, format: Fo
       betas: ["server-side-fallback-2026-07-01"],
       fallbacks: "default",
       cache_control: { type: "ephemeral" },
-      system: system(format),
+      system: instructions,
       output_config: { effort: "high", format: betaZodOutputFormat(schema) },
       messages,
     });
@@ -110,10 +121,23 @@ const conversation = <T extends z.ZodType>(schema: T, apiKey: string, format: Fo
   };
 };
 
-export const baseWriter = (apiKey: string, format: Format) => {
-  const ask = conversation(base, apiKey, format);
+// The game a scene is written for by pnpm generate-game: its brief, for the
+// scene to fit in it, and its style, the same for all its scenes.
+export type GameContext = { brief: string; style: string };
+
+export const baseWriter = (apiKey: string, format: Format, game?: GameContext) => {
+  const ask = conversation(base, apiKey, system(format));
+  // The game's style is kept as it is, whatever Claude sends back.
+  const write = async (content: string) => {
+    const output = await ask(content);
+    return game === undefined ? output : { ...output, style: game.style };
+  };
+  const context =
+    game === undefined
+      ? ""
+      : `\n\nLa scène fait partie d'un jeu, demandé ainsi : ${game.brief}\n\nSon style est celui de tout le jeu ; renvoie-le tel quel : ${game.style}`;
   return {
-    write: (brief: string) => ask(`Écris le fond de la scène : ${brief}`),
-    revise: (change: string) => ask(`Modifie le fond ainsi : ${change}`),
+    write: (brief: string) => write(`Écris le fond de la scène : ${brief}${context}`),
+    revise: (change: string) => write(`Modifie le fond ainsi : ${change}`),
   };
 };

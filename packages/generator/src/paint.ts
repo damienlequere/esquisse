@@ -11,7 +11,7 @@ import { characterBox, isLandscape, sceneRatio } from "@esquisse/engine/layout";
 import sharp from "sharp";
 import { generateImage } from "./gemini.ts";
 
-const IMAGE_MODEL = "gemini-nano-banana-2.1";
+export const IMAGE_MODEL = "gemini-nano-banana-2.1";
 
 // The background is painted in the scene's format (9:16 or 16:9).
 export const paintBackground = (key: string, scene: Scene) =>
