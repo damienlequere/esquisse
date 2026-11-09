@@ -6,6 +6,9 @@ import type { SceneData } from "../scenes/types.ts";
 // leads where the game says; an exit the game does not link stays closed, and
 // the action does what it would without it.
 export type Game = {
+  // What the game was asked for, in its author's words: the text given to
+  // generate its scenes, kept as it was.
+  brief?: string;
   title: string;
   // The scene it starts in.
   start: string;

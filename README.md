@@ -168,6 +168,9 @@ declares its **exits**: an object's action with `exit` (`{ "label": "Entrer",
 }
 ```
 
+A game may also keep, in `"brief"`, the text its scenes were asked for, in its
+author's words, as each scene keeps its own; neither app shows it.
+
 A scene can also offer a way back: `"back": "rue"` in its `scene.json` names an
 exit, linked like the others, taken by the back button, a return arrow in the
 bottom left corner of the frame, shown only where the game links it.
