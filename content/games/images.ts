@@ -10,6 +10,9 @@ import tristramSceneRueCielDevant from "./tristram/scenes/rue/ciel-devant.webp";
 import tristramSceneRueFeu from "./tristram/scenes/rue/feu.webp";
 import tristramSceneRueFond from "./tristram/scenes/rue/fond.webp";
 import tristramSceneRueLueur from "./tristram/scenes/rue/lueur.webp";
+import tristram2SceneCimetiereFond from "./tristram2/scenes/cimetiere/fond.webp";
+import tristram2ScenePlaceDuVillageFond from "./tristram2/scenes/place-du-village/fond.webp";
+import tristram2SceneRueFond from "./tristram2/scenes/rue/fond.webp";
 import tristram3SceneCimetiereFond from "./tristram3/scenes/cimetiere/fond.webp";
 import tristram3ScenePlaceDuVillageFond from "./tristram3/scenes/place-du-village/fond.webp";
 import tristram3SceneRueFond from "./tristram3/scenes/rue/fond.webp";
@@ -59,6 +62,26 @@ export const gameImages = {
       lanterne: tristramItemLanterne,
       pelle: tristramItemPelle,
     },
+  },
+  tristram2: {
+    scenes: {
+      cimetiere: {
+        background: tristram2SceneCimetiereFond,
+        characters: {},
+        effects: {},
+      },
+      "place-du-village": {
+        background: tristram2ScenePlaceDuVillageFond,
+        characters: {},
+        effects: {},
+      },
+      rue: {
+        background: tristram2SceneRueFond,
+        characters: {},
+        effects: {},
+      },
+    },
+    items: {},
   },
   tristram3: {
     scenes: {

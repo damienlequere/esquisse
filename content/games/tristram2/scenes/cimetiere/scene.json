@@ -1,0 +1,20 @@
+{
+  "brief": "le cimetière abandonné du village médiéval gothique et ténébreux, à la tombée du soir, devenu un parc retourné à l'état sauvage : hautes herbes et ronces sur des croix penchées et des tombes moussues, un if noir, des arbres morts, un mausolée couvert de mousse, une grille rouillée, brume basse, collines sombres à l'horizon ; aucune cathédrale visible",
+  "title": "Le Cimetière des Ronces",
+  "intro": "Tu pousses la grille rouillée qui grince, et le vieux cimetière du village t'avale dans sa brume basse : les croix penchent sous les ronces, les herbes montent jusqu'aux genoux et le soir tombe, violet et froid, derrière les collines.",
+  "imageRatio": "9:16",
+  "opening": false,
+  "safe": {
+    "x0": 0.09,
+    "y0": 0.14,
+    "x1": 0.91,
+    "y1": 0.86
+  },
+  "style": "Matte painting numérique de cinéma, réaliste et très détaillé, à la manière des décors peints d'un film gothique médiéval. Perspective et proportions justes, profondeur atmosphérique marquée par la brume. Les matières sont palpables : pierre calcaire rongée et fendue, mousse épaisse vert-de-gris, lichens jaunâtres, fer forgé écaillé de rouille, écorces mortes craquelées, herbes sèches et ronces épineuses, terre humide. Palette sombre et froide de bleus ardoise, gris-vert, violets éteints et noirs profonds, réchauffée seulement par une dernière lueur orangée et rose pâle à l'horizon. Lumière crépusculaire crédible, clair-obscur doux, silhouettes à contre-jour, brume laiteuse qui accroche la lumière restante. Atmosphère mélancolique, silencieuse, oubliée, ténébreuse sans être horrifique. Aucun texte, lettre, chiffre, signature ni logo ; pas de style cartoon, bande dessinée, anime ni caricature, pas de contours encrés ni d'aplats ; pas de photographie ni de rendu 3D lisse ; pas de cadre ni de bordure.",
+  "light": "Crépuscule froid : ciel bleu ardoise venant d'en haut, dernière lueur orange-rose basse à l'horizon derrière les collines, en contre-jour léger depuis le fond à gauche ; brume diffuse qui adoucit les ombres, longues ombres bleutées vers l'avant.",
+  "background": {
+    "prompt": "Format portrait 9:16, vue de face à hauteur d'homme sur un vieux cimetière médiéval abandonné, retourné à l'état sauvage, à la tombée du soir. Aucune personne, aucun animal, aucune église ni cathédrale visible. Le tiers inférieur de l'image est un sol dégagé : une ancienne allée de terre tassée et de dalles disjointes à moitié enfouies sous une herbe rase et couchée, humide de rosée, quelques feuilles mortes, une brume basse qui rampe au ras du sol, sans aucun objet. Au plan moyen, de part et d'autre de l'allée, de hautes herbes sèches et des ronces enchevêtrées envahissent des rangées de tombes moussues et de croix de pierre penchées, certaines brisées, leurs surfaces érodées couvertes de lichens. À gauche, un grand if noir et dense, au tronc tordu et cannelé, dont la masse sombre se découpe sur le ciel. À droite, un mausolée de pierre gothique trapu, toit à deux pans, porte de fer close et rouillée, façade entièrement mangée par la mousse et le lierre, pierres disjointes. Plus loin, une grille de fer forgé rouillée aux pointes de lance, affaissée par endroits, avec un portail entrouvert, court à travers la brume ; des arbres morts aux branches noires et griffues tendues vers le ciel la surplombent. Détails secondaires : un muret de pierre éboulé, une lanterne de pierre renversée, des couronnes de fer rouillées tombées dans l'herbe, des toiles d'araignée perlées de brume entre les croix, des racines soulevant les dalles. À l'horizon, des collines sombres et ondulées noyées de brume, sous un ciel crépusculaire bleu ardoise strié de nuages violets, avec une dernière bande de lumière orange-rose juste au-dessus des collines. Matte painting numérique de cinéma, réaliste et très détaillé."
+  },
+  "objects": [],
+  "characters": []
+}

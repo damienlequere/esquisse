@@ -1,0 +1,6 @@
+{
+  "brief": "je souhaite générer un nouveau jeu tristram2 dans un environement rappellant tristram dans diablo à la tombée du soir.\n\nPremière scène ('rue' en portrait) : une rue montante avec en fond une cathédrale.\nDeuxième scène ('place du village' en landscape) : cathédrale absente, une place ronde avec une fontaine au centre.\nTroisième scène ('parc/cimetière abandonné' en portrait): cathédrale abscente\n\nseule la première scène possède un écran titre",
+  "title": "Tristram 2",
+  "start": "rue",
+  "links": {}
+}
