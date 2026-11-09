@@ -31,6 +31,16 @@ import tristram2ScenePlaceDuVillageScene from "./tristram2/scenes/place-du-villa
 import tristram2SceneRueAspects from "./tristram2/scenes/rue/characters.json";
 import tristram2SceneRueObjects from "./tristram2/scenes/rue/objects.json";
 import tristram2SceneRueScene from "./tristram2/scenes/rue/scene.json";
+import tristram3Game from "./tristram3/game.json";
+import tristram3SceneCimetiereAspects from "./tristram3/scenes/cimetiere/characters.json";
+import tristram3SceneCimetiereObjects from "./tristram3/scenes/cimetiere/objects.json";
+import tristram3SceneCimetiereScene from "./tristram3/scenes/cimetiere/scene.json";
+import tristram3ScenePlaceDuVillageAspects from "./tristram3/scenes/place-du-village/characters.json";
+import tristram3ScenePlaceDuVillageObjects from "./tristram3/scenes/place-du-village/objects.json";
+import tristram3ScenePlaceDuVillageScene from "./tristram3/scenes/place-du-village/scene.json";
+import tristram3SceneRueAspects from "./tristram3/scenes/rue/characters.json";
+import tristram3SceneRueObjects from "./tristram3/scenes/rue/objects.json";
+import tristram3SceneRueScene from "./tristram3/scenes/rue/scene.json";
 
 // The games, by id: each one with all its scenes, by id, and its items.
 export const games = {
@@ -100,6 +110,27 @@ export const games = {
         scene: tristram2SceneRueScene,
         objects: tristram2SceneRueObjects,
         aspects: tristram2SceneRueAspects,
+      },
+    },
+    items: {},
+  },
+  tristram3: {
+    game: tristram3Game,
+    scenes: {
+      cimetiere: {
+        scene: tristram3SceneCimetiereScene,
+        objects: tristram3SceneCimetiereObjects,
+        aspects: tristram3SceneCimetiereAspects,
+      },
+      "place-du-village": {
+        scene: tristram3ScenePlaceDuVillageScene,
+        objects: tristram3ScenePlaceDuVillageObjects,
+        aspects: tristram3ScenePlaceDuVillageAspects,
+      },
+      rue: {
+        scene: tristram3SceneRueScene,
+        objects: tristram3SceneRueObjects,
+        aspects: tristram3SceneRueAspects,
       },
     },
     items: {},
