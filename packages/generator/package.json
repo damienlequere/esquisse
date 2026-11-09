@@ -4,7 +4,6 @@
   "type": "module",
   "scripts": {
     "generate-scene": "node --experimental-strip-types --disable-warning=ExperimentalWarning src/generate-scene.ts",
-    "generate-game": "node --experimental-strip-types --disable-warning=ExperimentalWarning src/generate-game.ts",
     "remove-scene": "node --experimental-strip-types --disable-warning=ExperimentalWarning src/remove-scene.ts",
     "remove-game": "node --experimental-strip-types --disable-warning=ExperimentalWarning src/remove-game.ts",
     "show-scene": "node --experimental-strip-types --disable-warning=ExperimentalWarning src/show-scene.ts",

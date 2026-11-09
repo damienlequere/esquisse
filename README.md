@@ -41,7 +41,6 @@ pnpm build           # production builds
 pnpm typecheck
 pnpm lint            # pnpm format to fix
 pnpm generate-scene <game> <id> portrait|landscape "brief"  # a new scene of a game, built step by step (see Generating a scene)
-pnpm generate-game <game> "brief"  # a whole game from a work of fiction: five backgrounds, without stopping (see A whole game)
 pnpm remove-scene <game> <id> # removes a scene, its texts and its images
 pnpm remove-game <game> # removes a game, all its scenes and its items
 pnpm show-scene <game> <id> # the scene's background with what is clickable outlined, in the image viewer
@@ -394,34 +393,6 @@ Each step calls the APIs, which are paid: one Claude request per writing or
 change (a dialogue's line, its rewriting or its change included) (more if the composition is sent back), one Gemini request per painting
 or retouch, and one per detection after an object or after details on a scene
 that has objects.
-
-### A whole game
-
-```bash
-pnpm generate-game <game> "<brief>"
-```
-
-```bash
-pnpm generate-game nautilus "Vingt mille lieues sous les mers, de Jules Verne"
-```
-
-The brief names an existing work of fiction. Claude picks the five key moments of
-its story and writes them, in order, with one style for all, then Gemini paints
-them one after the other, without any question: four in portrait, the last in
-landscape. It costs one Claude request and five Gemini ones.
-
-The scenes are backgrounds only, with no object and no character. The first one is
-what the game starts in, with the game's title and its intro as a title screen;
-the others have `opening: false`, their intros going to the logbook. As an exit is
-an object's action or a back button, they are not linked: `game.json` has no links,
-each scene is played alone at its URL (which the command lists), and `pnpm
-check-game` says so. Objects and exits are added with `pnpm generate-scene <game>
-<id>`, then linked in `game.json`.
-
-The texts are saved before the images, and each image as soon as it is painted.
-`pnpm generate-game <game>`, without a brief, paints the scenes that have no image
-yet: after a stop, or to paint one again, once its `fond.webp` is deleted. A game
-that exists is never written over.
 
 ### Removing a scene
 

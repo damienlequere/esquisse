@@ -18,7 +18,6 @@ import type {
 import { characterBox, isLandscape, sceneRatio } from "@esquisse/engine/layout";
 import { z } from "zod";
 import { CHARACTER_ASPECT, detailProblems, sceneProblems } from "./check-scene.ts";
-import { ID } from "./registry.ts";
 
 const TEXT_MODEL = "claude-opus-5-5";
 // The model writes, the script checks; after that many rounds, it gives up.
@@ -95,40 +94,12 @@ const element = z.object({
   ]),
 });
 
-// A game written at once: its key scenes, in the order of the story, which share
-// their style. Only backgrounds: no object, no character, no suggestion.
-const game = z.object({
-  title: z.string(),
-  style: z.string(),
-  scenes: z.array(
-    z.object({
-      id: z.string(),
-      title: z.string(),
-      intro: z.string(),
-      light: z.string(),
-      prompt: z.string(),
-    }),
-  ),
-});
-
 export type Base = z.infer<typeof base>;
-export type WrittenGame = z.infer<typeof game>;
 export type Element =
   | { kind: "object"; object: SceneObject }
   | { kind: "character"; character: Character };
 export type LineKind = "greeting" | "topic" | "farewell";
 export type Line = { text: string } | Topic;
-
-const ART_DIRECTION = `Les images sont du matte painting numérique de cinéma : des décors peints numériquement, réalistes et très détaillés, comme ceux d'un film, pas une illustration jeunesse ni une bande dessinée.
-
-- Les proportions, l'anatomie et la perspective sont justes ; les visages sont naturels, sans traits exagérés ni expressions de dessin animé.
-- La lumière est crédible : des sources précises, des ombres qui en découlent, un clair-obscur qui sert l'atmosphère.
-- Les matières se voient : bois, métal, pierre, tissu, verre, avec leur usure, leur patine, leur poussière.
-- Le lieu est riche en détails secondaires qui racontent son histoire, sans prendre le pas sur les éléments cliquables.
-- Le ton est sérieux. Une scène comique ou légère le reste dans ses textes et ses dialogues ; ses images gardent cette direction.`;
-
-const STYLE_LIMITS =
-  "Il finit toujours par les interdits : aucun texte, lettre, chiffre, signature ni logo ; pas de style cartoon, bande dessinée, anime ni caricature, pas de contours encrés ni d'aplats ; pas de photographie ni de rendu 3D lisse ; pas de cadre ni de bordure.";
 
 const system = (format: Format) =>
   `Tu crées des scènes cliquables pour Esquisse : une image peinte au format ${format.words}, où chaque objet du décor, cliquable, propose quelques actions qui affichent chacune un court texte, et où chaque personnage ouvre un dialogue. Les images sont générées par un modèle d'image à partir de tes descriptions, puis les objets sont repérés par un modèle de vision.
@@ -137,7 +108,13 @@ La scène se construit pas à pas, avec son auteur : d'abord le fond, qu'il vali
 
 ## La direction artistique
 
-${ART_DIRECTION}
+Les images sont du matte painting numérique de cinéma : des décors peints numériquement, réalistes et très détaillés, comme ceux d'un film, pas une illustration jeunesse ni une bande dessinée.
+
+- Les proportions, l'anatomie et la perspective sont justes ; les visages sont naturels, sans traits exagérés ni expressions de dessin animé.
+- La lumière est crédible : des sources précises, des ombres qui en découlent, un clair-obscur qui sert l'atmosphère.
+- Les matières se voient : bois, métal, pierre, tissu, verre, avec leur usure, leur patine, leur poussière.
+- Le lieu est riche en détails secondaires qui racontent son histoire, sans prendre le pas sur les éléments cliquables.
+- Le ton est sérieux. Une scène comique ou légère le reste dans ses textes et ses dialogues ; ses images gardent cette direction.
 
 ## Le fond
 
@@ -145,7 +122,7 @@ ${ART_DIRECTION}
 
 - title : le titre de la scène, court.
 - intro : 1 à 2 phrases, à la deuxième personne (« tu »), au présent, qui posent le lieu et l'ambiance quand le joueur arrive.
-- style : un paragraphe de direction artistique commun à toutes les images de la scène (matte painting numérique, rendu des matières, palette, lumière, atmosphère), qui suit la direction artistique ci-dessus. ${STYLE_LIMITS}
+- style : un paragraphe de direction artistique commun à toutes les images de la scène (matte painting numérique, rendu des matières, palette, lumière, atmosphère), qui suit la direction artistique ci-dessus. Il finit toujours par les interdits : aucun texte, lettre, chiffre, signature ni logo ; pas de style cartoon, bande dessinée, anime ni caricature, pas de contours encrés ni d'aplats ; pas de photographie ni de rendu 3D lisse ; pas de cadre ni de bordure.
 - light : la lumière de la scène en quelques mots (sources, couleur, direction), pour que les éléments ajoutés ensuite soient éclairés comme le décor.
 - background.prompt : le décor seul, vu de face à hauteur d'homme, vide de toute personne et de tout animal. Le sol occupe ${format.floor} et reste dégagé, pour recevoir ensuite des objets et des personnages. Il décrit le lieu en détail : ses matières, leur état, et les détails secondaires aux murs et au fond qui le font vivre. Les objets et les personnages que la demande cite n'y sont pas : ils seront ajoutés un à un.
 - suggestions : 3 à 5 ajouts possibles, objets ou personnages, en quelques mots chacun (« un feu de camp au premier plan »), dans l'esprit de la demande, en commençant par ceux qu'elle cite.
@@ -216,7 +193,7 @@ type Content = Message["content"];
 
 // One conversation with Claude, one structured answer per turn: what was
 // written stays in the conversation, for the changes asked next.
-const conversation = <T extends z.ZodType>(schema: T, apiKey: string, instructions: string) => {
+const conversation = <T extends z.ZodType>(schema: T, apiKey: string, format: Format) => {
   const client = new Anthropic({ apiKey });
   const messages: Message[] = [];
   return async (content: Content): Promise<z.infer<T>> => {
@@ -228,7 +205,7 @@ const conversation = <T extends z.ZodType>(schema: T, apiKey: string, instructio
       betas: ["server-side-fallback-2026-07-01"],
       fallbacks: "default",
       cache_control: { type: "ephemeral" },
-      system: instructions,
+      system: system(format),
       output_config: { effort: "high", format: betaZodOutputFormat(schema) },
       messages,
     });
@@ -250,7 +227,7 @@ const conversation = <T extends z.ZodType>(schema: T, apiKey: string, instructio
 };
 
 export const baseWriter = (apiKey: string, format: Format) => {
-  const ask = conversation(base, apiKey, system(format));
+  const ask = conversation(base, apiKey, format);
   return {
     write: (brief: string) => ask(`Écris le fond de la scène : ${brief}`),
     revise: (change: string) => ask(`Modifie le fond ainsi : ${change}`),
@@ -299,7 +276,7 @@ const image = (render: Buffer) =>
 // zone and sent back, then those the author kept, changed as asked. A detail
 // still out of the safe zone after the last round is dropped: it is never painted.
 export const detailWriter = (apiKey: string, data: SceneData, render: Buffer) => {
-  const ask = conversation(details, apiKey, system(formatOf(data.scene)));
+  const ask = conversation(details, apiKey, formatOf(data.scene));
   const checked = async (first: Content) => {
     let content = first;
     for (let attempt = 1; ; attempt++) {
@@ -329,7 +306,7 @@ export const detailWriter = (apiKey: string, data: SceneData, render: Buffer) =>
 // One conversation per element: written from the current render, its
 // composition checked and sent back, then changed as the author asks.
 export const elementWriter = (apiKey: string, data: SceneData, render: Buffer) => {
-  const ask = conversation(element, apiKey, system(formatOf(data.scene)));
+  const ask = conversation(element, apiKey, formatOf(data.scene));
   const checked = async (first: Content) => {
     let content = first;
     for (let attempt = 1; ; attempt++) {
@@ -373,7 +350,7 @@ const LINES = {
 // it is, with the lines already validated, then changed as the author asks.
 export const lineWriter = (apiKey: string, data: SceneData, c: Character, kind: LineKind) => {
   const { schema, what } = LINES[kind];
-  const ask = conversation(schema, apiKey, system(formatOf(data.scene))) as (
+  const ask = conversation(schema, apiKey, formatOf(data.scene)) as (
     content: Content,
   ) => Promise<Line>;
   return {
@@ -383,66 +360,4 @@ export const lineWriter = (apiKey: string, data: SceneData, c: Character, kind: 
       ),
     revise: (change: string) => ask(`Modifie la réplique ainsi : ${change}`),
   };
-};
-
-// ── A game at once ───────────────────────────────────────────────────────────
-
-export const GAME_SCENES = 5;
-
-// All in portrait but the last, the climax, which takes the width.
-export const gameSceneFormat = (index: number): Format =>
-  index === GAME_SCENES - 1 ? FORMATS.landscape : FORMATS.portrait;
-
-const gameSystem = () => {
-  const { portrait, landscape } = FORMATS;
-  return `Tu écris une courte aventure pour Esquisse à partir d'un univers de fiction existant, que la demande de l'auteur évoque (un roman, un film, un mythe). Elle tient en ${GAME_SCENES} scènes, chacune une seule image peinte, générée par un modèle d'image à partir de tes descriptions.
-
-## La direction artistique
-
-${ART_DIRECTION}
-
-## L'aventure
-
-Tu choisis les ${GAME_SCENES} moments clés de l'histoire originale, dans l'ordre du récit, ceux à quoi on la reconnaît : du départ au dénouement, en montant jusqu'à une dernière scène qui en est le sommet. Tu restes fidèle à ses lieux, à son époque et à ses événements, et ce que la demande fixe, tu le respectes. Tu écris avec tes propres mots, sans citer le texte de l'œuvre.
-
-Une scène n'est qu'un décor : aucun objet à cliquer, aucun personnage à qui parler, aucune personne dans l'image. L'histoire se lit dans le lieu : ce qu'il montre, les traces de ce qui s'y est passé, et ce qui en fait partie à l'échelle du décor (un navire au loin, une créature démesurée, si l'histoire l'exige).
-
-## Ce que tu écris
-
-- title : le titre de l'aventure, court, celui de son écran titre.
-- style : un paragraphe de direction artistique commun à toutes les images de l'aventure (matte painting numérique, rendu des matières, palette, atmosphère), pour qu'elles forment une même œuvre, qui suit la direction artistique ci-dessus. ${STYLE_LIMITS}
-- scenes : exactement ${GAME_SCENES} scènes, dans l'ordre du récit, chacune avec :
-  - id : son nom dans l'URL, kebab-case, a-z, 0-9 et tirets, commençant par une lettre (« salon-du-nautilus »), distinct des autres.
-  - title : son titre, court.
-  - intro : 1 à 2 phrases, à la deuxième personne (« tu »), au présent, qui posent le moment de l'histoire. Celle de la première scène, sur l'écran titre, ouvre l'aventure.
-  - light : sa lumière en quelques mots (sources, couleur, direction).
-  - prompt : le décor seul, vu de face à hauteur d'homme, sans personne, décrit en détail et seulement en images : ses matières, leur état, les détails secondaires. Le modèle d'image ne connaît pas l'histoire : tu ne nommes ni l'œuvre ni ses personnages, tu décris ce qui se voit.
-
-## Le cadrage
-
-Les ${GAME_SCENES - 1} premières scènes sont au format ${portrait.words}, la dernière au format ${landscape.words} : chaque prompt compose pour son format. Les bords de l'image sont coupés sur certains écrans : ce qui compte tient dans la zone sûre, en fractions de l'image, ${JSON.stringify(portrait.safe)} en portrait et ${JSON.stringify(landscape.safe)} en paysage.
-
-Tout est en français, sauf si la demande dit une autre langue.`;
-};
-
-// What is wrong with what was written, for it to be sent back.
-const gameProblems = ({ scenes }: WrittenGame) => [
-  ...(scenes.length === GAME_SCENES ? [] : [`${scenes.length} scènes au lieu de ${GAME_SCENES}`]),
-  ...scenes.filter((s) => !ID.test(s.id)).map((s) => `L'id « ${s.id} » n'est pas en kebab-case`),
-  ...scenes
-    .filter((s, i) => scenes.findIndex((o) => o.id === s.id) !== i)
-    .map((s) => `L'id « ${s.id} » est déjà pris`),
-];
-
-export const writeGame = async (apiKey: string, brief: string) => {
-  const ask = conversation(game, apiKey, gameSystem());
-  let content: Content = `Écris l'aventure : ${brief}`;
-  for (let attempt = 1; ; attempt++) {
-    const written = await ask(content);
-    const problems = gameProblems(written);
-    if (problems.length === 0) return written;
-    if (attempt === ATTEMPTS) throw new Error(`Claude: ${problems.join("; ")}`);
-    console.log(`⚠ ${problems.length} problem(s), sent back to fix:\n  ${problems.join("\n  ")}`);
-    content = `L'aventure ne tient pas :\n- ${problems.join("\n- ")}\nCorrige-la et renvoie-la en entier.`;
-  }
 };

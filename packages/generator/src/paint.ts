@@ -30,10 +30,6 @@ const paint = (key: string, aspectRatio: string, prompt: string, references: Buf
     imageSize: "2K",
   });
 
-// The size the apps get the background at, and its animations' images but the
-// painted sky: 1440 × 2560 or 2560 × 1440.
-export const appSize = (scene: Scene) => (isLandscape(scene) ? { width: 2560 } : { width: 1440 });
-
 export const paintBackground = (key: string, scene: Scene) =>
   paint(
     key,
