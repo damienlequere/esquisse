@@ -1,8 +1,5 @@
 // Written by packages/generator/src/generate-scene.ts: do not edit by hand.
 
-import cthulhuSceneDepartFond from "./cthulhu/scenes/depart/fond.webp";
-import montagnesScenePlateauFond from "./montagnes/scenes/plateau/fond.webp";
-import terreDuMilieuSceneMaraisDesMortsFond from "./terre-du-milieu/scenes/marais-des-morts/fond.webp";
 import tristramItemCouteau from "./tristram/items/couteau.webp";
 import tristramItemLanterne from "./tristram/items/lanterne.webp";
 import tristramItemPelle from "./tristram/items/pelle.webp";
@@ -13,8 +10,6 @@ import tristramSceneRueCielDevant from "./tristram/scenes/rue/ciel-devant.webp";
 import tristramSceneRueFeu from "./tristram/scenes/rue/feu.webp";
 import tristramSceneRueFond from "./tristram/scenes/rue/fond.webp";
 import tristramSceneRueLueur from "./tristram/scenes/rue/lueur.webp";
-import tristram2ScenePlaceDuVillageFond from "./tristram2/scenes/place-du-village/fond.webp";
-import tristram2SceneRueFond from "./tristram2/scenes/rue/fond.webp";
 import tristram3SceneCimetiereFond from "./tristram3/scenes/cimetiere/fond.webp";
 import tristram3ScenePlaceDuVillageFond from "./tristram3/scenes/place-du-village/fond.webp";
 import tristram3SceneRueFond from "./tristram3/scenes/rue/fond.webp";
@@ -36,36 +31,6 @@ export type GameImages<Image> = {
 };
 
 export const gameImages = {
-  cthulhu: {
-    scenes: {
-      depart: {
-        background: cthulhuSceneDepartFond,
-        characters: {},
-        effects: {},
-      },
-    },
-    items: {},
-  },
-  montagnes: {
-    scenes: {
-      plateau: {
-        background: montagnesScenePlateauFond,
-        characters: {},
-        effects: {},
-      },
-    },
-    items: {},
-  },
-  "terre-du-milieu": {
-    scenes: {
-      "marais-des-morts": {
-        background: terreDuMilieuSceneMaraisDesMortsFond,
-        characters: {},
-        effects: {},
-      },
-    },
-    items: {},
-  },
   tristram: {
     scenes: {
       auberge: {
@@ -94,21 +59,6 @@ export const gameImages = {
       lanterne: tristramItemLanterne,
       pelle: tristramItemPelle,
     },
-  },
-  tristram2: {
-    scenes: {
-      "place-du-village": {
-        background: tristram2ScenePlaceDuVillageFond,
-        characters: {},
-        effects: {},
-      },
-      rue: {
-        background: tristram2SceneRueFond,
-        characters: {},
-        effects: {},
-      },
-    },
-    items: {},
   },
   tristram3: {
     scenes: {
