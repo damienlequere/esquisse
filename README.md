@@ -341,6 +341,15 @@ written in `scene.json` (and the objects' boxes in `objects.json`) by hand.
 `pnpm show-scene` shows where they fall on the background.
 
 Running it again on an existing scene asks, then deletes it and starts over.
+Its new brief, title, intro, style, light and background are in its
+`scene.json`; the game's `"generation"` keeps the first ones.
+
+In a game made by `pnpm generate-game` (its `game.json` keeps its brief, and its
+`"generation"` one style for all its scenes), the scene is written within the
+game, as there: Claude reads the game's brief and the style is the game's, kept
+as it is. A scene painted again keeps whether it has an opening (`"opening":
+false` in its `scene.json`), and a scene of the plan not made yet takes the
+plan's.
 
 Each painting calls the APIs, which are paid: one Claude request per writing
 or change, one Gemini request per painting.

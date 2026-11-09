@@ -14,14 +14,21 @@
 // the image viewer. The objects, the characters and the animations are not made
 // here: they are written in scene.json by hand.
 //
+// A scene of a game made by pnpm generate-game keeps the game's style: when its
+// game.json keeps its brief and its "generation" gives all its painted scenes
+// one style, Claude writes within the game and that style is kept as it is. A
+// scene painted again keeps whether it has an opening, from its scene.json, or
+// from the game's plan for a scene not made yet.
+//
 // What is validated is saved at once: the scene and the converted background in
 // content/games/<game>/scenes/<id>, the original in its sources/, and the scene
 // listed for both apps (see registry.ts). Needs ANTHROPIC_API_KEY (to write) and
 // GEMINI_API_KEY (for the image), in packages/generator/.env.local or .env (see
 // env.ts).
 
-import { existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import type { Game, Scene } from "@esquisse/engine";
 import { apiKey } from "./env.ts";
 import { format, gameDir, ID, sceneDir } from "./registry.ts";
 import { json, paintScene, session } from "./session.ts";
@@ -51,7 +58,27 @@ const geminiKey = apiKey("GEMINI_API_KEY");
 const author = session();
 const { choose } = author;
 
-if (existsSync(SCENE)) {
+const read = <T>(path: string): T | undefined =>
+  existsSync(path) ? (JSON.parse(readFileSync(path, "utf8")) as T) : undefined;
+const gameJson = read<Game>(GAME);
+const previous = read<Scene>(SCENE);
+
+// The game's style: one for all the scenes generate-game painted.
+const styles = new Set(
+  (gameJson?.generation?.scenes ?? []).flatMap((s) => (s.style === undefined ? [] : [s.style])),
+);
+const [style] = styles;
+const context =
+  gameJson?.brief !== undefined && styles.size === 1 && style !== undefined
+    ? { brief: gameJson.brief, style }
+    : undefined;
+// false: no opening, as the scene had, or as the game's plan has it.
+const opening =
+  previous !== undefined
+    ? previous.opening
+    : gameJson?.generation?.scenes.find((s) => s.id === id)?.opening;
+
+if (previous !== undefined) {
   const answer = await choose(`The scene "${id}" exists: start it over, losing it?`, {
     o: "oui",
     n: "non",
@@ -67,7 +94,9 @@ if (!existsSync(GAME)) {
   console.log(`New game "${game}", starting in "${id}": its title is in ${GAME}`);
 }
 
-const writer = baseWriter(anthropicKey, FORMAT);
+if (context !== undefined) console.log(`Within the game "${game}": its brief and its style`);
+if (opening === false) console.log(`"${id}" has no opening`);
+const writer = baseWriter(anthropicKey, FORMAT, context);
 const painted = await paintScene({
   session: author,
   geminiKey,
@@ -76,6 +105,7 @@ const painted = await paintScene({
   format: FORMAT,
   brief,
   writer,
+  opening,
 });
 if (painted === undefined) process.exit(0);
 author.close();
