@@ -1,0 +1,20 @@
+{
+  "brief": "La place ronde d'un bourg médiéval abandonné à la tombée du soir, sol de pavés inégaux envahis d'herbes et de boue, cernée de maisons à colombages affaissées, d'un puits couvert, d'une charrette renversée et d'étals de marché vides et brisés ; au centre, une fontaine de pierre moussue au bassin croupi, dont l'eau stagnante reflète un ciel bas et sanglant. Pas de cathédrale visible, seulement des toits sombres et la brume qui monte des ruelles ; ambiance oppressante, sans aucun personnage.",
+  "title": "La place du bourg",
+  "intro": "Tu débouches sur la place ronde du bourg, déserte, où le soir tombe comme un couvercle. Les maisons affaissées se penchent vers toi, et la brume monte des ruelles sans qu'aucun bruit ne vienne la troubler.",
+  "imageRatio": "16:9",
+  "opening": false,
+  "safe": {
+    "x0": 0.14,
+    "y0": 0.14,
+    "x1": 0.86,
+    "y1": 0.86
+  },
+  "style": "Matte painting numérique de cinéma, réaliste et très détaillé, dans l'esprit d'un bourg médiéval maudit à la tombée du soir. Architecture de colombages affaissés, pierre grise rongée de lichen, bois pourrissant, fer rouillé, toits de chaume et de bardeaux détrempés ; chaque matière porte son usure, sa boue, sa poussière. Palette étouffée de bruns terreux, de gris ardoise et de verts éteints, relevée par les derniers rouges sanglants d'un couchant voilé et par les lueurs orangées de rares torches ou lanternes. Lumière crédible et rasante, ombres longues et profondes, brume basse qui noie les sols, ciel chargé de nuages lourds. Atmosphère sombre, oppressante, silencieuse, celle d'un lieu abandonné où quelque chose rôde ; proportions, perspective et anatomie justes, rendu pictural aux textures visibles. Aucun texte, lettre, chiffre, signature ni logo ; pas de style cartoon, bande dessinée, anime ni caricature, pas de contours encrés ni d'aplats ; pas de photographie ni de rendu 3D lisse ; pas de cadre ni de bordure.",
+  "light": "Couchant voilé, rouge sanglant et bas, venant de la gauche derrière les toits ; lumière rasante et froide, ombres longues projetées vers la droite ; faible lueur orangée d'une lanterne à une fenêtre au fond ; brume basse grise qui adoucit le bas des murs.",
+  "background": {
+    "prompt": "Place ronde d'un bourg médiéval abandonné à la tombée du soir, vue de face à hauteur d'homme, entièrement vide, sans personne ni animal. La moitié inférieure de l'image est un sol dégagé de pavés inégaux, gris et bruns, luisants d'humidité, disjoints et soulevés par endroits, envahis d'herbes jaunies, de touffes de mousse et de flaques de boue noire qui reflètent faiblement le ciel rouge ; une brume basse et grise rampe au ras des pierres et s'épaissit vers les bords. Au fond, la place est cernée d'un arc continu de maisons à colombages affaissées : poutres de chêne noircies et gauchies, torchis fissuré et lépreux aux teintes ocre sale, étages en encorbellement qui se penchent dangereusement au-dessus de la place, volets de bois pendants ou arrachés, fenêtres à petits carreaux sombres dont certains sont brisés, une seule lueur orangée vacillante derrière un carreau terne au fond à droite. Toits de chaume détrempé et de bardeaux moussus, affaissés en leur milieu, cheminées de pierre éteintes et fendues ; une enseigne de fer forgé rouillée pend de travers sans aucune inscription. Entre les maisons, deux ruelles étroites s'enfoncent dans l'obscurité, d'où monte une brume laiteuse. Au-dessus des toits sombres, aucune cathédrale, seulement un ciel bas et lourd, strié de nuages gris ardoise et illuminé par les derniers rouges sanglants d'un couchant voilé venant de la gauche, qui jette une lumière rasante et des ombres longues sur les façades. Détails secondaires : rigole de pierre bouchée longeant les maisons, tas de feuilles mortes pourrissantes contre un seuil, anneau de fer scellé dans un mur, porte entrouverte sur le noir, mousse et lichen sur les soubassements de pierre grise. Atmosphère silencieuse et oppressante de lieu déserté. Matte painting numérique réaliste, textures picturales visibles."
+  },
+  "objects": [],
+  "characters": []
+}

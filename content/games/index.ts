@@ -32,6 +32,16 @@ import tristram3ScenePlaceDuVillageScene from "./tristram3/scenes/place-du-villa
 import tristram3SceneRueAspects from "./tristram3/scenes/rue/characters.json";
 import tristram3SceneRueObjects from "./tristram3/scenes/rue/objects.json";
 import tristram3SceneRueScene from "./tristram3/scenes/rue/scene.json";
+import tristram4Game from "./tristram4/game.json";
+import tristram4SceneParcCimetiereAbandonneAspects from "./tristram4/scenes/parc-cimetiere-abandonne/characters.json";
+import tristram4SceneParcCimetiereAbandonneObjects from "./tristram4/scenes/parc-cimetiere-abandonne/objects.json";
+import tristram4SceneParcCimetiereAbandonneScene from "./tristram4/scenes/parc-cimetiere-abandonne/scene.json";
+import tristram4ScenePlaceDuVillageAspects from "./tristram4/scenes/place-du-village/characters.json";
+import tristram4ScenePlaceDuVillageObjects from "./tristram4/scenes/place-du-village/objects.json";
+import tristram4ScenePlaceDuVillageScene from "./tristram4/scenes/place-du-village/scene.json";
+import tristram4SceneRueAspects from "./tristram4/scenes/rue/characters.json";
+import tristram4SceneRueObjects from "./tristram4/scenes/rue/objects.json";
+import tristram4SceneRueScene from "./tristram4/scenes/rue/scene.json";
 
 // The games, by id: each one with all its scenes, by id, and its items.
 export const games = {
@@ -94,6 +104,27 @@ export const games = {
         scene: tristram3SceneRueScene,
         objects: tristram3SceneRueObjects,
         aspects: tristram3SceneRueAspects,
+      },
+    },
+    items: {},
+  },
+  tristram4: {
+    game: tristram4Game,
+    scenes: {
+      "parc-cimetiere-abandonne": {
+        scene: tristram4SceneParcCimetiereAbandonneScene,
+        objects: tristram4SceneParcCimetiereAbandonneObjects,
+        aspects: tristram4SceneParcCimetiereAbandonneAspects,
+      },
+      "place-du-village": {
+        scene: tristram4ScenePlaceDuVillageScene,
+        objects: tristram4ScenePlaceDuVillageObjects,
+        aspects: tristram4ScenePlaceDuVillageAspects,
+      },
+      rue: {
+        scene: tristram4SceneRueScene,
+        objects: tristram4SceneRueObjects,
+        aspects: tristram4SceneRueAspects,
       },
     },
     items: {},

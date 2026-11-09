@@ -16,6 +16,9 @@ import tristram2SceneRueFond from "./tristram2/scenes/rue/fond.webp";
 import tristram3SceneCimetiereFond from "./tristram3/scenes/cimetiere/fond.webp";
 import tristram3ScenePlaceDuVillageFond from "./tristram3/scenes/place-du-village/fond.webp";
 import tristram3SceneRueFond from "./tristram3/scenes/rue/fond.webp";
+import tristram4SceneParcCimetiereAbandonneFond from "./tristram4/scenes/parc-cimetiere-abandonne/fond.webp";
+import tristram4ScenePlaceDuVillageFond from "./tristram4/scenes/place-du-village/fond.webp";
+import tristram4SceneRueFond from "./tristram4/scenes/rue/fond.webp";
 
 // The games' images, for both apps: each scene's background, its characters'
 // layers, and the images of its background's animations, by effect (see
@@ -97,6 +100,26 @@ export const gameImages = {
       },
       rue: {
         background: tristram3SceneRueFond,
+        characters: {},
+        effects: {},
+      },
+    },
+    items: {},
+  },
+  tristram4: {
+    scenes: {
+      "parc-cimetiere-abandonne": {
+        background: tristram4SceneParcCimetiereAbandonneFond,
+        characters: {},
+        effects: {},
+      },
+      "place-du-village": {
+        background: tristram4ScenePlaceDuVillageFond,
+        characters: {},
+        effects: {},
+      },
+      rue: {
+        background: tristram4SceneRueFond,
         characters: {},
         effects: {},
       },
