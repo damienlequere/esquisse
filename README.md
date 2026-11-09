@@ -178,8 +178,8 @@ bottom left corner of the frame, shown only where the game links it.
 An exit the game does not link, as every exit of a scene played alone at
 `/game/<game>/scene/<id>`, stays closed: the action does what it would without
 `exit` (its text, or a search). A game is played at `/game/<game>` on the web
-site, and from the home screen in both apps, which lists the games only (a
-scene alone has no link there). It is listed once its first scene is.
+site, and from the home screen in both apps, which lists each game, then each of
+its scenes, to play alone. It is listed once its first scene is.
 
 What the player keeps from scene to scene is the game's (`GameProgress` in
 `play.ts`): the inventory, the logbook (each scene's intro, on its first
