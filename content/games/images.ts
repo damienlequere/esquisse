@@ -13,15 +13,6 @@ import tristramSceneRueLueur from "./tristram/scenes/rue/lueur.webp";
 import tristram2SceneCimetiereFond from "./tristram2/scenes/cimetiere/fond.webp";
 import tristram2ScenePlaceDuVillageFond from "./tristram2/scenes/place-du-village/fond.webp";
 import tristram2SceneRueFond from "./tristram2/scenes/rue/fond.webp";
-import tristram3SceneCimetiereFond from "./tristram3/scenes/cimetiere/fond.webp";
-import tristram3ScenePlaceDuVillageFond from "./tristram3/scenes/place-du-village/fond.webp";
-import tristram3SceneRueFond from "./tristram3/scenes/rue/fond.webp";
-import tristram4SceneParcCimetiereAbandonneFond from "./tristram4/scenes/parc-cimetiere-abandonne/fond.webp";
-import tristram4ScenePlaceDuVillageFond from "./tristram4/scenes/place-du-village/fond.webp";
-import tristram4SceneRueFond from "./tristram4/scenes/rue/fond.webp";
-import tristram5SceneParcCimetiereAbandonneFond from "./tristram5/scenes/parc-cimetiere-abandonne/fond.webp";
-import tristram5ScenePlaceDuVillageFond from "./tristram5/scenes/place-du-village/fond.webp";
-import tristram5SceneRueFond from "./tristram5/scenes/rue/fond.webp";
 
 // The games' images, for both apps: each scene's background, its characters'
 // layers, and the images of its background's animations, by effect (see
@@ -83,66 +74,6 @@ export const gameImages = {
       },
       rue: {
         background: tristram2SceneRueFond,
-        characters: {},
-        effects: {},
-      },
-    },
-    items: {},
-  },
-  tristram3: {
-    scenes: {
-      cimetiere: {
-        background: tristram3SceneCimetiereFond,
-        characters: {},
-        effects: {},
-      },
-      "place-du-village": {
-        background: tristram3ScenePlaceDuVillageFond,
-        characters: {},
-        effects: {},
-      },
-      rue: {
-        background: tristram3SceneRueFond,
-        characters: {},
-        effects: {},
-      },
-    },
-    items: {},
-  },
-  tristram4: {
-    scenes: {
-      "parc-cimetiere-abandonne": {
-        background: tristram4SceneParcCimetiereAbandonneFond,
-        characters: {},
-        effects: {},
-      },
-      "place-du-village": {
-        background: tristram4ScenePlaceDuVillageFond,
-        characters: {},
-        effects: {},
-      },
-      rue: {
-        background: tristram4SceneRueFond,
-        characters: {},
-        effects: {},
-      },
-    },
-    items: {},
-  },
-  tristram5: {
-    scenes: {
-      "parc-cimetiere-abandonne": {
-        background: tristram5SceneParcCimetiereAbandonneFond,
-        characters: {},
-        effects: {},
-      },
-      "place-du-village": {
-        background: tristram5ScenePlaceDuVillageFond,
-        characters: {},
-        effects: {},
-      },
-      rue: {
-        background: tristram5SceneRueFond,
         characters: {},
         effects: {},
       },
