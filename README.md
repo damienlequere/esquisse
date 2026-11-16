@@ -119,8 +119,10 @@ plays on a scene's first visit only. A scene with `"opening": false` in its
 `scene.json` has none: it shows at once, its intro going only to the logbook.
 
 - **The background is written by Claude** (Opus 5.5) from a brief: the title,
-  the intro, the style, the light and the decor, painted by Gemini. The objects,
-  the characters, their texts and dialogues are written by hand.
+  the intro, the style, the light and the decor, painted by Gemini. In a game
+  made by `pnpm generate-game`, its exits are objects found in it by
+  `pnpm link-game`, and its night is painted by `pnpm generate-night`. The other
+  objects, the characters, their texts and dialogues are written by hand.
 - **The image is portrait (9:16) or landscape (16:9)**, chosen per scene
   (`imageRatio` in `scene.json`), in `cover`. In portrait, a phone crops its
   sides (9% each), a tablet its top and bottom (12.5% each), and the text is a
@@ -152,7 +154,7 @@ plays on a scene's first visit only. A scene with `"opening": false` in its
 | `content/games/index.ts` | The games, with their scenes and items, for both apps (generated) |
 | `content/games/images.ts` | The games' images, for both apps (generated): Next and Metro each need every import spelled out, and each makes it what it shows |
 | `apps/web/components/Scene.tsx`, `apps/mobile/src/components/Scene.tsx` | The scene, in each app |
-| `content/games/<game>/game.json` | A game: its first scene, and its scenes' links (written by hand) |
+| `content/games/<game>/game.json` | A game: its first scene, and its scenes' links (written by `pnpm generate-game` and `pnpm link-game`, or by hand) |
 | `packages/engine/src/scenes/play.ts` | How a game is played (`playGame`), the same in both apps |
 | `apps/web/components/Game.tsx`, `apps/mobile/src/components/Game.tsx` | A game, from scene to scene, in each app; a scene alone is a game of its own |
 
@@ -221,6 +223,7 @@ $ pnpm check-game
 | `packages/generator/src/generate-scene.ts` | The background, written, painted, validated, saved and listed for both apps |
 | `packages/generator/src/generate-game.ts` | A new game: its plan, then each of its scenes as generate-scene makes one, kept in its `game.json` |
 | `packages/generator/src/link-game.ts` | A game linked from its plan: each exit's threshold found in its scene, made an object, and the game's links |
+| `packages/generator/src/generate-night.ts` | Each scene's night, its background painted again, listed for both apps |
 | `packages/generator/src/write-game.ts`, `session.ts` | The game's plan with Claude; what both commands share (the questions, a background painted until validated, saved) |
 | `packages/generator/src/write-scene.ts`, `paint.ts`, `registry.ts` | The writing with Claude, the image with Gemini and the renders, the generated lists |
 
@@ -246,6 +249,51 @@ cp packages/generator/.env.example packages/generator/.env.local
 `.env.local`, which wins over `.env`. Both files are ignored by git; never put
 keys in `.env.example`, which is committed. The scripts are TypeScript, run by
 Node as they are (`--experimental-strip-types`, from Node 22.6).
+
+### Making a game, step by step
+
+A playable game, from one brief, in three commands, each run once the one
+before it is done:
+
+```bash
+pnpm generate-game tristram6 "<brief>"  # 1. the plan, then each scene's background
+pnpm link-game tristram6                # 2. the exits found in each scene, the scenes linked
+pnpm generate-night tristram6           # 3. each scene's night, for the ring menu's wait item
+```
+
+1. **The plan and the backgrounds** (`pnpm generate-game`, see A new game). The
+   game must not exist yet (`pnpm remove-game` first). The brief fixes what
+   matters to you; Claude invents the rest. For the map to be yours, say how
+   many scenes, their ids and orientations, which one opens on its title, how
+   they follow one another and through which thresholds (a door, a gate, a
+   stair), and what is seen from afar:
+
+   ```bash
+   pnpm generate-game tristram6 "un village médiéval gothique et maudit à la tombée du soir : brume, maisons à colombages noircies, une cathédrale sombre qui domine tout. Quatre scènes : 'rue' en portrait, une rue boueuse qui monte vers la cathédrale, avec à gauche la porte de l'auberge et au fond le passage vers la place ; 'auberge' en paysage, la salle commune vue depuis sa porte ; 'place' en paysage, la place du village autour d'un puits, avec la grille du cimetière ; 'cimetiere' en portrait, derrière la grille. Seule la première scène a une ouverture."
+   ```
+
+   Read the plan before validating it: each scene's viewpoint, its landmarks,
+   each exit (`→`), its threshold and its cell in the image. A threshold may
+   still be painted against the image's edge, outside the safe zone, where a
+   phone crops it: ask (`m`) for it at the center rather than at an edge if it
+   matters. Then validate each background on its render (`v`), or have it
+   painted again (`r`), or describe a change (`m`).
+
+2. **The exits** (`pnpm link-game`, see Linking a game). Each exit's threshold
+   is found in its scene and its box drawn on the render, with the share of it
+   outside the safe zone: validate the scene (`v`), or have it detected again
+   (`r`). The game's links are then written, and the game checked: it is
+   playable at `/game/tristram6` (`pnpm dev`).
+
+3. **The night** (`pnpm generate-night`, see A game's night). Each scene's
+   night is drawn with the exits' boxes over it: they must still frame their
+   thresholds. Validate it (`v`), or have it painted again (`r`) if something
+   appeared or moved.
+
+A scene painted again later (`pnpm generate-scene`) loses its exits and its
+night: run `pnpm link-game <game>` and `pnpm generate-night <game>` again, which
+only make what is missing. Then commit the game's folder with the lists (see
+Committing).
 
 ### A new game
 
@@ -290,7 +338,7 @@ scenes nor links of the game, which `pnpm link-game` makes (see Linking a
 game).
 
 ```text
-$ pnpm generate-game tristram4 "un village rappelant Tristram à la tombée du soir…"
+$ pnpm generate-game tristram6 "un village médiéval gothique et maudit à la tombée du soir…"
 Writing with claude-opus-5-5…
 
 Tristram
@@ -308,7 +356,7 @@ Monde : un village sur une butte, le soleil couchant à l'ouest…
    → rue « Descendre » par l'entrée de la rue (à gauche, en bas) [retour]
 Le plan :  [v] valider  [m] modifier  [q] quitter
 > v
-New game "tristram4", starting in "rue": content/games/tristram4/game.json
+New game "tristram6", starting in "rue": content/games/tristram6/game.json
 
 ── 1/2 : rue (portrait)
 …
@@ -348,14 +396,14 @@ again after painting a scene again, or after passing one. One Claude request per
 exit found.
 
 ```text
-$ pnpm link-game valrouge
+$ pnpm link-game tristram6
 ── rue
   Finding « auberge » → auberge: la porte basse de l'auberge…
     La porte de l'auberge: {"x0":0.224,"y0":0.573,"x1":0.425,"y1":0.848}
 Les sorties :  [v] valider  [r] redétecter  [p] passer  [q] quitter
 > v
 …
-✓ valrouge
+✓ tristram6
 ```
 
 ### A game's night
@@ -469,7 +517,10 @@ games for both apps.
 
 Commit the scene's folder (`content/games/<game>/scenes/<id>/`), and its game's
 `game.json` when it is new, with the three lists, which are written by the
-generator and never edited by hand.
+generator and never edited by hand. For a game made step by step, commit its
+whole folder (`content/games/<game>/`): its `game.json` with its plan and its
+links, each scene with its exits (`scene.json`, `objects.json`) and its night
+(`nuit.webp`, `sources/nuit.jpg`), with the lists.
 
 ## The device frame (web)
 
