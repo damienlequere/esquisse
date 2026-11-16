@@ -17,9 +17,13 @@ import tristramSceneRueFeu from "./tristram/scenes/rue/feu.webp";
 import tristramSceneRueFond from "./tristram/scenes/rue/fond.webp";
 import tristramSceneRueLueur from "./tristram/scenes/rue/lueur.webp";
 import tristram2SceneAubergeFond from "./tristram2/scenes/auberge/fond.webp";
+import tristram2SceneAubergeNuit from "./tristram2/scenes/auberge/nuit.webp";
 import tristram2SceneCimetiereFond from "./tristram2/scenes/cimetiere/fond.webp";
+import tristram2SceneCimetiereNuit from "./tristram2/scenes/cimetiere/nuit.webp";
 import tristram2ScenePlaceFond from "./tristram2/scenes/place/fond.webp";
+import tristram2ScenePlaceNuit from "./tristram2/scenes/place/nuit.webp";
 import tristram2SceneRueFond from "./tristram2/scenes/rue/fond.webp";
+import tristram2SceneRueNuit from "./tristram2/scenes/rue/nuit.webp";
 
 // The games' images, for both apps: each scene's background, its night if it
 // has one, its characters' layers, and the images of its background's
@@ -95,21 +99,25 @@ export const gameImages = {
     scenes: {
       auberge: {
         background: tristram2SceneAubergeFond,
+        night: tristram2SceneAubergeNuit,
         characters: {},
         effects: {},
       },
       cimetiere: {
         background: tristram2SceneCimetiereFond,
+        night: tristram2SceneCimetiereNuit,
         characters: {},
         effects: {},
       },
       place: {
         background: tristram2ScenePlaceFond,
+        night: tristram2ScenePlaceNuit,
         characters: {},
         effects: {},
       },
       rue: {
         background: tristram2SceneRueFond,
+        night: tristram2SceneRueNuit,
         characters: {},
         effects: {},
       },
