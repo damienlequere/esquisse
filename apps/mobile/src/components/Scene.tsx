@@ -13,7 +13,9 @@ import {
   INVENTORY_COLUMNS,
   INVENTORY_SLOTS,
   type Items,
+  isNight,
   itemName,
+  NIGHT_FADE,
   type ObjectAction,
   objectActions,
   objectMenuPlace,
@@ -25,6 +27,7 @@ import {
   type SceneObject,
   sceneLayout,
   sceneText,
+  WAIT_ICONS,
 } from "@esquisse/engine";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -47,6 +50,7 @@ import Animated, {
   FadeInDown,
   FadeOut,
   useAnimatedStyle,
+  useReducedMotion,
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
@@ -157,6 +161,8 @@ export const Scene = ({
   };
 
   const { conversation, inventory, flags, searching, toast, logbook } = state;
+  // Whether it shows its night (see isNight).
+  const night = isNight(data, state);
 
   // Leaving the scene, from the general menu, for the home screen.
   const router = useRouter();
@@ -241,7 +247,9 @@ export const Scene = ({
           }}
         >
           <Image source={images.background} style={{ width: "100%", height: "100%" }} />
-          {scene.effects && Platform.OS !== "web" && (
+          {images.night && <NightImage source={images.night} shown={night} />}
+          {/* The animations are the day's: none at night. */}
+          {scene.effects && !night && Platform.OS !== "web" && (
             <Effects
               effects={scene.effects}
               background={images.background}
@@ -317,10 +325,25 @@ export const Scene = ({
       {/* The back button, in the bottom left corner, where the scene has a
           way back. */}
       {onBack && screen && (
-        <BackButton
+        <CornerButton
           size={ringSizes(screen.width, screen.height).size}
+          label={sceneText.back}
+          icon={BACK_ARROW}
           onPress={onBack}
           style={{ left: Math.max(16, insets.left), bottom: Math.max(16, insets.bottom) }}
+        />
+      )}
+
+      {/* The wait button, in the top right corner, where the scene has its
+          night: a moon by day, a sun by night. Not in a conversation, whose
+          panel is on the right in landscape (the web's has the same). */}
+      {images.night && scene.night && !inConversation && screen && (
+        <CornerButton
+          size={ringSizes(screen.width, screen.height).size}
+          label={sceneText.wait}
+          icon={night ? WAIT_ICONS.sun : WAIT_ICONS.moon}
+          onPress={() => dispatch({ type: "wait" })}
+          style={{ right: Math.max(16, insets.right), top: Math.max(16, insets.top) }}
         />
       )}
 
@@ -595,21 +618,26 @@ const EnterButton = ({
   );
 };
 
-// The back button: the ring menu's circle's size, its arrow drawn as the
-// circle is, over a darker, wider stroke; half seen at rest, white and glowing
-// while pressed (the web's has the same).
-const BackButton = ({
+// A button in a corner of the screen, the back button's or the wait button's:
+// the ring menu's circle's size, its icon drawn as the circle is, over a
+// darker, wider stroke; half seen at rest, white and glowing while pressed (the
+// web's has the same).
+const CornerButton = ({
   size,
+  label,
+  icon,
   onPress,
   style,
 }: {
   size: number;
+  label: string;
+  icon: string;
   onPress(): void;
-  style: { left: number; bottom: number };
+  style: { left?: number; right?: number; top?: number; bottom?: number };
 }) => (
   <Pressable
     accessibilityRole="button"
-    accessibilityLabel={sceneText.back}
+    accessibilityLabel={label}
     onPress={onPress}
     className="items-center justify-center"
     style={[{ position: "absolute", width: size, height: size }, style]}
@@ -640,7 +668,7 @@ const BackButton = ({
           ].map(({ stroke, width }) => (
             <Path
               key={width}
-              d={BACK_ARROW}
+              d={icon}
               fill="none"
               stroke={stroke}
               strokeWidth={width}
@@ -653,6 +681,24 @@ const BackButton = ({
     )}
   </Pressable>
 );
+
+// The scene's night, over its day, fading in when night falls and out when the
+// day breaks, over NIGHT_FADE, at once for whom asks for less motion (the web's
+// has the same).
+const NightImage = ({ source, shown }: { source: ImageSourcePropType; shown: boolean }) => {
+  const reduced = useReducedMotion();
+  const opacity = useSharedValue(shown ? 1 : 0);
+  useEffect(() => {
+    opacity.value = reduced ? (shown ? 1 : 0) : withTiming(shown ? 1 : 0, { duration: NIGHT_FADE });
+  }, [shown, reduced, opacity]);
+  const style = useAnimatedStyle(() => ({ opacity: opacity.value }));
+  return (
+    <Animated.Image
+      source={source}
+      style={[{ position: "absolute", left: 0, top: 0, width: "100%", height: "100%" }, style]}
+    />
+  );
+};
 
 // A window in the middle of the screen, over the darkened scene, in both
 // orientations, showing `children`; `titled`, its label above them, otherwise

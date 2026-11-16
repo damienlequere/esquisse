@@ -26,6 +26,7 @@ export const SceneFrame = ({
   const style = { "--backdrop": `url(${images.background.src})` } as CSSProperties;
   const sources = [
     images.background.src,
+    ...(images.night && !capsule ? [images.night.src] : []),
     ...(capsule ? [] : Object.values(images.characters).map((image) => image.src)),
     ...Object.values(images.effects).flatMap((files) => files.map((image) => image.src)),
   ];

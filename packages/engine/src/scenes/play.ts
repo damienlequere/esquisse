@@ -26,6 +26,10 @@ export type GameProgress = {
   // The scenes visited, by id: what each of their objects still holds, by its
   // id. A scene left and come back to is as it was left.
   visits: Record<string, { contents: Record<string, string[]> }>;
+  // Whether night has fallen, in every scene that has its night (see
+  // Scene.night); one without stays in daylight. The player waits for it to
+  // fall, and waits again for the day.
+  night: boolean;
 };
 
 export type GameState = GameProgress & {
@@ -49,7 +53,8 @@ export type GameAction =
   | { type: "ask"; topic: Topic }
   | { type: "leave" }
   | { type: "take"; item: string }
-  | { type: "stopSearching" };
+  | { type: "stopSearching" }
+  | { type: "wait" };
 
 // Opening a scene, in ms: its title alone, then its intro fading in under it
 // (textFade); shortly after it has fully appeared (buttonDelay), whatever its
@@ -76,6 +81,26 @@ export const ENTER_ARROW = "M4,12 H20 M13,5 L20,12 L13,19";
 // shaft curving round to the right and back under it. The button is the ring
 // menu's circle's size, in the bottom left corner, drawn as it is.
 export const BACK_ARROW = "M9,14 L4,9 L9,4 M4,9 H14.5 A5.5,5.5 0 0 1 14.5,20 H11";
+
+// The wait button's icons, the same way: a crescent moon by day, to let night
+// fall, a sun by night, to wait for the day. The button is the back button's
+// size, in the top right corner, drawn as it is.
+export const WAIT_ICONS = {
+  moon: "M19.5,14.5 A7.5,7.5 0 1 1 9.5,4.5 A6,6 0 0 0 19.5,14.5 Z",
+  sun: "M12,8 A4,4 0 1 1 12,16 A4,4 0 1 1 12,8 Z M12,2.5 V4.5 M12,19.5 V21.5 M2.5,12 H4.5 M19.5,12 H21.5 M5.3,5.3 L6.7,6.7 M17.3,17.3 L18.7,18.7 M5.3,18.7 L6.7,17.3 M17.3,6.7 L18.7,5.3",
+};
+
+// From day to night, and back: the night's image fading over the day's, in ms.
+export const NIGHT_FADE = 2500;
+
+// Whether the scene shows its night: night has fallen, and it has one.
+export const isNight = (data: SceneData, state: GameProgress) =>
+  state.night && data.scene.night !== undefined;
+
+// Whether the player can wait for night, or for the day, where they are: the
+// scene has its night.
+export const canWait = ({ scenes }: GameData, state: GameProgress) =>
+  scenes[state.at]?.scene.night !== undefined;
 
 // From the opening to the button to enter.
 export const INTRO_HOLD = INTRO.textDelay + INTRO.textFade + INTRO.buttonDelay;
@@ -128,6 +153,7 @@ export const startGame = (game: GameData): GameState =>
       logbook: [],
       flags: [],
       visits: {},
+      night: false,
       intro: true,
       narration: { title: "", text: "", key: 0 },
     },
@@ -161,6 +187,12 @@ export const playGame =
         if (search) return { ...raised, searching: object };
         // What the player finds out is a toast, as an item taken.
         return text ? { ...raised, toast: toastOf(raised, text) } : raised;
+      }
+      case "wait": {
+        if (!canWait(game, state)) return state;
+        const night = !state.night;
+        const text = night ? sceneText.nightFalls : sceneText.dayBreaks;
+        return { ...state, night, toast: toastOf(state, text) };
       }
       case "exit": {
         const to = exitTo(game, state, action.exit);
@@ -368,6 +400,11 @@ export const sceneText = {
   close: "Fermer",
   // The back button, which leaves the scene by its back exit.
   back: "Retour en arrière",
+  // The wait button, which lets night fall, or the day break, and what it says
+  // then.
+  wait: "Attendre",
+  nightFalls: "La nuit tombe.",
+  dayBreaks: "Le jour se lève.",
   // A capsule's icon, for screen readers.
   expand: "Agrandir",
   reduce: "Réduire",

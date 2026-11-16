@@ -15,7 +15,9 @@ import {
   INVENTORY_COLUMNS,
   INVENTORY_SLOTS,
   type Items,
+  isNight,
   itemName,
+  NIGHT_FADE,
   type ObjectAction,
   objectActions,
   objectMenuPlace,
@@ -27,6 +29,7 @@ import {
   type SceneObject,
   sceneLayout,
   sceneText,
+  WAIT_ICONS,
 } from "@esquisse/engine";
 import type { StaticImageData } from "next/image";
 import { useRouter } from "next/navigation";
@@ -98,6 +101,8 @@ export const Scene = ({
 }) => {
   const { scene } = data;
   const layout = sceneLayout(data);
+  // Whether it shows its night (see isNight).
+  const night = isNight(data, state);
   const { conversation, inventory, flags, searching, toast, logbook } = state;
   const router = useRouter();
 
@@ -195,7 +200,19 @@ export const Scene = ({
     >
       <div className={styles.scene} style={{ "--image-ratio": layout.ratio } as CSSProperties}>
         <img className={styles.background} src={images.background.src} alt="" />
-        {scene.effects && (
+        {/* Its night, over the day, fading in when night falls and out when
+            the day breaks. */}
+        {images.night && !capsule && (
+          <img
+            className={styles.night}
+            src={images.night.src}
+            alt=""
+            data-shown={night || undefined}
+            style={{ "--night-fade": `${NIGHT_FADE}ms` } as CSSProperties}
+          />
+        )}
+        {/* The animations are the day's: none at night. */}
+        {scene.effects && !night && (
           <Effects effects={scene.effects} background={images.background} files={images.effects} />
         )}
         <div className={styles.layer}>
@@ -239,6 +256,18 @@ export const Scene = ({
       {/* The back button, in the bottom left corner, where the scene has a
           way back. */}
       {onBack && <BackButton onPress={onBack} />}
+
+      {/* The wait button, in the top right corner, where the scene has its
+          night: a moon by day, a sun by night. Not in a conversation, whose
+          panel is on the right in landscape. */}
+      {!capsule && images.night && scene.night && !inConversation && (
+        <CornerButton
+          className={styles.wait}
+          label={sceneText.wait}
+          icon={night ? WAIT_ICONS.sun : WAIT_ICONS.moon}
+          onPress={() => dispatch({ type: "wait" })}
+        />
+      )}
 
       {/* The ring menu, in the bottom right corner: its pouch opens the
           inventory, its book the logbook, its cogwheel the general menu. */}
@@ -503,7 +532,29 @@ const CapsuleIcon = ({ expanded, onToggle }: { expanded: boolean; onToggle(): vo
 // The back button: the ring menu's circle's size (ringSizes, from the frame's),
 // its arrow drawn as the circle is, half seen at rest. The mobile app has the
 // same.
-const BackButton = ({ onPress }: { onPress(): void }) => {
+const BackButton = ({ onPress }: { onPress(): void }) => (
+  <CornerButton
+    className={styles.back}
+    label={sceneText.back}
+    icon={BACK_ARROW}
+    onPress={onPress}
+  />
+);
+
+// A button in a corner of the frame, the back button's or the wait button's:
+// the ring menu's circle's size, its icon a stroke drawn as the circle is.
+const CornerButton = ({
+  className,
+  label,
+  icon,
+  onPress,
+}: {
+  // Its corner (styles.back or styles.wait).
+  className: string | undefined;
+  label: string;
+  icon: string;
+  onPress(): void;
+}) => {
   const ref = useRef<HTMLButtonElement>(null);
   const [frame, setFrame] = useState({ width: 400, height: 400 });
   useLayoutEffect(() => {
@@ -520,13 +571,13 @@ const BackButton = ({ onPress }: { onPress(): void }) => {
     <button
       ref={ref}
       type="button"
-      className={styles.back}
-      aria-label={sceneText.back}
+      className={`${styles.corner} ${className}`}
+      aria-label={label}
       style={{ width: size, height: size }}
       onClick={onPress}
     >
-      <svg className={styles.backArrow} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <path d={BACK_ARROW} />
+      <svg className={styles.cornerIcon} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d={icon} />
       </svg>
     </button>
   );
