@@ -5,15 +5,19 @@
 // --model is the Claude model that writes the plan and the scenes, claude-opus-5-5
 // by default; it is checked before anything is paid for.
 //
-// Claude writes the game's plan from the brief: its title, one style for all
-// its images, and its scenes, each with its id, its orientation, whether it has
-// an opening, and its own brief. The author validates the plan or asks for a
-// change. Then each scene is made as pnpm generate-scene makes one, written
-// within the game (its brief, its style) and validated on its render, then
-// saved at once.
+// Claude writes the game's plan from the brief, a map of the game: its title,
+// one style for all its images, the world its scenes are viewpoints of (its
+// setting, its landmarks), and its scenes, each with its id, its orientation,
+// whether it has an opening, its viewpoint, its own brief, the landmarks seen
+// from it, its exits (each a threshold, where in the image, the scene it leads
+// to) and the one its back button takes. The author validates the plan or asks
+// for a change. Then each scene is made as pnpm generate-scene makes one,
+// written within the game (its brief, its style, its world, its place in it,
+// and its neighbors already painted) and validated on its render, then saved at
+// once.
 //
 // game.json keeps the game's brief and, in "generation", how it was generated:
-// the changes asked to the plan, and each scene's plan, then, once validated,
+// the changes asked to the plan, the world, and each scene's plan (its map), then, once validated,
 // what was painted, with the changes asked to it. It is written once, whatever
 // the scenes become after (their scene.json). Quitting keeps the scenes
 // validated: the others are in the plan, to make with pnpm generate-scene.
@@ -29,7 +33,7 @@ import { IMAGE_MODEL } from "./paint.ts";
 import { format, gameDir, ID } from "./registry.ts";
 import { json, paintScene, session } from "./session.ts";
 import { gameWriter, type Plan, planErrors } from "./write-game.ts";
-import { baseWriter, checkModel, FORMATS, TEXT_MODEL } from "./write-scene.ts";
+import { baseWriter, checkModel, FORMATS, TEXT_MODEL, zoneWords } from "./write-scene.ts";
 
 const USAGE = 'Usage: pnpm generate-game <game> "brief" [--model <id>]';
 const argv = process.argv.slice(2);
@@ -59,10 +63,22 @@ await checkModel(anthropicKey, model);
 const author = session();
 
 const showPlan = (p: Plan) => {
-  console.log(`\n${p.title}\n\nStyle : ${p.style}\n`);
+  console.log(`\n${p.title}\n\nStyle : ${p.style}\n\nMonde : ${p.world.setting}`);
+  for (const l of p.world.landmarks) console.log(`  ◆ ${l.id} : ${l.description} (${l.where})`);
+  console.log();
   for (const [i, s] of p.scenes.entries()) {
     const opening = s.opening ? ", avec ouverture" : "";
-    console.log(`${i + 1}. ${s.id} (${s.orientation}${opening}) : ${s.brief}`);
+    console.log(`${i + 1}. ${s.id} (${s.orientation}${opening}) — ${s.viewpoint}`);
+    console.log(`   Décor : ${s.brief}`);
+    if (s.landmarks.length > 0)
+      console.log(`   Repères : ${s.landmarks.map((l) => `${l.id} (${l.where})`).join(" ; ")}`);
+    for (const e of s.exits) {
+      const marks = [e.id === s.back ? "retour" : "", e.oneWay ? "sans retour" : ""].filter(
+        Boolean,
+      );
+      const tail = marks.length > 0 ? ` [${marks.join(", ")}]` : "";
+      console.log(`   → ${e.to} « ${e.label} » par ${e.threshold} (${zoneWords(e.zone)})${tail}`);
+    }
   }
   console.log();
 };
@@ -94,12 +110,19 @@ const generation: Generation = {
   textModel: model,
   imageModel: IMAGE_MODEL,
   ...(planChanges.length > 0 ? { changes: planChanges } : {}),
-  scenes: plan.scenes.map(({ id, orientation, opening, brief }) => ({
-    id,
-    orientation,
-    opening,
-    brief,
-  })),
+  world: plan.world,
+  scenes: plan.scenes.map(
+    ({ id, orientation, opening, viewpoint, brief, landmarks, exits, back }) => ({
+      id,
+      orientation,
+      opening,
+      brief,
+      viewpoint,
+      landmarks,
+      exits,
+      ...(back !== null ? { back } : {}),
+    }),
+  ),
 };
 const first = plan.scenes[0]?.id ?? "";
 const gameJson: Game = { brief, title: plan.title, start: first, links: {}, generation };
@@ -115,7 +138,21 @@ for (const [i, planned] of generation.scenes.entries()) {
   const { id, brief: sceneBrief } = planned;
   console.log(`\n── ${i + 1}/${generation.scenes.length} : ${id} (${planned.orientation})`);
   const FORMAT = FORMATS[planned.orientation as keyof typeof FORMATS];
-  const writer = baseWriter(anthropicKey, FORMAT, { brief, style: plan.style }, model);
+  // Its neighbors already painted: the scenes its exits lead to, or come from.
+  const neighbors = generation.scenes.filter(
+    (n) =>
+      n.background !== undefined &&
+      n.id !== id &&
+      ((planned.exits ?? []).some((e) => e.to === n.id) ||
+        (n.exits ?? []).some((e) => e.to === id)),
+  );
+  if (neighbors.length > 0) console.log(`Next to: ${neighbors.map((n) => n.id).join(", ")}`);
+  const writer = baseWriter(
+    anthropicKey,
+    FORMAT,
+    { brief, style: plan.style, world: plan.world, scene: planned, neighbors },
+    model,
+  );
   const painted = await paintScene({
     session: author,
     geminiKey,
@@ -144,4 +181,6 @@ for (const [i, planned] of generation.scenes.entries()) {
 }
 author.close();
 console.log(`\n✓ ${plan.title}: /game/${game}, run pnpm dev to see it`);
-console.log("  Its scenes are not linked: their exits go in game.json (see pnpm check-game).");
+console.log(
+  "  Its scenes are not linked yet: their exits are in the plan, in game.json's generation.",
+);

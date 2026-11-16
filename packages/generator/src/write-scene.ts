@@ -3,7 +3,7 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
-import type { Box } from "@esquisse/engine";
+import type { Box, GeneratedScene, World } from "@esquisse/engine";
 import { z } from "zod";
 
 // The default; pnpm generate-game takes another with --model.
@@ -147,8 +147,60 @@ export const conversation = <T extends z.ZodType>(
 };
 
 // The game a scene is written for by pnpm generate-game: its brief, for the
-// scene to fit in it, and its style, the same for all its scenes.
-export type GameContext = { brief: string; style: string };
+// scene to fit in it, and its style, the same for all its scenes. A game whose
+// plan is a map adds its world, the scene's plan (its viewpoint, its landmarks,
+// its exits) and its neighbors already painted, those its exits lead to or
+// come from.
+export type GameContext = {
+  brief: string;
+  style: string;
+  world?: World;
+  scene?: GeneratedScene;
+  neighbors?: GeneratedScene[];
+};
+
+// An exit's cell of the grid, in words (see PlannedExit).
+const X = { left: "à gauche", center: "au centre", right: "à droite" };
+const Y = { middle: "à mi-hauteur", bottom: "en bas" };
+export const zoneWords = ({ x, y }: { x: string; y: string }) =>
+  `${X[x as keyof typeof X] ?? x}, ${Y[y as keyof typeof Y] ?? y}`;
+
+// What Claude is told of the world, the scene's place in it, and its neighbors.
+const mapContext = ({ world, scene, neighbors = [] }: GameContext) => {
+  if (world === undefined || scene === undefined) return "";
+  const lines = [`\n\nLe monde du jeu : ${world.setting}`];
+  if (world.landmarks.length > 0) {
+    lines.push("Ses repères, visibles de loin :");
+    for (const l of world.landmarks) lines.push(`- ${l.id} : ${l.description} (${l.where})`);
+  }
+  lines.push(`\nCette scène est un point de vue sur ce monde : ${scene.viewpoint ?? ""}`);
+  const seen = scene.landmarks ?? [];
+  lines.push(
+    seen.length === 0
+      ? "Aucun repère du monde n'est visible d'ici."
+      : `Les repères visibles d'ici, à leur place dans l'image : ${seen.map((l) => `${l.id} (${l.where})`).join(" ; ")}.`,
+  );
+  const exits = scene.exits ?? [];
+  if (exits.length > 0) {
+    lines.push("Ses sorties, chacune un seuil peint dans le décor, à sa place dans l'image :");
+    for (const e of exits)
+      lines.push(`- « ${e.label} », vers ${e.to} : ${e.threshold} (${zoneWords(e.zone)})`);
+  }
+  for (const n of neighbors) {
+    const there = n.exits?.find((e) => e.to === scene.id);
+    const here = exits.find((e) => e.to === n.id);
+    lines.push(
+      `\nLa scène voisine « ${n.title ?? n.id} » (${n.id}) est déjà peinte.` +
+        (here !== undefined ? ` On y va d'ici par ${here.threshold}.` : "") +
+        (there !== undefined ? ` On en vient par ${there.threshold}, vu de son côté.` : "") +
+        `\nSon décor : ${n.background ?? ""}\nSa lumière : ${n.light ?? ""}`,
+    );
+  }
+  lines.push(
+    "\nDans background.prompt, chaque sortie est son seuil, décrit à sa place dans l'image, loin des bords, bien visible et reconnaissable, sans personne devant ; chaque repère visible est à sa place, avec sa description. Un seuil qu'une scène voisine montre de l'autre côté garde ses matières, sa couleur et son usure. La lumière (light) est celle de la même heure que les scènes voisines, venant du même côté du monde ; un intérieur garde l'heure qu'il fait dehors. Rien dans le décor ne contredit le monde ni les scènes voisines.",
+  );
+  return lines.join("\n");
+};
 
 export const baseWriter = (
   apiKey: string,
@@ -165,7 +217,7 @@ export const baseWriter = (
   const context =
     game === undefined
       ? ""
-      : `\n\nLa scène fait partie d'un jeu, demandé ainsi : ${game.brief}\n\nSon style est celui de tout le jeu ; renvoie-le tel quel : ${game.style}`;
+      : `\n\nLa scène fait partie d'un jeu, demandé ainsi : ${game.brief}\n\nSon style est celui de tout le jeu ; renvoie-le tel quel : ${game.style}${mapContext(game)}`;
   return {
     write: (brief: string) => write(`Écris le fond de la scène : ${brief}${context}`),
     revise: (change: string) => write(`Modifie le fond ainsi : ${change}`),

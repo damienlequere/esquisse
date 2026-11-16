@@ -242,9 +242,20 @@ pnpm generate-game <game> "<brief>" [--model <id>]
 
 The brief says what the whole game is about, and may fix its scenes: how many,
 their names, their orientations, what each shows or does not, which ones open on
-their title. Claude writes the plan: the game's title, one style for all its
-images, and its scenes, each with its id, its orientation, its opening and its
-own brief. Then `v` validate, `m` describe a change, `q` quit.
+their title, how they follow one another. Claude writes the plan, a map of a
+first-person game: the game's title, one style for all its images, its
+**world** (the whole place, its hour, where its light comes from, and two to
+four **landmarks** seen from afar), and its scenes, each a viewpoint on that
+world, with its id, its orientation, its opening, where the player stands and
+looks, its own brief, the landmarks seen from there and where in the image, its
+**exits** and the one its back button takes. Each exit goes through a
+**threshold** painted in the decor (a door, a gate, a stair, a street corner),
+in a cell of the image (left, center or right; middle or bottom), to another
+scene, which has an exit back, unless it has none (`oneWay`): no two scenes
+show the same space from two angles. The plan is checked (each exit leads to a
+scene that leads back, two exits of a scene are in two cells, every scene is
+reached from the first, every landmark is the world's) and sent back to Claude
+until it is. Then `v` validate, `m` describe a change, `q` quit.
 
 `--model` chooses the Claude model that writes the plan and every scene, for
 the whole run: `claude-opus-5-5` by default, or another id the API knows, such
@@ -255,9 +266,14 @@ only on Fable 5.1, Opus 5.5, Opus 5 and Sonnet 5.5. `pnpm generate-scene`
 always writes with `claude-opus-5-5`.
 
 Each scene is then made as `pnpm generate-scene` makes one, from its brief,
-written within the game (Claude reads the game's brief, and the style is the
-plan's, the same for every scene), and saved once validated. The game starts
-in the first scene; its scenes are not linked.
+written within the game, and saved once validated. Claude reads the game's
+brief, its world, the scene's place in it (its viewpoint, its landmarks, its
+exits, whose thresholds it paints where the plan puts them), and the scenes next
+to it already painted (those its exits lead to or come from: their decor, their
+light, the threshold seen from their side); the style is the plan's, the same
+for every scene. The game starts in the first scene; its scenes are not linked
+yet: their exits are in the plan, in `generation`, not yet objects of the
+scenes nor links of the game.
 
 ```text
 $ pnpm generate-game tristram4 "un village rappelant Tristram à la tombée du soir…"
@@ -266,8 +282,16 @@ Writing with claude-opus-5-5…
 Tristram
 Style : Matte painting numérique de cinéma…
 
-1. rue (portrait, avec ouverture) : une rue montante…
-2. place-du-village (landscape) : la place ronde…
+Monde : un village sur une butte, le soleil couchant à l'ouest…
+  ◆ cathedrale : une cathédrale gothique noire (au nord, en haut de la butte)
+
+1. rue (portrait, avec ouverture) — en bas de la rue, face au nord
+   Décor : une rue montante…
+   Repères : cathedrale (au fond, au centre, au-dessus des toits)
+   → place-du-village « Monter » par le haut de la rue (au centre, à mi-hauteur)
+2. place-du-village (landscape) — au débouché de la rue, face à l'est
+   Décor : la place ronde…
+   → rue « Descendre » par l'entrée de la rue (à gauche, en bas) [retour]
 Le plan :  [v] valider  [m] modifier  [q] quitter
 > v
 New game "tristram4", starting in "rue": content/games/tristram4/game.json
@@ -277,8 +301,8 @@ New game "tristram4", starting in "rue": content/games/tristram4/game.json
 ```
 
 The game's `game.json` keeps how it was generated, once, in `"generation"`:
-the command, the date, the models, the changes asked to the plan, and for each
-scene its plan, then, once validated, its title, intro, style, light and
+the command, the date, the models, the changes asked to the plan, the world,
+and for each scene its plan (its viewpoint, its landmarks, its exits, its back), then, once validated, its title, intro, style, light and
 background, with the changes asked to it. Gemini got, one per line, the style,
 the background and `Format portrait.` or `Format paysage.`. It never changes
 after: the scenes' `scene.json` do. Quitting keeps the scenes validated; the

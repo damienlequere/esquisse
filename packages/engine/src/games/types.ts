@@ -31,7 +31,32 @@ export type Generation = {
   imageModel: string;
   // The changes asked to the plan, in order, after the brief.
   changes?: string[];
+  // The world the scenes are viewpoints of, for a game whose plan is a map.
+  world?: World;
   scenes: GeneratedScene[];
+};
+
+// The whole place a game's scenes are seen from: what they share, and the
+// landmarks seen from afar, the same wherever they are seen from.
+export type World = {
+  setting: string;
+  landmarks: { id: string; description: string; where: string }[];
+};
+
+// Where an exit is in its scene's image: a cell of a 3 × 2 grid, in its safe
+// zone. Read from game.json, they are only strings.
+export type ExitZone = { x: string; y: string };
+
+// An exit of a scene as planned: its id (its name in the scene and in the
+// game's links), the label of its action, the scene it leads to, the threshold
+// it goes through, painted in the decor, where, and whether it has no way back.
+export type PlannedExit = {
+  id: string;
+  label: string;
+  to: string;
+  threshold: string;
+  zone: ExitZone;
+  oneWay: boolean;
 };
 
 // A scene as planned, then as painted once validated: Gemini got its style, its
@@ -43,6 +68,13 @@ export type GeneratedScene = {
   orientation: string;
   opening: boolean;
   brief: string;
+  // In a game whose plan is a map: where the player stands and looks, the
+  // landmarks seen from there and where, its exits, and the one the back
+  // button takes.
+  viewpoint?: string;
+  landmarks?: { id: string; where: string }[];
+  exits?: PlannedExit[];
+  back?: string;
   // The changes asked to its background, in order, after the brief.
   changes?: string[];
   title?: string;
