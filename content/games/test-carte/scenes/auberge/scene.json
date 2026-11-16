@@ -1,0 +1,60 @@
+{
+  "brief": "La salle commune d'une auberge médiévale au soir, sous un plafond de grosses poutres de chêne noircies, avec tables et bancs de bois usé, une large cheminée de pierre où brûle un feu, et au fond de petites fenêtres à vitres bullées où rougeoie le couchant. L'éclairage mêle la lueur orangée des fenêtres et la flamme des chandelles et de l'âtre ; la salle est vide de clients.",
+  "title": "La salle commune du Cerf Blanc",
+  "intro": "Tu passes la porte basse et la chaleur du feu t'enveloppe, mêlée à l'odeur de fumée de bois, de cire et de bière éventée. La salle commune du Cerf Blanc est vide et silencieuse ; seul le couchant rougeoie aux petites fenêtres du fond.",
+  "imageRatio": "16:9",
+  "opening": false,
+  "safe": {
+    "x0": 0.14,
+    "y0": 0.14,
+    "x1": 0.86,
+    "y1": 0.86
+  },
+  "style": "Matte painting numérique de cinéma, réaliste et très détaillé, à la manière des décors peints pour les films historiques : perspective juste, proportions exactes, profondeur atmosphérique marquée. Les matières sont rendues avec soin et portent leur âge : pierre calcaire blonde érodée et tachée de lichen, colombages de chêne noircis et fendus, enduit de chaux écaillé, tuiles et lauzes moussues, fer forgé piqué de rouille, verre soufflé bullé, tissus de laine rêche, poussière et suie dans les recoins. Palette chaude de fin de jour, ocres, ambres et rouges brique dans la lumière, bleus et violets profonds dans les ombres. Lumière crédible venant de sources précises : la lueur rasante et orangée du soleil couchant, puis la flamme dorée des lanternes, chandelles et âtres, avec des ombres longues et cohérentes et un clair-obscur qui installe une atmosphère calme, un peu mélancolique. Fine brume de fumée de bois dans l'air, particules de poussière dans les rais de lumière. Détails secondaires nombreux qui racontent la vie du lieu sans voler la vedette aux passages et aux portes. Aucun texte, lettre, chiffre, signature ni logo ; pas de style cartoon, bande dessinée, anime ni caricature, pas de contours encrés ni d'aplats ; pas de photographie ni de rendu 3D lisse ; pas de cadre ni de bordure.",
+  "light": "Couchant orangé et rougeoyant entrant de face par les petites fenêtres bullées du mur du fond (ouest), rais de lumière obliques qui tombent vers le spectateur et étirent les ombres vers l'avant ; flamme dorée et vacillante de l'âtre au centre du fond et des chandelles des appliques ; lumière froide, bleutée et faible du soir filtrant par la porte entrouverte au premier plan à gauche ; plafond et recoins plongés dans une pénombre brune et violette.",
+  "background": {
+    "prompt": "Format paysage 16:9, vue de face à hauteur d'homme depuis l'intérieur d'une auberge médiévale du XIVe siècle, quelques pas après la porte d'entrée, regard tourné vers le fond de la salle commune. Salle basse et profonde sous un plafond de grosses poutres de chêne noircies par la suie et fendues, soutenues par des solives serrées et deux poteaux de chêne équarri ; murs de colombages noircis aux hourdis d'enduit de chaux jaunis et écaillés, soubassements de pierre calcaire blonde. Le sol occupe toute la moitié inférieure de l'image : grandes dalles de pierre calcaire blonde inégales, usées et polies par les pas, aux joints garnis de poussière, quelques brins de jonc et de paille éparpillés, taches de cire et de vin anciennes ; ce sol reste entièrement dégagé et vide, sans table, sans banc, sans meuble. Salle entièrement vide, sans aucune personne ni aucun animal. Au premier plan à gauche, bien en retrait du bord de l'image, dans le mur d'entrée qui fait retour, la porte basse de l'auberge en chêne sombre cerclée de bandes de fer forgé rouillé, aux gros clous et à la poignée en anneau, vue de son côté intérieur avec sa barre de fer relevée sur ses crochets ; elle est entrouverte sur la rue, et par l'entrebâillement filtre la lumière bleutée et froide du soir, avec un liseré doré de la lanterne extérieure sur la marche de pierre creusée par l'usure du seuil ; rien n'obstrue la porte. Au fond, dans le mur ouest, deux petites fenêtres à meneau de pierre, à vitres de verre soufflé bullé serties de plomb, où rougeoie le couchant orangé et ambré, projetant des rais de lumière obliques chargés de poussière et de fumée vers le sol. Au centre du mur du fond, une large cheminée de pierre calcaire blonde au manteau épais noirci de suie, à la hotte enduite de chaux, où brûle un feu de bûches vives sur des chenets de fer forgé, une crémaillère et un chaudron de fonte suspendu au-dessus, la plaque de l'âtre noircie, un tas de bûches et un soufflet de cuir posés à côté. À droite, à mi-hauteur de l'image et loin du bord, un escalier raide de chêne usé, aux marches creusées au centre, à la rampe de bois poli par les mains et aux balustres tournés, monte le long du mur du fond vers une trémie sombre de l'étage ; rien n'encombre ses marches. Détails secondaires aux murs et au fond : appliques de fer forgé portant des chandelles de suif allumées aux coulures de cire, une couronne de fer à chandelles éteinte suspendue à une poutre par une chaîne, une étagère chargée de pichets d'étain et d'écuelles de terre cuite, des tonneaux de chêne cerclés de fer couchés sur un chantier contre le mur sous l'escalier, des bouquets d'herbes séchées et des chapelets d'oignons pendus aux poutres, un jambon fumé accroché près de la hotte, une ramure de cerf blanchie clouée au-dessus du manteau de la cheminée, des crochets de fer garnis de manteaux de laine rêche près de la porte, des traces de suie et de fumée sur l'enduit, toiles d'araignée dans les angles du plafond. Fine brume de fumée de bois flottant sous les poutres, particules de poussière dorées dans les rais du couchant, reflets chauds du feu sur les dalles et les pichets d'étain, pénombre brune et violette dans les recoins."
+  },
+  "objects": [
+    {
+      "id": "rue",
+      "zone": {
+        "x0": 0,
+        "y0": 0.057,
+        "x1": 0.159,
+        "y1": 0.92
+      },
+      "paint": "la porte d'entrée en chêne cerclé de fer, entrouverte sur la rue où tombe la lumière bleutée du soir, au premier plan à gauche",
+      "detect": "the open iron-banded oak door on the far left, with the doorway showing blue evening light and a lantern on the stone threshold",
+      "label": "La porte d'entrée",
+      "actions": [
+        {
+          "label": "Sortir",
+          "exit": "rue",
+          "text": "La lourde porte de chêne cerclée de fer bâille sur la rue, où le soir tombe en lumière bleutée. Un souffle frais vient frôler la lanterne posée sur le seuil, porteur de l'odeur de pierre humide et des rumeurs lointaines du village."
+        }
+      ]
+    },
+    {
+      "id": "etage",
+      "zone": {
+        "x0": 0.733,
+        "y0": 0.194,
+        "x1": 1,
+        "y1": 0.814
+      },
+      "paint": "l'escalier raide de chêne usé, à rampe de bois poli, qui monte le long du mur du fond vers l'étage",
+      "detect": "the steep wooden staircase with turned balusters on the right, climbing along the back wall behind the barrels",
+      "label": "L'escalier",
+      "actions": [
+        {
+          "label": "Monter",
+          "exit": "etage",
+          "text": "Les marches de chêne, creusées par des années de pas, grimpent raides vers la pénombre de l'étage, où ne brille aucune chandelle. La rampe polie luit sous la lueur du feu, et là-haut tout reste silencieux."
+        }
+      ]
+    }
+  ],
+  "characters": [],
+  "back": "rue"
+}

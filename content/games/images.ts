@@ -1,5 +1,8 @@
 // Written by packages/generator/src/generate-scene.ts: do not edit by hand.
 
+import testCarteSceneAubergeFond from "./test-carte/scenes/auberge/fond.webp";
+import testCarteSceneEtageFond from "./test-carte/scenes/etage/fond.webp";
+import testCarteSceneRueFond from "./test-carte/scenes/rue/fond.webp";
 import tristramItemCouteau from "./tristram/items/couteau.webp";
 import tristramItemLanterne from "./tristram/items/lanterne.webp";
 import tristramItemPelle from "./tristram/items/pelle.webp";
@@ -31,6 +34,26 @@ export type GameImages<Image> = {
 };
 
 export const gameImages = {
+  "test-carte": {
+    scenes: {
+      auberge: {
+        background: testCarteSceneAubergeFond,
+        characters: {},
+        effects: {},
+      },
+      etage: {
+        background: testCarteSceneEtageFond,
+        characters: {},
+        effects: {},
+      },
+      rue: {
+        background: testCarteSceneRueFond,
+        characters: {},
+        effects: {},
+      },
+    },
+    items: {},
+  },
   tristram: {
     scenes: {
       auberge: {

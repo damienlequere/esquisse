@@ -1,0 +1,41 @@
+{
+  "brief": "Le palier étroit de l'étage d'une auberge médiévale au soir, au plancher de chêne grinçant et aux murs de chaux entre les colombages, bordé de portes de chambres closes, avec au bout une petite fenêtre à vitres bullées par où entre la dernière lueur orangée du couchant. Une chandelle dans une applique de fer éclaire faiblement le couloir ; personne n'y est.",
+  "title": "Le palier du Cerf Blanc",
+  "intro": "En haut de l'escalier, tu débouches sur le palier étroit de l'étage, où chaque latte de chêne grince sous tes pas. Toutes les portes sont closes, une chandelle tremble dans son applique, et au bout du couloir le couchant s'éteint lentement derrière une petite fenêtre aux vitres bullées.",
+  "imageRatio": "9:16",
+  "opening": false,
+  "safe": {
+    "x0": 0.09,
+    "y0": 0.14,
+    "x1": 0.91,
+    "y1": 0.86
+  },
+  "style": "Matte painting numérique de cinéma, réaliste et très détaillé, à la manière des décors peints pour les films historiques : perspective juste, proportions exactes, profondeur atmosphérique marquée. Les matières sont rendues avec soin et portent leur âge : pierre calcaire blonde érodée et tachée de lichen, colombages de chêne noircis et fendus, enduit de chaux écaillé, tuiles et lauzes moussues, fer forgé piqué de rouille, verre soufflé bullé, tissus de laine rêche, poussière et suie dans les recoins. Palette chaude de fin de jour, ocres, ambres et rouges brique dans la lumière, bleus et violets profonds dans les ombres. Lumière crédible venant de sources précises : la lueur rasante et orangée du soleil couchant, puis la flamme dorée des lanternes, chandelles et âtres, avec des ombres longues et cohérentes et un clair-obscur qui installe une atmosphère calme, un peu mélancolique. Fine brume de fumée de bois dans l'air, particules de poussière dans les rais de lumière. Détails secondaires nombreux qui racontent la vie du lieu sans voler la vedette aux passages et aux portes. Aucun texte, lettre, chiffre, signature ni logo ; pas de style cartoon, bande dessinée, anime ni caricature, pas de contours encrés ni d'aplats ; pas de photographie ni de rendu 3D lisse ; pas de cadre ni de bordure.",
+  "light": "Dernière lueur orangée et rougeoyante du couchant entrant de face par la petite fenêtre bullée au bout du couloir (ouest), étirant les ombres vers le spectateur ; flamme dorée et faible d'une chandelle dans une applique de fer sur le mur de droite à mi-couloir ; halo chaud et vacillant montant de la cage d'escalier en bas à gauche, reflet du feu de la salle commune ; plafond, angles et seuils des portes plongés dans une pénombre brune et violette.",
+  "background": {
+    "prompt": "Format portrait 9:16, vue de face à hauteur d'homme depuis le haut d'un escalier, sur le palier de l'étage d'une auberge médiévale du XIVe siècle, regard porté le long d'un couloir étroit et profond qui file droit vers le fond, en perspective centrale marquée. Plafond bas de solives de chêne noircies par la suie et fendues, portées par une grosse poutre transversale ; murs de colombages de chêne noirci, aux pièces obliques et verticales, dont les hourdis d'enduit de chaux jauni sont écaillés, fissurés et tachés de suie. Le sol occupe le tiers inférieur de l'image : plancher de larges lattes de chêne sombre, inégales, disjointes et usées au centre par les pas, aux têtes de clous de fer luisantes, quelques brins de paille et de jonc, de la poussière dans les joints, une ancienne tache de cire ; ce plancher reste entièrement dégagé et vide, sans meuble, sans objet. Couloir entièrement vide, sans aucune personne ni aucun animal. De chaque côté du couloir, des portes de chambres closes en planches de chêne sombre, basses et cintrées, aux pentures et loquets de fer forgé rouillé, aux seuils de bois creusés, en enfilade qui diminue vers le fond : deux sur le mur de gauche, deux sur le mur de droite, toutes fermées. Au bout du couloir, au centre du mur du fond, une petite fenêtre carrée dans un ébrasement de pierre calcaire blonde, à vitres rondes de verre soufflé bullé serties de plomb, où rougeoie la dernière lueur orangée et ambrée du couchant, projetant un rai de lumière oblique chargé de poussière et de fumée qui glisse sur le plancher vers le spectateur. Au premier plan à gauche, en bas de l'image mais bien en retrait du bord, l'ouverture de la trémie de l'escalier dans le plancher : la première marche de l'escalier raide de chêne usé, creusée au centre, plongeant vers le bas, avec le départ de sa rampe de bois poli par les mains et le pilastre aux balustres tournés, le tout baigné d'un halo chaud et doré montant de la salle commune en contrebas ; rien n'encombre la marche. Sur le mur de droite, à mi-couloir, une applique de fer forgé tenant une chandelle de suif allumée aux longues coulures de cire, qui jette un faible cercle doré sur l'enduit. Détails secondaires aux murs et au fond : un crochet de fer où pend un vieux manteau de laine rêche près d'une porte, une petite niche dans le mur avec une écuelle de terre cuite, des traînées de fumée noire au-dessus de l'applique, des toiles d'araignée dans les angles des solives, une poutre fendue rafistolée d'un étrier de fer, un clou portant un bouquet d'herbes séchées, des fissures dans l'enduit autour des colombages, des marques d'usure et de doigts sur les montants des portes. Fine brume de fumée de bois sous le plafond, particules de poussière dorées dans le rai du couchant, reflets orangés sur les lattes cirées par l'usage, pénombre brune et violette dans les recoins et entre les portes."
+  },
+  "objects": [
+    {
+      "id": "auberge",
+      "zone": {
+        "x0": 0.017,
+        "y0": 0.517,
+        "x1": 0.377,
+        "y1": 0.957
+      },
+      "paint": "la première marche de l'escalier raide de chêne usé, avec le départ de sa rampe de bois poli, plongeant vers la lueur de la salle commune",
+      "detect": "the steep worn oak staircase going down on the bottom left, with its turned wooden banister and newel posts beside the landing floor",
+      "label": "L'escalier",
+      "actions": [
+        {
+          "label": "Descendre",
+          "exit": "auberge",
+          "text": "La rampe de bois poli s'enfonce sous tes doigts dans la cage de l'escalier, où les marches usées plongent vers la lueur dorée de la salle commune. D'en bas montent le craquement du feu, des rires étouffés et une odeur de bière tiède."
+        }
+      ]
+    }
+  ],
+  "characters": [],
+  "back": "auberge"
+}

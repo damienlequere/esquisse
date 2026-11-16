@@ -1,0 +1,39 @@
+{
+  "brief": "Une rue pavée étroite et montante d'un village médiéval à la tombée du soir, bordée de maisons à colombages à encorbellements, avec à gauche l'enseigne en fer forgé d'une auberge et sa porte basse, et tout au fond, en haut de la pente, une cathédrale gothique. La lumière rasante du couchant vient de la gauche et dore les façades de droite tandis que le côté gauche est dans l'ombre bleutée ; la rue est vide de passants.",
+  "title": "La rue montante de Valrouge",
+  "intro": "Tu passes la porte des remparts et la rue pavée de Valrouge s'élève devant toi, étroite et déserte, entre des façades à colombages que le couchant dore d'un côté et que l'ombre bleuit de l'autre. Tout là-haut, la cathédrale veille sur le village pendant que s'allument les premières lanternes.",
+  "imageRatio": "9:16",
+  "safe": {
+    "x0": 0.09,
+    "y0": 0.14,
+    "x1": 0.91,
+    "y1": 0.86
+  },
+  "style": "Matte painting numérique de cinéma, réaliste et très détaillé, à la manière des décors peints pour les films historiques : perspective juste, proportions exactes, profondeur atmosphérique marquée. Les matières sont rendues avec soin et portent leur âge : pierre calcaire blonde érodée et tachée de lichen, colombages de chêne noircis et fendus, enduit de chaux écaillé, tuiles et lauzes moussues, fer forgé piqué de rouille, verre soufflé bullé, tissus de laine rêche, poussière et suie dans les recoins. Palette chaude de fin de jour, ocres, ambres et rouges brique dans la lumière, bleus et violets profonds dans les ombres. Lumière crédible venant de sources précises : la lueur rasante et orangée du soleil couchant, puis la flamme dorée des lanternes, chandelles et âtres, avec des ombres longues et cohérentes et un clair-obscur qui installe une atmosphère calme, un peu mélancolique. Fine brume de fumée de bois dans l'air, particules de poussière dans les rais de lumière. Détails secondaires nombreux qui racontent la vie du lieu sans voler la vedette aux passages et aux portes. Aucun texte, lettre, chiffre, signature ni logo ; pas de style cartoon, bande dessinée, anime ni caricature, pas de contours encrés ni d'aplats ; pas de photographie ni de rendu 3D lisse ; pas de cadre ni de bordure.",
+  "light": "Soleil couchant bas et rasant venant de la gauche (ouest), lumière orangée et ambrée qui dore les façades de droite et le flanc gauche de la cathédrale ; côté gauche de la rue dans une ombre bleutée et violette ; ciel ambre à gauche virant au bleu profond à droite ; lueurs dorées et chaudes des premières lanternes et des fenêtres, ombres longues étirées vers la droite.",
+  "background": {
+    "prompt": "Format portrait 9:16, vue de face à hauteur d'homme depuis le bas d'une rue médiévale, juste passé la porte des remparts, regard tourné vers le haut de la pente. Une rue pavée étroite monte droit vers le fond en perspective centrale, entre deux rangées serrées de maisons à colombages à encorbellements dont les étages en surplomb se rapprochent au-dessus de la chaussée. Le sol occupe le tiers inférieur de l'image : pavés de pierre ronds et usés, polis au centre, joints garnis de terre et de brins d'herbe, une rigole centrale peu profonde qui descend la pente, quelques feuilles mortes d'automne ; ce premier plan reste dégagé et vide. Rue entièrement vide, sans aucune personne ni aucun animal. Côté gauche (ouest), les façades sont plongées dans une ombre bleutée et violette : soubassements de pierre calcaire blonde érodée, poutres de chêne noircies et fendues, hourdis d'enduit de chaux écaillé, volets de bois gris entrouverts, petites fenêtres à vitres bullées dont certaines brillent d'une lueur de chandelle. À gauche, à mi-hauteur de l'image et bien en retrait du bord, s'ouvre l'entrée de l'auberge : un renfoncement de pierre blonde aux arêtes émoussées, au fond duquel se tient une porte basse en chêne sombre cerclée de bandes de fer forgé rouillé, aux gros clous et à la poignée en anneau, une marche de pierre creusée par l'usure devant elle et rien qui l'obstrue ; au-dessus, une potence de fer forgé porte une enseigne découpée en forme de cerf, et à côté de la porte une lanterne de fer et de verre allumée jette un halo doré et chaud sur la pierre et les pavés, contrastant avec l'ombre bleue. Côté droit (est), les façades sont dorées par la lumière rasante orangée du couchant : colombages chauds, enduit ocré, encorbellements soutenus par des consoles de bois sculptées, petites lucarnes, toits de tuiles brunes moussues, cheminées dont s'échappent de fins filets de fumée de bois, longues ombres projetées par les poutres. Détails secondaires aux murs : anneaux de fer scellés pour attacher les chevaux, bancs de pierre, pots de terre cuite aux rebords des fenêtres, une corde à linge vide tendue entre deux étages, des traces de suie au-dessus des portes, une niche de pierre vide, des gouttières de bois. Tout au fond, au centre, en haut de la rue et dominant les toits, se dresse une haute cathédrale gothique de pierre calcaire blonde, à la façade percée d'une grande rosace et flanquée de deux tours carrées inachevées, dont l'une porte un échafaudage de bois ; ses arcs-boutants se découpent sur le ciel du soir, son flanc gauche éclairé par le couchant et son flanc droit dans l'ombre bleue, adoucie par la brume atmosphérique. Au loin à droite, au-dessus des toits, une petite silhouette de moulin à vent de bois sur pivot, aux ailes tendues de toile grise immobiles, perché seul sur une crête herbeuse au-delà des remparts. Ciel de fin de jour d'automne sec et clair, ambre et orangé à gauche, passant au bleu profond vers la droite, quelques étoiles naissantes à droite ; fine brume de fumée de bois flottant entre les maisons et particules de poussière dans les rais de lumière rasante."
+  },
+  "objects": [
+    {
+      "id": "auberge",
+      "zone": {
+        "x0": 0.224,
+        "y0": 0.573,
+        "x1": 0.425,
+        "y1": 0.848
+      },
+      "paint": "la porte basse de l'auberge, en chêne cerclé de fer, au fond d'un renfoncement de pierre blonde, sous une enseigne de fer forgé en forme de cerf et une lanterne allumée",
+      "detect": "the arched dark oak door with iron studs in the stone recess on the left, under the stag sign and lit lantern, with stone steps below",
+      "label": "La porte de l'auberge",
+      "actions": [
+        {
+          "label": "Entrer",
+          "exit": "auberge",
+          "text": "La lourde porte de chêne cerclée de fer luit sous la lanterne, et l'enseigne au cerf grince doucement au-dessus de ta tête. De l'autre côté filtrent une odeur de feu de bois et le murmure assourdi de quelques voix."
+        }
+      ]
+    }
+  ],
+  "characters": []
+}

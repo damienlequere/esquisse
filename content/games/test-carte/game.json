@@ -1,0 +1,140 @@
+{
+  "brief": "un petit village médiéval à la tombée du soir, trois scènes : 'rue' en portrait, une rue montante avec au fond une cathédrale, et l'enseigne d'une auberge sur la gauche ; 'auberge' en paysage, la salle commune de l'auberge, vue depuis sa porte d'entrée ; 'etage' en portrait, le palier de l'étage de l'auberge en haut de l'escalier. Seule la première scène a une ouverture.",
+  "title": "Le Soir sur Valrouge",
+  "start": "rue",
+  "links": {
+    "rue": {
+      "auberge": "auberge"
+    },
+    "auberge": {
+      "rue": "rue",
+      "etage": "etage"
+    },
+    "etage": {
+      "auberge": "auberge"
+    }
+  },
+  "generation": {
+    "command": "generate-game",
+    "date": "2026-11-16",
+    "textModel": "claude-opus-5-5",
+    "imageModel": "gemini-nano-banana-2.1",
+    "world": {
+      "setting": "Valrouge, petit village fortifié de la fin du Moyen Âge, au XIVe siècle, à la tombée du soir d'un jour d'automne sec et clair. Le soleil se couche à l'ouest, bas sur l'horizon, et jette une lumière rasante orangée sur les façades tournées vers lui, tandis que le ciel passe de l'ambre au bleu profond vers l'est ; les premières lanternes s'allument. Le village s'étage sur une colline : de la porte des remparts, au sud, une unique rue pavée monte droit vers le nord jusqu'au parvis de la cathédrale qui couronne le sommet. Les maisons à colombages, à encorbellements et toits de tuiles brunes bordent la rue de chaque côté. L'auberge du Cerf Blanc s'ouvre du côté ouest de la rue, à mi-pente : sa salle commune au rez-de-chaussée, voûtée de poutres, avec un escalier de chêne menant au palier des chambres à l'étage. Matières partagées : pierre calcaire blonde, chêne noirci, enduit de chaux, fer forgé, tuiles et pavés usés.",
+      "landmarks": [
+        {
+          "id": "cathedrale",
+          "description": "Une haute cathédrale gothique de pierre calcaire blonde, à la façade percée d'une grande rosace et flanquée de deux tours carrées inachevées, dont l'une porte un échafaudage de bois ; ses arcs-boutants se découpent sur le ciel du soir.",
+          "where": "au nord, au sommet de la colline, au bout de la rue montante"
+        },
+        {
+          "id": "moulin",
+          "description": "Un moulin à vent de bois sur pivot, aux ailes tendues de toile grise immobiles, perché seul sur une crête herbeuse.",
+          "where": "au nord-est, sur une crête au-delà des remparts"
+        }
+      ]
+    },
+    "scenes": [
+      {
+        "id": "rue",
+        "orientation": "portrait",
+        "opening": true,
+        "brief": "Une rue pavée étroite et montante d'un village médiéval à la tombée du soir, bordée de maisons à colombages à encorbellements, avec à gauche l'enseigne en fer forgé d'une auberge et sa porte basse, et tout au fond, en haut de la pente, une cathédrale gothique. La lumière rasante du couchant vient de la gauche et dore les façades de droite tandis que le côté gauche est dans l'ombre bleutée ; la rue est vide de passants.",
+        "viewpoint": "En bas de la rue, juste passé la porte des remparts, dos à elle, face au nord et à la pente.",
+        "landmarks": [
+          {
+            "id": "cathedrale",
+            "where": "au fond, au centre, en haut de la rue, dominant les toits, son flanc gauche éclairé par le couchant"
+          },
+          {
+            "id": "moulin",
+            "where": "au loin à droite, au-dessus des toits, petite silhouette sur une crête"
+          }
+        ],
+        "exits": [
+          {
+            "id": "auberge",
+            "label": "Entrer",
+            "to": "auberge",
+            "threshold": "la porte basse de l'auberge, en chêne cerclé de fer, au fond d'un renfoncement de pierre blonde, sous une enseigne de fer forgé en forme de cerf et une lanterne allumée",
+            "zone": {
+              "x": "left",
+              "y": "middle"
+            },
+            "oneWay": false
+          }
+        ],
+        "title": "La rue montante de Valrouge",
+        "intro": "Tu passes la porte des remparts et la rue pavée de Valrouge s'élève devant toi, étroite et déserte, entre des façades à colombages que le couchant dore d'un côté et que l'ombre bleuit de l'autre. Tout là-haut, la cathédrale veille sur le village pendant que s'allument les premières lanternes.",
+        "style": "Matte painting numérique de cinéma, réaliste et très détaillé, à la manière des décors peints pour les films historiques : perspective juste, proportions exactes, profondeur atmosphérique marquée. Les matières sont rendues avec soin et portent leur âge : pierre calcaire blonde érodée et tachée de lichen, colombages de chêne noircis et fendus, enduit de chaux écaillé, tuiles et lauzes moussues, fer forgé piqué de rouille, verre soufflé bullé, tissus de laine rêche, poussière et suie dans les recoins. Palette chaude de fin de jour, ocres, ambres et rouges brique dans la lumière, bleus et violets profonds dans les ombres. Lumière crédible venant de sources précises : la lueur rasante et orangée du soleil couchant, puis la flamme dorée des lanternes, chandelles et âtres, avec des ombres longues et cohérentes et un clair-obscur qui installe une atmosphère calme, un peu mélancolique. Fine brume de fumée de bois dans l'air, particules de poussière dans les rais de lumière. Détails secondaires nombreux qui racontent la vie du lieu sans voler la vedette aux passages et aux portes. Aucun texte, lettre, chiffre, signature ni logo ; pas de style cartoon, bande dessinée, anime ni caricature, pas de contours encrés ni d'aplats ; pas de photographie ni de rendu 3D lisse ; pas de cadre ni de bordure.",
+        "light": "Soleil couchant bas et rasant venant de la gauche (ouest), lumière orangée et ambrée qui dore les façades de droite et le flanc gauche de la cathédrale ; côté gauche de la rue dans une ombre bleutée et violette ; ciel ambre à gauche virant au bleu profond à droite ; lueurs dorées et chaudes des premières lanternes et des fenêtres, ombres longues étirées vers la droite.",
+        "background": "Format portrait 9:16, vue de face à hauteur d'homme depuis le bas d'une rue médiévale, juste passé la porte des remparts, regard tourné vers le haut de la pente. Une rue pavée étroite monte droit vers le fond en perspective centrale, entre deux rangées serrées de maisons à colombages à encorbellements dont les étages en surplomb se rapprochent au-dessus de la chaussée. Le sol occupe le tiers inférieur de l'image : pavés de pierre ronds et usés, polis au centre, joints garnis de terre et de brins d'herbe, une rigole centrale peu profonde qui descend la pente, quelques feuilles mortes d'automne ; ce premier plan reste dégagé et vide. Rue entièrement vide, sans aucune personne ni aucun animal. Côté gauche (ouest), les façades sont plongées dans une ombre bleutée et violette : soubassements de pierre calcaire blonde érodée, poutres de chêne noircies et fendues, hourdis d'enduit de chaux écaillé, volets de bois gris entrouverts, petites fenêtres à vitres bullées dont certaines brillent d'une lueur de chandelle. À gauche, à mi-hauteur de l'image et bien en retrait du bord, s'ouvre l'entrée de l'auberge : un renfoncement de pierre blonde aux arêtes émoussées, au fond duquel se tient une porte basse en chêne sombre cerclée de bandes de fer forgé rouillé, aux gros clous et à la poignée en anneau, une marche de pierre creusée par l'usure devant elle et rien qui l'obstrue ; au-dessus, une potence de fer forgé porte une enseigne découpée en forme de cerf, et à côté de la porte une lanterne de fer et de verre allumée jette un halo doré et chaud sur la pierre et les pavés, contrastant avec l'ombre bleue. Côté droit (est), les façades sont dorées par la lumière rasante orangée du couchant : colombages chauds, enduit ocré, encorbellements soutenus par des consoles de bois sculptées, petites lucarnes, toits de tuiles brunes moussues, cheminées dont s'échappent de fins filets de fumée de bois, longues ombres projetées par les poutres. Détails secondaires aux murs : anneaux de fer scellés pour attacher les chevaux, bancs de pierre, pots de terre cuite aux rebords des fenêtres, une corde à linge vide tendue entre deux étages, des traces de suie au-dessus des portes, une niche de pierre vide, des gouttières de bois. Tout au fond, au centre, en haut de la rue et dominant les toits, se dresse une haute cathédrale gothique de pierre calcaire blonde, à la façade percée d'une grande rosace et flanquée de deux tours carrées inachevées, dont l'une porte un échafaudage de bois ; ses arcs-boutants se découpent sur le ciel du soir, son flanc gauche éclairé par le couchant et son flanc droit dans l'ombre bleue, adoucie par la brume atmosphérique. Au loin à droite, au-dessus des toits, une petite silhouette de moulin à vent de bois sur pivot, aux ailes tendues de toile grise immobiles, perché seul sur une crête herbeuse au-delà des remparts. Ciel de fin de jour d'automne sec et clair, ambre et orangé à gauche, passant au bleu profond vers la droite, quelques étoiles naissantes à droite ; fine brume de fumée de bois flottant entre les maisons et particules de poussière dans les rais de lumière rasante."
+      },
+      {
+        "id": "auberge",
+        "orientation": "landscape",
+        "opening": false,
+        "brief": "La salle commune d'une auberge médiévale au soir, sous un plafond de grosses poutres de chêne noircies, avec tables et bancs de bois usé, une large cheminée de pierre où brûle un feu, et au fond de petites fenêtres à vitres bullées où rougeoie le couchant. L'éclairage mêle la lueur orangée des fenêtres et la flamme des chandelles et de l'âtre ; la salle est vide de clients.",
+        "viewpoint": "Juste à l'intérieur de l'auberge, quelques pas après la porte d'entrée, dos à la rue, face à l'ouest et au fond de la salle.",
+        "landmarks": [],
+        "exits": [
+          {
+            "id": "rue",
+            "label": "Sortir",
+            "to": "rue",
+            "threshold": "la porte d'entrée en chêne cerclé de fer, entrouverte sur la rue où tombe la lumière bleutée du soir, au premier plan à gauche",
+            "zone": {
+              "x": "left",
+              "y": "bottom"
+            },
+            "oneWay": false
+          },
+          {
+            "id": "etage",
+            "label": "Monter",
+            "to": "etage",
+            "threshold": "l'escalier raide de chêne usé, à rampe de bois poli, qui monte le long du mur du fond vers l'étage",
+            "zone": {
+              "x": "right",
+              "y": "middle"
+            },
+            "oneWay": false
+          }
+        ],
+        "back": "rue",
+        "title": "La salle commune du Cerf Blanc",
+        "intro": "Tu passes la porte basse et la chaleur du feu t'enveloppe, mêlée à l'odeur de fumée de bois, de cire et de bière éventée. La salle commune du Cerf Blanc est vide et silencieuse ; seul le couchant rougeoie aux petites fenêtres du fond.",
+        "style": "Matte painting numérique de cinéma, réaliste et très détaillé, à la manière des décors peints pour les films historiques : perspective juste, proportions exactes, profondeur atmosphérique marquée. Les matières sont rendues avec soin et portent leur âge : pierre calcaire blonde érodée et tachée de lichen, colombages de chêne noircis et fendus, enduit de chaux écaillé, tuiles et lauzes moussues, fer forgé piqué de rouille, verre soufflé bullé, tissus de laine rêche, poussière et suie dans les recoins. Palette chaude de fin de jour, ocres, ambres et rouges brique dans la lumière, bleus et violets profonds dans les ombres. Lumière crédible venant de sources précises : la lueur rasante et orangée du soleil couchant, puis la flamme dorée des lanternes, chandelles et âtres, avec des ombres longues et cohérentes et un clair-obscur qui installe une atmosphère calme, un peu mélancolique. Fine brume de fumée de bois dans l'air, particules de poussière dans les rais de lumière. Détails secondaires nombreux qui racontent la vie du lieu sans voler la vedette aux passages et aux portes. Aucun texte, lettre, chiffre, signature ni logo ; pas de style cartoon, bande dessinée, anime ni caricature, pas de contours encrés ni d'aplats ; pas de photographie ni de rendu 3D lisse ; pas de cadre ni de bordure.",
+        "light": "Couchant orangé et rougeoyant entrant de face par les petites fenêtres bullées du mur du fond (ouest), rais de lumière obliques qui tombent vers le spectateur et étirent les ombres vers l'avant ; flamme dorée et vacillante de l'âtre au centre du fond et des chandelles des appliques ; lumière froide, bleutée et faible du soir filtrant par la porte entrouverte au premier plan à gauche ; plafond et recoins plongés dans une pénombre brune et violette.",
+        "background": "Format paysage 16:9, vue de face à hauteur d'homme depuis l'intérieur d'une auberge médiévale du XIVe siècle, quelques pas après la porte d'entrée, regard tourné vers le fond de la salle commune. Salle basse et profonde sous un plafond de grosses poutres de chêne noircies par la suie et fendues, soutenues par des solives serrées et deux poteaux de chêne équarri ; murs de colombages noircis aux hourdis d'enduit de chaux jaunis et écaillés, soubassements de pierre calcaire blonde. Le sol occupe toute la moitié inférieure de l'image : grandes dalles de pierre calcaire blonde inégales, usées et polies par les pas, aux joints garnis de poussière, quelques brins de jonc et de paille éparpillés, taches de cire et de vin anciennes ; ce sol reste entièrement dégagé et vide, sans table, sans banc, sans meuble. Salle entièrement vide, sans aucune personne ni aucun animal. Au premier plan à gauche, bien en retrait du bord de l'image, dans le mur d'entrée qui fait retour, la porte basse de l'auberge en chêne sombre cerclée de bandes de fer forgé rouillé, aux gros clous et à la poignée en anneau, vue de son côté intérieur avec sa barre de fer relevée sur ses crochets ; elle est entrouverte sur la rue, et par l'entrebâillement filtre la lumière bleutée et froide du soir, avec un liseré doré de la lanterne extérieure sur la marche de pierre creusée par l'usure du seuil ; rien n'obstrue la porte. Au fond, dans le mur ouest, deux petites fenêtres à meneau de pierre, à vitres de verre soufflé bullé serties de plomb, où rougeoie le couchant orangé et ambré, projetant des rais de lumière obliques chargés de poussière et de fumée vers le sol. Au centre du mur du fond, une large cheminée de pierre calcaire blonde au manteau épais noirci de suie, à la hotte enduite de chaux, où brûle un feu de bûches vives sur des chenets de fer forgé, une crémaillère et un chaudron de fonte suspendu au-dessus, la plaque de l'âtre noircie, un tas de bûches et un soufflet de cuir posés à côté. À droite, à mi-hauteur de l'image et loin du bord, un escalier raide de chêne usé, aux marches creusées au centre, à la rampe de bois poli par les mains et aux balustres tournés, monte le long du mur du fond vers une trémie sombre de l'étage ; rien n'encombre ses marches. Détails secondaires aux murs et au fond : appliques de fer forgé portant des chandelles de suif allumées aux coulures de cire, une couronne de fer à chandelles éteinte suspendue à une poutre par une chaîne, une étagère chargée de pichets d'étain et d'écuelles de terre cuite, des tonneaux de chêne cerclés de fer couchés sur un chantier contre le mur sous l'escalier, des bouquets d'herbes séchées et des chapelets d'oignons pendus aux poutres, un jambon fumé accroché près de la hotte, une ramure de cerf blanchie clouée au-dessus du manteau de la cheminée, des crochets de fer garnis de manteaux de laine rêche près de la porte, des traces de suie et de fumée sur l'enduit, toiles d'araignée dans les angles du plafond. Fine brume de fumée de bois flottant sous les poutres, particules de poussière dorées dans les rais du couchant, reflets chauds du feu sur les dalles et les pichets d'étain, pénombre brune et violette dans les recoins."
+      },
+      {
+        "id": "etage",
+        "orientation": "portrait",
+        "opening": false,
+        "brief": "Le palier étroit de l'étage d'une auberge médiévale au soir, au plancher de chêne grinçant et aux murs de chaux entre les colombages, bordé de portes de chambres closes, avec au bout une petite fenêtre à vitres bullées par où entre la dernière lueur orangée du couchant. Une chandelle dans une applique de fer éclaire faiblement le couloir ; personne n'y est.",
+        "viewpoint": "En haut de l'escalier, sur le palier de l'étage, dos à la cage d'escalier qu'on vient de gravir, face à l'ouest le long du couloir.",
+        "landmarks": [],
+        "exits": [
+          {
+            "id": "auberge",
+            "label": "Descendre",
+            "to": "auberge",
+            "threshold": "la première marche de l'escalier raide de chêne usé, avec le départ de sa rampe de bois poli, plongeant vers la lueur de la salle commune",
+            "zone": {
+              "x": "left",
+              "y": "bottom"
+            },
+            "oneWay": false
+          }
+        ],
+        "back": "auberge",
+        "title": "Le palier du Cerf Blanc",
+        "intro": "En haut de l'escalier, tu débouches sur le palier étroit de l'étage, où chaque latte de chêne grince sous tes pas. Toutes les portes sont closes, une chandelle tremble dans son applique, et au bout du couloir le couchant s'éteint lentement derrière une petite fenêtre aux vitres bullées.",
+        "style": "Matte painting numérique de cinéma, réaliste et très détaillé, à la manière des décors peints pour les films historiques : perspective juste, proportions exactes, profondeur atmosphérique marquée. Les matières sont rendues avec soin et portent leur âge : pierre calcaire blonde érodée et tachée de lichen, colombages de chêne noircis et fendus, enduit de chaux écaillé, tuiles et lauzes moussues, fer forgé piqué de rouille, verre soufflé bullé, tissus de laine rêche, poussière et suie dans les recoins. Palette chaude de fin de jour, ocres, ambres et rouges brique dans la lumière, bleus et violets profonds dans les ombres. Lumière crédible venant de sources précises : la lueur rasante et orangée du soleil couchant, puis la flamme dorée des lanternes, chandelles et âtres, avec des ombres longues et cohérentes et un clair-obscur qui installe une atmosphère calme, un peu mélancolique. Fine brume de fumée de bois dans l'air, particules de poussière dans les rais de lumière. Détails secondaires nombreux qui racontent la vie du lieu sans voler la vedette aux passages et aux portes. Aucun texte, lettre, chiffre, signature ni logo ; pas de style cartoon, bande dessinée, anime ni caricature, pas de contours encrés ni d'aplats ; pas de photographie ni de rendu 3D lisse ; pas de cadre ni de bordure.",
+        "light": "Dernière lueur orangée et rougeoyante du couchant entrant de face par la petite fenêtre bullée au bout du couloir (ouest), étirant les ombres vers le spectateur ; flamme dorée et faible d'une chandelle dans une applique de fer sur le mur de droite à mi-couloir ; halo chaud et vacillant montant de la cage d'escalier en bas à gauche, reflet du feu de la salle commune ; plafond, angles et seuils des portes plongés dans une pénombre brune et violette.",
+        "background": "Format portrait 9:16, vue de face à hauteur d'homme depuis le haut d'un escalier, sur le palier de l'étage d'une auberge médiévale du XIVe siècle, regard porté le long d'un couloir étroit et profond qui file droit vers le fond, en perspective centrale marquée. Plafond bas de solives de chêne noircies par la suie et fendues, portées par une grosse poutre transversale ; murs de colombages de chêne noirci, aux pièces obliques et verticales, dont les hourdis d'enduit de chaux jauni sont écaillés, fissurés et tachés de suie. Le sol occupe le tiers inférieur de l'image : plancher de larges lattes de chêne sombre, inégales, disjointes et usées au centre par les pas, aux têtes de clous de fer luisantes, quelques brins de paille et de jonc, de la poussière dans les joints, une ancienne tache de cire ; ce plancher reste entièrement dégagé et vide, sans meuble, sans objet. Couloir entièrement vide, sans aucune personne ni aucun animal. De chaque côté du couloir, des portes de chambres closes en planches de chêne sombre, basses et cintrées, aux pentures et loquets de fer forgé rouillé, aux seuils de bois creusés, en enfilade qui diminue vers le fond : deux sur le mur de gauche, deux sur le mur de droite, toutes fermées. Au bout du couloir, au centre du mur du fond, une petite fenêtre carrée dans un ébrasement de pierre calcaire blonde, à vitres rondes de verre soufflé bullé serties de plomb, où rougeoie la dernière lueur orangée et ambrée du couchant, projetant un rai de lumière oblique chargé de poussière et de fumée qui glisse sur le plancher vers le spectateur. Au premier plan à gauche, en bas de l'image mais bien en retrait du bord, l'ouverture de la trémie de l'escalier dans le plancher : la première marche de l'escalier raide de chêne usé, creusée au centre, plongeant vers le bas, avec le départ de sa rampe de bois poli par les mains et le pilastre aux balustres tournés, le tout baigné d'un halo chaud et doré montant de la salle commune en contrebas ; rien n'encombre la marche. Sur le mur de droite, à mi-couloir, une applique de fer forgé tenant une chandelle de suif allumée aux longues coulures de cire, qui jette un faible cercle doré sur l'enduit. Détails secondaires aux murs et au fond : un crochet de fer où pend un vieux manteau de laine rêche près d'une porte, une petite niche dans le mur avec une écuelle de terre cuite, des traînées de fumée noire au-dessus de l'applique, des toiles d'araignée dans les angles des solives, une poutre fendue rafistolée d'un étrier de fer, un clou portant un bouquet d'herbes séchées, des fissures dans l'enduit autour des colombages, des marques d'usure et de doigts sur les montants des portes. Fine brume de fumée de bois sous le plafond, particules de poussière dorées dans le rai du couchant, reflets orangés sur les lattes cirées par l'usage, pénombre brune et violette dans les recoins et entre les portes."
+      }
+    ]
+  }
+}
