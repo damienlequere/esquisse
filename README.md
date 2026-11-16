@@ -42,6 +42,7 @@ pnpm typecheck
 pnpm lint            # pnpm format to fix
 pnpm generate-game <game> "brief" [--model <id>]  # a new game, its plan then its scenes' backgrounds, kept in its game.json (see A new game)
 pnpm generate-scene <game> <id> portrait|landscape "brief"  # a new scene of a game, its background only (see Generating a scene)
+pnpm link-game <game>  # links a game made by pnpm generate-game, from its plan: its exits found in its scenes, its links (see Linking a game)
 pnpm remove-scene <game> <id> # removes a scene, its texts and its images
 pnpm remove-game <game> # removes a game, all its scenes and its items
 pnpm show-scene <game> <id> # the scene's background with what is clickable outlined, in the image viewer
@@ -208,6 +209,7 @@ $ pnpm check-game
 ```
 | `packages/generator/src/generate-scene.ts` | The background, written, painted, validated, saved and listed for both apps |
 | `packages/generator/src/generate-game.ts` | A new game: its plan, then each of its scenes as generate-scene makes one, kept in its `game.json` |
+| `packages/generator/src/link-game.ts` | A game linked from its plan: each exit's threshold found in its scene, made an object, and the game's links |
 | `packages/generator/src/write-game.ts`, `session.ts` | The game's plan with Claude; what both commands share (the questions, a background painted until validated, saved) |
 | `packages/generator/src/write-scene.ts`, `paint.ts`, `registry.ts` | The writing with Claude, the image with Gemini and the renders, the generated lists |
 
@@ -273,7 +275,8 @@ to it already painted (those its exits lead to or come from: their decor, their
 light, the threshold seen from their side); the style is the plan's, the same
 for every scene. The game starts in the first scene; its scenes are not linked
 yet: their exits are in the plan, in `generation`, not yet objects of the
-scenes nor links of the game.
+scenes nor links of the game, which `pnpm link-game` makes (see Linking a
+game).
 
 ```text
 $ pnpm generate-game tristram4 "un village rappelant Tristram à la tombée du soir…"
@@ -310,6 +313,39 @@ others stay in the plan, to make with `pnpm generate-scene`.
 
 The game must not exist: `pnpm remove-game` first. Each plan and each change to
 it is one Claude request, on top of the scenes'.
+
+### Linking a game
+
+```bash
+pnpm link-game <game>
+```
+
+For a game made by `pnpm generate-game`, whose plan is a map. For each scene
+of the plan on disk, Claude finds each exit's threshold in the painted
+background (its original in `sources/`, at most 1568 pixels wide or high): its
+box, its name, a short description in English (`detect`), and the text shown
+when the exit stays closed, as when the scene is played alone. The render shows
+the boxes, and the share of each outside the safe zone; then `v` validate, `r`
+detect again, `p` pass the scene, `q` quit. A validated scene is saved at once:
+each exit an object of its `scene.json` (`label`, `actions: [{ label, exit,
+text }]`), its box in `objects.json`, and its `back` from the plan. Then the
+game's `links` are written from the plan, for the exits made whose scene is on
+disk, and the game is checked as `pnpm check-game` checks it.
+
+An exit already made is kept as it is, its box adjusted by hand included: run it
+again after painting a scene again, or after passing one. One Claude request per
+exit found.
+
+```text
+$ pnpm link-game valrouge
+── rue
+  Finding « auberge » → auberge: la porte basse de l'auberge…
+    La porte de l'auberge: {"x0":0.224,"y0":0.573,"x1":0.425,"y1":0.848}
+Les sorties :  [v] valider  [r] redétecter  [p] passer  [q] quitter
+> v
+…
+✓ valrouge
+```
 
 ### A new scene
 

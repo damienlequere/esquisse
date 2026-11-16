@@ -5,6 +5,7 @@
   "scripts": {
     "generate-game": "node --experimental-strip-types --disable-warning=ExperimentalWarning src/generate-game.ts",
     "generate-scene": "node --experimental-strip-types --disable-warning=ExperimentalWarning src/generate-scene.ts",
+    "link-game": "node --experimental-strip-types --disable-warning=ExperimentalWarning src/link-game.ts",
     "remove-scene": "node --experimental-strip-types --disable-warning=ExperimentalWarning src/remove-scene.ts",
     "remove-game": "node --experimental-strip-types --disable-warning=ExperimentalWarning src/remove-game.ts",
     "show-scene": "node --experimental-strip-types --disable-warning=ExperimentalWarning src/show-scene.ts",
