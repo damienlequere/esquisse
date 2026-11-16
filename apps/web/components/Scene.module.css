@@ -609,12 +609,14 @@
   }
 }
 
-/* The buttons in the frame's corners (see CornerButton in Scene.tsx), drawn as
-   the ring menu's circle (RingMenu.module.css): their stroke alone, half seen
-   at rest, white and glowing when pointed at or focused. The back button is in
-   the bottom left corner, the wait button in the top right one. */
-.corner {
+/* The back button, in the bottom left corner of the frame (see BackButton in
+   Scene.tsx), drawn as the ring menu's circle (RingMenu.module.css): its
+   stroke alone, half seen at rest, white and glowing when pointed at or
+   focused. */
+.back {
   position: absolute;
+  left: max(1rem, env(safe-area-inset-left));
+  bottom: max(1rem, env(safe-area-inset-bottom));
   padding: 0;
   border: 0;
   border-radius: 50%;
@@ -626,17 +628,7 @@
     color 150ms;
 }
 
-.back {
-  left: max(1rem, env(safe-area-inset-left));
-  bottom: max(1rem, env(safe-area-inset-bottom));
-}
-
-.wait {
-  right: max(1rem, env(safe-area-inset-right));
-  top: max(1rem, env(safe-area-inset-top));
-}
-
-.cornerIcon {
+.backArrow {
   display: block;
   width: 80%;
   height: 80%;
@@ -653,19 +645,19 @@
     opacity 150ms;
 }
 
-.corner:hover,
-.corner:focus-visible {
+.back:hover,
+.back:focus-visible {
   color: #fff;
   outline: none;
 }
 
-.corner:hover .cornerIcon,
-.corner:focus-visible .cornerIcon {
+.back:hover .backArrow,
+.back:focus-visible .backArrow {
   opacity: 1;
   filter: drop-shadow(0 0 2px rgb(0 0 0 / 0.9)) drop-shadow(0 0 6px rgb(255 255 255 / 0.6));
 }
 
-.corner:active {
+.back:active {
   scale: 0.9;
 }
 

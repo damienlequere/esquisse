@@ -82,9 +82,8 @@ export const ENTER_ARROW = "M4,12 H20 M13,5 L20,12 L13,19";
 // menu's circle's size, in the bottom left corner, drawn as it is.
 export const BACK_ARROW = "M9,14 L4,9 L9,4 M4,9 H14.5 A5.5,5.5 0 0 1 14.5,20 H11";
 
-// The wait button's icons, the same way: a crescent moon by day, to let night
-// fall, a sun by night, to wait for the day. The button is the back button's
-// size, in the top right corner, drawn as it is.
+// The wait item's icons, in the ring menu, as its others (RING_ICONS): a
+// crescent moon by day, to let night fall, a sun by night, to wait for the day.
 export const WAIT_ICONS = {
   moon: "M19.5,14.5 A7.5,7.5 0 1 1 9.5,4.5 A6,6 0 0 0 19.5,14.5 Z",
   sun: "M12,8 A4,4 0 1 1 12,16 A4,4 0 1 1 12,8 Z M12,2.5 V4.5 M12,19.5 V21.5 M2.5,12 H4.5 M19.5,12 H21.5 M5.3,5.3 L6.7,6.7 M17.3,17.3 L18.7,18.7 M5.3,18.7 L6.7,17.3 M17.3,6.7 L18.7,5.3",
@@ -400,8 +399,8 @@ export const sceneText = {
   close: "Fermer",
   // The back button, which leaves the scene by its back exit.
   back: "Retour en arrière",
-  // The wait button, which lets night fall, or the day break, and what it says
-  // then.
+  // The ring menu's wait item, which lets night fall, or the day break, and
+  // what it says then.
   wait: "Attendre",
   nightFalls: "La nuit tombe.",
   dayBreaks: "Le jour se lève.",

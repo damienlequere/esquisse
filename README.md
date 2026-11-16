@@ -193,9 +193,9 @@ only once it is raised, and an object left with no action is not clickable. A
 scene comes back without its opening.
 
 A scene with its night (`"night"` in its `scene.json`, `nuit.webp`, see A
-game's night) has a **wait button**, in the top right corner of the frame: a
-moon by day, a sun by night (`WAIT_ICONS`), hidden during a conversation. It
-lets night fall, or the day break, for the whole game (`night` in
+game's night) has a **wait item** in its ring menu, between the logbook and
+the cogwheel: a moon by day, a sun by night (`WAIT_ICONS`). It lets night
+fall, or the day break, for the whole game (`night` in
 `GameProgress`): the night's image fades over the day's in 2.5 s
 (`NIGHT_FADE`, at once for whom asks for less motion), a toast says « La nuit
 tombe. » or « Le jour se lève. », and every scene with its night shows it until

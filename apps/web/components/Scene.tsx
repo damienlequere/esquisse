@@ -257,20 +257,10 @@ export const Scene = ({
           way back. */}
       {onBack && <BackButton onPress={onBack} />}
 
-      {/* The wait button, in the top right corner, where the scene has its
-          night: a moon by day, a sun by night. Not in a conversation, whose
-          panel is on the right in landscape. */}
-      {!capsule && images.night && scene.night && !inConversation && (
-        <CornerButton
-          className={styles.wait}
-          label={sceneText.wait}
-          icon={night ? WAIT_ICONS.sun : WAIT_ICONS.moon}
-          onPress={() => dispatch({ type: "wait" })}
-        />
-      )}
-
       {/* The ring menu, in the bottom right corner: its pouch opens the
-          inventory, its book the logbook, its cogwheel the general menu. */}
+          inventory, its book the logbook, where the scene has its night its
+          moon lets night fall and its sun the day break, its cogwheel the
+          general menu. */}
       {capsule?.onToggle && <CapsuleIcon expanded={capsule.expanded} onToggle={capsule.onToggle} />}
 
       {!capsule && (
@@ -278,10 +268,20 @@ export const Scene = ({
           items={[
             { id: "inventory", label: sceneText.inventory, icon: RING_ICONS.inventory },
             { id: "logbook", label: sceneText.logbook, icon: RING_ICONS.logbook },
+            ...(images.night && scene.night
+              ? [
+                  {
+                    id: "wait" as const,
+                    label: sceneText.wait,
+                    icon: night ? WAIT_ICONS.sun : WAIT_ICONS.moon,
+                  },
+                ]
+              : []),
             { id: "gameMenu", label: sceneText.gameMenu, icon: RING_ICONS.gameMenu },
           ]}
           onChoose={(item) => {
             if (item === "inventory") setInventoryOpen(true);
+            if (item === "wait") dispatch({ type: "wait" });
             if (item === "logbook") setLogbookOpen(true);
             if (item === "gameMenu") setGameMenuOpen(true);
           }}
@@ -532,29 +532,7 @@ const CapsuleIcon = ({ expanded, onToggle }: { expanded: boolean; onToggle(): vo
 // The back button: the ring menu's circle's size (ringSizes, from the frame's),
 // its arrow drawn as the circle is, half seen at rest. The mobile app has the
 // same.
-const BackButton = ({ onPress }: { onPress(): void }) => (
-  <CornerButton
-    className={styles.back}
-    label={sceneText.back}
-    icon={BACK_ARROW}
-    onPress={onPress}
-  />
-);
-
-// A button in a corner of the frame, the back button's or the wait button's:
-// the ring menu's circle's size, its icon a stroke drawn as the circle is.
-const CornerButton = ({
-  className,
-  label,
-  icon,
-  onPress,
-}: {
-  // Its corner (styles.back or styles.wait).
-  className: string | undefined;
-  label: string;
-  icon: string;
-  onPress(): void;
-}) => {
+const BackButton = ({ onPress }: { onPress(): void }) => {
   const ref = useRef<HTMLButtonElement>(null);
   const [frame, setFrame] = useState({ width: 400, height: 400 });
   useLayoutEffect(() => {
@@ -571,13 +549,13 @@ const CornerButton = ({
     <button
       ref={ref}
       type="button"
-      className={`${styles.corner} ${className}`}
-      aria-label={label}
+      className={styles.back}
+      aria-label={sceneText.back}
       style={{ width: size, height: size }}
       onClick={onPress}
     >
-      <svg className={styles.cornerIcon} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <path d={icon} />
+      <svg className={styles.backArrow} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d={BACK_ARROW} />
       </svg>
     </button>
   );

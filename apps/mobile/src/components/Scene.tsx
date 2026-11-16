@@ -325,39 +325,36 @@ export const Scene = ({
       {/* The back button, in the bottom left corner, where the scene has a
           way back. */}
       {onBack && screen && (
-        <CornerButton
+        <BackButton
           size={ringSizes(screen.width, screen.height).size}
-          label={sceneText.back}
-          icon={BACK_ARROW}
           onPress={onBack}
           style={{ left: Math.max(16, insets.left), bottom: Math.max(16, insets.bottom) }}
         />
       )}
 
-      {/* The wait button, in the top right corner, where the scene has its
-          night: a moon by day, a sun by night. Not in a conversation, whose
-          panel is on the right in landscape (the web's has the same). */}
-      {images.night && scene.night && !inConversation && screen && (
-        <CornerButton
-          size={ringSizes(screen.width, screen.height).size}
-          label={sceneText.wait}
-          icon={night ? WAIT_ICONS.sun : WAIT_ICONS.moon}
-          onPress={() => dispatch({ type: "wait" })}
-          style={{ right: Math.max(16, insets.right), top: Math.max(16, insets.top) }}
-        />
-      )}
-
       {/* The ring menu, in the bottom right corner: its pouch opens the
-          inventory, its book the logbook, its cogwheel the general menu. */}
+          inventory, its book the logbook, where the scene has its night its
+          moon lets night fall and its sun the day break, its cogwheel the
+          general menu (the web's has the same). */}
       <RingMenu
         frame={screen}
         items={[
           { id: "inventory", label: sceneText.inventory, icon: RING_ICONS.inventory },
           { id: "logbook", label: sceneText.logbook, icon: RING_ICONS.logbook },
+          ...(images.night && scene.night
+            ? [
+                {
+                  id: "wait" as const,
+                  label: sceneText.wait,
+                  icon: night ? WAIT_ICONS.sun : WAIT_ICONS.moon,
+                },
+              ]
+            : []),
           { id: "gameMenu", label: sceneText.gameMenu, icon: RING_ICONS.gameMenu },
         ]}
         onChoose={(item) => {
           if (item === "inventory") setInventoryOpen(true);
+          if (item === "wait") dispatch({ type: "wait" });
           if (item === "logbook") setLogbookOpen(true);
           if (item === "gameMenu") setGameMenuOpen(true);
         }}
@@ -618,26 +615,21 @@ const EnterButton = ({
   );
 };
 
-// A button in a corner of the screen, the back button's or the wait button's:
-// the ring menu's circle's size, its icon drawn as the circle is, over a
-// darker, wider stroke; half seen at rest, white and glowing while pressed (the
-// web's has the same).
-const CornerButton = ({
+// The back button: the ring menu's circle's size, its arrow drawn as the
+// circle is, over a darker, wider stroke; half seen at rest, white and glowing
+// while pressed (the web's has the same).
+const BackButton = ({
   size,
-  label,
-  icon,
   onPress,
   style,
 }: {
   size: number;
-  label: string;
-  icon: string;
   onPress(): void;
-  style: { left?: number; right?: number; top?: number; bottom?: number };
+  style: { left: number; bottom: number };
 }) => (
   <Pressable
     accessibilityRole="button"
-    accessibilityLabel={label}
+    accessibilityLabel={sceneText.back}
     onPress={onPress}
     className="items-center justify-center"
     style={[{ position: "absolute", width: size, height: size }, style]}
@@ -668,7 +660,7 @@ const CornerButton = ({
           ].map(({ stroke, width }) => (
             <Path
               key={width}
-              d={icon}
+              d={BACK_ARROW}
               fill="none"
               stroke={stroke}
               strokeWidth={width}
