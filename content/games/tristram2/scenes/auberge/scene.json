@@ -1,0 +1,41 @@
+{
+  "brief": "La salle commune d'une auberge médiévale au soir, basse de plafond sous de lourdes poutres de chêne noircies, avec de longues tables et des bancs usés, une grande cheminée de pierre où rougeoient des braises et des chandelles de suif ; par les petites fenêtres à vitraux plombés du mur du fond filtre la dernière lueur cuivrée du couchant. Salle vide et silencieuse, chopes abandonnées sur les tables.",
+  "title": "La salle commune de l'auberge",
+  "intro": "Tu passes le seuil bas de l'auberge et le silence te tombe sur les épaules : la salle commune est déserte, les braises rougeoient seules dans l'âtre, et par les petits vitraux du fond filtre la dernière lueur cuivrée du couchant. Des chopes à demi pleines attendent sur les tables des buveurs qui ne sont jamais revenus.",
+  "imageRatio": "16:9",
+  "opening": false,
+  "safe": {
+    "x0": 0.14,
+    "y0": 0.14,
+    "x1": 0.86,
+    "y1": 0.86
+  },
+  "style": "Matte painting numérique de cinéma, réaliste et très détaillé, comme un décor peint pour un film d'époque sombre. Proportions, perspective et anatomie justes. Les matières sont rendues avec précision : colombages de chêne noircis par la suie et l'humidité, torchis fissuré, ardoises luisantes, pierre grise rongée de lichen et de mousse, fer forgé piqué de rouille, boue épaisse creusée d'ornières, bois de mobilier poli par l'usage et taché de cire. Palette froide et désaturée de gris bleutés, de bruns tourbeux et de verts mousse, que réchauffent seulement les dernières lueurs cuivrées du couchant et l'or tremblant des lanternes et des bougies. Lumière crédible venue de sources précises, ombres longues qui en découlent, clair-obscur profond. Une brume basse et laiteuse traîne au ras du sol et noie les lointains, donnant une atmosphère pesante, silencieuse et maudite. Nombreux détails secondaires qui racontent l'abandon et la peur (volets cloués, symboles de protection gravés, herbes folles, flaques), sans voler la vedette aux passages et aux portes. Aucun texte, lettre, chiffre, signature ni logo ; pas de style cartoon, bande dessinée, anime ni caricature, pas de contours encrés ni d'aplats ; pas de photographie ni de rendu 3D lisse ; pas de cadre ni de bordure.",
+  "light": "Tombée du soir d'automne : dernière lueur cuivrée et rasante du couchant entrant de face par les petites fenêtres à vitraux plombés du mur du fond (l'ouest), qui étire les ombres vers le spectateur ; rougeoiement orangé des braises de la cheminée à gauche ; petites flammes jaunes et tremblantes des chandelles de suif ; lueur jaune de la lanterne de la rue par la porte ouverte à droite ; pénombre générale froide, gris bleuté, sous le plafond bas.",
+  "background": {
+    "prompt": "Format paysage 16:9, vue de face à hauteur d'homme, depuis l'entrée de la salle commune d'une auberge médiévale du XIVe siècle, dos à la rue, le regard tourné vers l'ouest, à la tombée du soir d'automne. Pièce large et basse de plafond : de lourdes poutres de chêne noircies par des siècles de fumée traversent tout le haut de l'image en perspective, portées par des solives fendues où pendent des crochets de fer rouillé, des bouquets d'herbes séchées et des chapelets d'ail racornis ; des toiles d'araignée grises s'accrochent dans les angles. La moitié inférieure de l'image est le sol, dégagé et entièrement vide : de grandes dalles de pierre grise inégales, usées et creusées par les pas, jonchées de paille et de joncs secs piétinés, tachées de coulures de cire et d'anciennes flaques de bière séchée, avec des traces de boue apportées de la rue près de l'entrée ; aucun meuble, aucune table, aucun banc n'y est posé. Le mur du fond, face au spectateur, est fait de colombages de chêne noircis et de torchis gris fissuré, taché de suie et d'humidité ; il est percé à mi-hauteur de trois petites fenêtres basses à vitraux plombés en losanges, aux verres épais, bullés et verdâtres, dont l'un est fêlé et un autre condamné par une planche clouée en travers ; à travers elles filtre la dernière lueur cuivrée du couchant, qui découpe des rais de lumière poussiéreuse dans la pénombre et pose des losanges dorés pâles sur les dalles. Dans l'angle du fond à droite, un étroit escalier de bois sombre aux marches creusées monte vers l'étage et se perd dans l'obscurité, sa rampe polie par les mains. Sur le mur de gauche, une grande cheminée de pierre grise au manteau massif noirci de suie, où sont grossièrement gravés au couteau des symboles de protection et cloué un fer à cheval rouillé ; dans son âtre profond, sur un lit de cendres, rougeoient des braises orangées sous une crémaillère de fer vide, et leur lueur chaude lèche les pierres du foyer et le sol devant elle. Au premier plan à droite, bien en retrait du bord de l'image, la porte basse de l'auberge, en chêne noirci cerclé de pentures de fer rouillé, a son battant grand ouvert, rabattu vers l'intérieur : par l'embrasure on voit les deux marches de pierre grise usées et creusées par les pas qui descendent vers la boue brun tourbeux de la rue, luisante d'ornières, où se pose le halo doré de la lanterne à la flamme jaune tremblante accrochée dehors ; un filet de brume laiteuse se glisse par le seuil au ras des dalles ; la porte est bien visible, dégagée, sans personne devant. Détails secondaires aux murs : une étagère de bois gauchie vide de vaisselle, des pots de terre fêlés posés haut, un tonneau éventré dans un coin sombre, des traces de croix tracées à la suie au-dessus des fenêtres, un rameau de buis sec glissé derrière une poutre. Salle entièrement vide et silencieuse : aucune personne, aucun animal, rien que la pénombre, la braise, la poussière et la lueur mourante du couchant."
+  },
+  "objects": [
+    {
+      "id": "rue",
+      "zone": {
+        "x0": 0.763,
+        "y0": 0.261,
+        "x1": 0.989,
+        "y1": 0.914
+      },
+      "paint": "Le battant ouvert de la porte basse de l'auberge, en chêne noirci cerclé de fer, au premier plan à droite, laissant voir les deux marches de pierre usées, la boue de la rue et la lueur jaune de la lanterne.",
+      "detect": "the open dark oak door with iron hinges on the right, with the doorway showing the foggy muddy street, the hanging lantern and the two worn stone steps",
+      "label": "La porte de l'auberge",
+      "actions": [
+        {
+          "label": "Sortir",
+          "exit": "rue",
+          "text": "Le battant de chêne noirci bâille sur la rue, et la brume rampe par-dessus les deux marches usées. Dehors, la boue luit sous la lanterne qui grésille, et aucun pas ne résonne entre les maisons."
+        }
+      ]
+    }
+  ],
+  "characters": [],
+  "back": "rue"
+}

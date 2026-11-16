@@ -1,7 +1,7 @@
 {
-  "brief": "une rue montante et boueuse d'un village médiéval gothique et ténébreux à la tombée du soir : maisons à colombages noircis et penchées, volets clos, torches murales, brume basse ; la rue monte en pente vers le fond de l'image, où une grande cathédrale gothique sombre domine le village, une lueur rouge derrière sa rosace",
-  "title": "La Montée de la Cathédrale",
-  "intro": "Tu gravis une rue boueuse où les maisons noircies se penchent comme pour t'écouter passer, tandis que la brume rampe entre les pavés. Tout en haut, la cathédrale veille, et derrière sa rosace brûle une lueur rouge que personne ne semble vouloir regarder.",
+  "brief": "Une rue de village médiéval boueuse et défoncée d'ornières qui monte en pente raide entre des maisons à colombages noircies en encorbellement, volets clos et cloués, à la tombée du soir dans la brume ; à gauche la façade de l'auberge, au fond un passage voûté sous une maison. Personne dans la rue, aucune charrette, seule la brume rampe au ras de la boue.",
+  "title": "La rue des volets cloués",
+  "intro": "Tu passes la porte du village et la rue boueuse monte devant toi, raide, entre des maisons noircies aux volets cloués. Tout là-haut, au-dessus des toits, la cathédrale te regarde à travers la brume, et seule la lanterne de l'auberge brille encore.",
   "imageRatio": "9:16",
   "safe": {
     "x0": 0.09,
@@ -9,11 +9,50 @@
     "x1": 0.91,
     "y1": 0.86
   },
-  "style": "Matte painting numérique de cinéma, réaliste et très détaillé, dans l'esprit des décors peints d'un film d'horreur gothique médiéval. Perspective juste et profonde, proportions crédibles, architecture solide et vraisemblable. Les matières sont rendues avec précision : bois de colombage noirci et fendu, torchis craquelé et taché d'humidité, ardoises et tuiles moussues, fer forgé rouillé, pierre de taille érodée et couverte de lichen, boue épaisse luisante d'eau, flaques qui reflètent les flammes. Palette sombre et froide de bleus ardoise, gris verdâtres et bruns terreux, réchauffée par l'orange vacillant des torches et percée au loin par un rouge sourd et inquiétant. Clair-obscur marqué, ombres longues et nettes portées par chaque flamme, brume basse épaisse qui adoucit les lointains et accroche la lumière. Atmosphère oppressante, silencieuse, chargée de menace. Aucun texte, lettre, chiffre, signature ni logo ; pas de style cartoon, bande dessinée, anime ni caricature, pas de contours encrés ni d'aplats ; pas de photographie ni de rendu 3D lisse ; pas de cadre ni de bordure.",
-  "light": "Crépuscule bleu-gris froid venant du ciel couvert ; torches murales à flamme orange vacillante sur les façades à gauche et à droite, éclairage chaud latéral et rasant ; lueur rouge sourde rayonnant depuis la rosace de la cathédrale au fond, en contre-jour.",
+  "style": "Matte painting numérique de cinéma, réaliste et très détaillé, comme un décor peint pour un film d'époque sombre. Proportions, perspective et anatomie justes. Les matières sont rendues avec précision : colombages de chêne noircis par la suie et l'humidité, torchis fissuré, ardoises luisantes, pierre grise rongée de lichen et de mousse, fer forgé piqué de rouille, boue épaisse creusée d'ornières, bois de mobilier poli par l'usage et taché de cire. Palette froide et désaturée de gris bleutés, de bruns tourbeux et de verts mousse, que réchauffent seulement les dernières lueurs cuivrées du couchant et l'or tremblant des lanternes et des bougies. Lumière crédible venue de sources précises, ombres longues qui en découlent, clair-obscur profond. Une brume basse et laiteuse traîne au ras du sol et noie les lointains, donnant une atmosphère pesante, silencieuse et maudite. Nombreux détails secondaires qui racontent l'abandon et la peur (volets cloués, symboles de protection gravés, herbes folles, flaques), sans voler la vedette aux passages et aux portes. Aucun texte, lettre, chiffre, signature ni logo ; pas de style cartoon, bande dessinée, anime ni caricature, pas de contours encrés ni d'aplats ; pas de photographie ni de rendu 3D lisse ; pas de cadre ni de bordure.",
+  "light": "Tombée du soir d'automne : dernières lueurs cuivrées et rasantes du couchant venant de la gauche (l'ouest), qui accrochent les pignons et les toits de droite ; lueur jaune et tremblante de la lanterne de l'auberge à gauche ; ambiance générale froide, gris bleuté, diffusée par un ciel bas et la brume ; ombres longues étirées vers la droite.",
   "background": {
-    "prompt": "Rue médiévale étroite et boueuse vue de face, à hauteur d'homme, au cœur d'un village gothique ténébreux à la tombée du soir. La rue part du premier plan et monte en pente régulière vers le fond de l'image. Le tiers inférieur de l'image est occupé par le sol de la rue, large et dégagé : boue épaisse et brune creusée d'ornières de charrettes, flaques sombres qui reflètent les flammes, quelques vieux pavés disjoints affleurant, un mince filet d'eau qui ruisselle vers le bas de la pente. De chaque côté, des maisons à colombages hautes et étroites, aux poutres noircies par la suie et l'âge, au torchis craquelé et taché d'humidité, dont les étages en encorbellement penchent dangereusement vers la rue jusqu'à presque se toucher au-dessus. Tous les volets de bois sont clos, gauchis, cloutés de fer rouillé ; des portes basses barrées, des seuils de pierre usés. Des torches fixées aux murs dans des supports de fer forgé brûlent avec une flamme orange vacillante et laissent des traînées de suie sur les façades. Détails secondaires : une enseigne de fer rouillée sans inscription qui pend de travers à une potence, des toits d'ardoises moussues aux gouttières affaissées, des cheminées tordues d'où monte un mince filet de fumée, des chaînes rouillées, des herbes sèches au pied des murs, des traces de cire et de chaux sur un linteau, une petite niche murale vide et ébréchée. Une brume basse et laiteuse rampe au ras du sol et s'épaissit à mesure que la rue monte. Au fond, au sommet de la pente, une immense cathédrale gothique sombre domine tout le village : façade de pierre noircie, tours massives et flèches acérées découpées sur un ciel crépusculaire bleu-gris lourd de nuages, gargouilles, arcs-boutants, portail profond plongé dans l'ombre. Au centre de sa façade, une grande rosace laisse filtrer une lueur rouge sourde et inquiétante, comme un feu qui couve à l'intérieur, qui teinte la brume autour d'elle. La rue est entièrement vide, sans aucune personne ni aucun animal."
+    "prompt": "Format portrait 9:16, vue de face à hauteur d'homme, en bas d'une rue de village médiéval du XIVe siècle, le regard tourné vers le nord et montant le long d'une rue étroite en pente raide, à la tombée du soir d'automne. Le tiers inférieur de l'image est le sol de la rue, dégagé et vide : une boue épaisse brun tourbeux, défoncée d'ornières profondes pleines d'eau sombre où se reflète le ciel, de flaques, de quelques pierres affleurantes et de touffes d'herbes folles sur les bords ; une brume basse et laiteuse rampe au ras de la boue. La rue monte en perspective vers le centre de l'image, bordée des deux côtés de hautes maisons à colombages de chêne noircis par la suie et l'humidité, en encorbellement, leurs étages surplombant la rue et se resserrant vers le haut ; torchis gris fissuré et taché, toits d'ardoise luisante et affaissés, gouttières de bois pourri, volets de bois clos et cloués de planches en croix, symboles de protection grossièrement gravés au couteau dans les poteaux, bouquets d'herbes séchées et fers à cheval rouillés cloués au-dessus des portes, mousse et lichen au pied des murs. À gauche, à mi-hauteur de l'image, bien en retrait du bord, la façade de l'auberge, plus large et plus trapue que ses voisines : sa porte basse en chêne noirci cerclée de pentures de fer rouillé, au bout de deux marches de pierre grise usées et creusées par les pas, surmontée d'une enseigne de fer forgé sans aucune inscription qui pend à une potence et d'une lanterne à la flamme jaune tremblante qui jette un halo doré sur le seuil et la boue ; la porte est bien visible, dégagée, sans personne devant. Au fond de la rue, au centre de l'image et à mi-hauteur, une maison à colombages en encorbellement enjambe la rue : sous elle s'ouvre un passage voûté, une arche de pierre grise moussue et rongée de lichen, au-dessus de quelques pavés humides et luisants où s'engouffre la brume ; l'arche est bien lisible, sombre en son creux, sans personne. Tout en haut de l'image, au centre, très haute au-dessus des toits et des derniers pignons, une immense cathédrale gothique de pierre noircie domine tout : sans aucune tour de façade, une seule haute flèche ajourée, effilée comme une aiguille, s'élance de la croisée du transept au-dessus d'une longue nef hérissée d'arcs-boutants et de gargouilles, et se perd dans les nuages bas ; sa façade à pignon pointu porte une grande rosace éteinte qui paraît un œil mort ; la brume enveloppe sa base. Ciel bas et chargé de nuages gris bleuté ; à gauche, les dernières lueurs cuivrées du couchant rasent les toits et allument d'un reflet roux les pignons et les ardoises du côté droit, tandis que les façades de gauche restent dans l'ombre froide. Rue entièrement vide : aucune personne, aucun animal, aucune charrette, rien que la boue, la brume et le silence."
   },
-  "objects": [],
+  "objects": [
+    {
+      "id": "auberge",
+      "zone": {
+        "x0": 0.082,
+        "y0": 0.599,
+        "x1": 0.203,
+        "y1": 0.781
+      },
+      "paint": "La porte basse de l'auberge, en chêne noirci cerclé de fer, sous une enseigne de fer forgé sans inscription et une lanterne à la flamme jaune, au bout de deux marches de pierre usées.",
+      "detect": "the dark oak door with iron bands on the left house, beside the lit lantern, at the top of worn stone steps",
+      "label": "La porte de l'auberge",
+      "actions": [
+        {
+          "label": "Entrer",
+          "exit": "auberge",
+          "text": "La porte de chêne noirci, cerclée de fer, reste muette sous l'enseigne sans nom, et la lanterne jette sa flamme jaune sur les marches usées. Derrière le bois, tu devines une chaleur étouffée, peut-être un murmure, peut-être seulement le vent."
+        }
+      ]
+    },
+    {
+      "id": "place",
+      "zone": {
+        "x0": 0.466,
+        "y0": 0.609,
+        "x1": 0.677,
+        "y1": 0.74
+      },
+      "paint": "Le passage voûté sous une maison à colombages en encorbellement, arche de pierre grise moussue au-dessus de pavés humides, où s'engouffre la brume.",
+      "detect": "the mossy grey stone archway under the half-timbered house at the center, at the end of the muddy street, filled with mist",
+      "label": "Le passage voûté",
+      "actions": [
+        {
+          "label": "Monter",
+          "exit": "place",
+          "text": "Sous la maison à colombages, l'arche de pierre moussue s'ouvre sur une ruelle noyée de brume. Les pavés luisent d'humidité et montent vers des façades à peine devinées, d'où ne vient aucun bruit."
+        }
+      ]
+    }
+  ],
   "characters": []
 }
