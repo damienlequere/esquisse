@@ -36,7 +36,7 @@ export const session = () => {
 export type Session = ReturnType<typeof session>;
 
 // The size the apps get the background at: 1440 × 2560 or 2560 × 1440.
-const appSize = (scene: Scene) => (isLandscape(scene) ? { width: 2560 } : { width: 1440 });
+export const appSize = (scene: Scene) => (isLandscape(scene) ? { width: 2560 } : { width: 1440 });
 
 // A scene's folder holds it all: its texts, its converted images, and their
 // originals in sources/.

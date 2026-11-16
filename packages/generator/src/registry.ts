@@ -36,6 +36,8 @@ const itemName = (game: string, item: string) => `${camel(game)}Item${pascal(ite
 // An effect's images, by its id (see effectFiles).
 type ListedScene = {
   id: string;
+  // Whether it has its night (nuit.webp).
+  night: boolean;
   characters: string[];
   effects: { id: string; files: string[] }[];
 };
@@ -55,9 +57,12 @@ const effectsOf = (scene: Scene) =>
 
 const complete = (dir: string, scene: Scene) =>
   ["scene.json", "objects.json", "characters.json"].every((f) => existsSync(join(dir, f))) &&
-  ["fond", ...scene.characters.map((c) => c.id), ...effectsOf(scene).flatMap((e) => e.files)].every(
-    (f) => existsSync(join(dir, `${f}.webp`)),
-  );
+  [
+    "fond",
+    ...(scene.night !== undefined ? ["nuit"] : []),
+    ...scene.characters.map((c) => c.id),
+    ...effectsOf(scene).flatMap((e) => e.files),
+  ].every((f) => existsSync(join(dir, `${f}.webp`)));
 
 const listScenes = (game: string): ListedScene[] =>
   folders(join(gameDir(game), "scenes")).flatMap((id) => {
@@ -65,7 +70,14 @@ const listScenes = (game: string): ListedScene[] =>
     if (!existsSync(join(dir, "scene.json"))) return [];
     const scene: Scene = JSON.parse(readFileSync(join(dir, "scene.json"), "utf8"));
     return complete(dir, scene)
-      ? [{ id, characters: scene.characters.map((c) => c.id), effects: effectsOf(scene) }]
+      ? [
+          {
+            id,
+            night: scene.night !== undefined,
+            characters: scene.characters.map((c) => c.id),
+            effects: effectsOf(scene),
+          },
+        ]
       : [];
   });
 
@@ -153,8 +165,9 @@ const sceneAsset = (game: string, scene: string, file: string) =>
   `./${game}/scenes/${scene}/${file}.webp`;
 const itemAsset = (game: string, item: string) => `./${game}/items/${item}.webp`;
 
-const sceneFiles = ({ characters, effects }: ListedScene) => [
+const sceneFiles = ({ night, characters, effects }: ListedScene) => [
   "fond",
+  ...(night ? ["nuit"] : []),
   ...characters,
   ...effects.flatMap((e) => e.files),
 ];
@@ -168,8 +181,8 @@ const gameImages = (
 ) =>
   `  ${key(id)}: {\n    scenes: {\n${scenes
     .map(
-      ({ id: s, characters, effects }) =>
-        `      ${key(s)}: {\n        background: ${scene(s, "fond")},\n        characters: {\n${characters
+      ({ id: s, night, characters, effects }) =>
+        `      ${key(s)}: {\n        background: ${scene(s, "fond")},\n${night ? `        night: ${scene(s, "nuit")},\n` : ""}        characters: {\n${characters
           .map((c) => `          ${key(c)}: ${scene(s, c)},`)
           .join("\n")}\n        },\n        effects: {\n${effects
           .map((e) => `          ${key(e.id)}: [${e.files.map((f) => scene(s, f)).join(", ")}],`)
@@ -196,14 +209,15 @@ ${imports(
   ]),
 )}
 
-// The games' images, for both apps: each scene's background, its characters'
-// layers, and the images of its background's animations, by effect (see
-// effectFiles); and the items', by id. Each app's bundler makes each import
+// The games' images, for both apps: each scene's background, its night if it
+// has one, its characters' layers, and the images of its background's
+// animations, by effect (see effectFiles); and the items', by id. Each app's bundler makes each import
 // what it shows: Next a StaticImageData, Metro an ImageSourcePropType. Each
 // app gives that type as Image, and its own declaration of *.webp checks it
 // (next/image-types/global, apps/mobile/webp.d.ts).
 export type SceneImages<Image> = {
   background: Image;
+  night?: Image;
   characters: Record<string, Image>;
   effects: Record<string, Image[]>;
 };

@@ -43,6 +43,7 @@ pnpm lint            # pnpm format to fix
 pnpm generate-game <game> "brief" [--model <id>]  # a new game, its plan then its scenes' backgrounds, kept in its game.json (see A new game)
 pnpm generate-scene <game> <id> portrait|landscape "brief"  # a new scene of a game, its background only (see Generating a scene)
 pnpm link-game <game>  # links a game made by pnpm generate-game, from its plan: its exits found in its scenes, its links (see Linking a game)
+pnpm generate-night <game> [<scene>…]  # each scene's night, painted from its background (see A game's night)
 pnpm remove-scene <game> <id> # removes a scene, its texts and its images
 pnpm remove-game <game> # removes a game, all its scenes and its items
 pnpm show-scene <game> <id> # the scene's background with what is clickable outlined, in the image viewer
@@ -346,6 +347,26 @@ Les sorties :  [v] valider  [r] redétecter  [p] passer  [q] quitter
 …
 ✓ valrouge
 ```
+
+### A game's night
+
+```bash
+pnpm generate-night <game> [<scene>…]
+```
+
+Without scenes, every scene of the game without its night yet, in the order of
+its plan. Each night is the scene's background painted again: Claude writes,
+from the game's world and the scene, its night light and what the night
+changes (the moon on the same side of the world in every scene, the lanterns
+and windows lit), in one conversation for the whole game, for its nights to
+agree; Gemini repaints the day's original (`sources/fond.jpg`) with it, the
+same framing, each thing in its place, for the objects' boxes to stay right.
+The render shows the night with those boxes; then `v` validate, `r` paint again,
+`m` describe a change, `p` pass the scene, `q` quit. A validated night is saved
+at once: `nuit.webp`, its original in `sources/nuit.jpg`, `"night"` in
+`scene.json` (its light and its prompt), and the scene listed with its night
+for both apps (`night` in `content/games/images.ts`). Naming a scene paints its
+night again.
 
 ### A new scene
 

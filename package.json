@@ -13,6 +13,7 @@
     "generate-game": "pnpm --filter @esquisse/generator generate-game",
     "generate-scene": "pnpm --filter @esquisse/generator generate-scene",
     "link-game": "pnpm --filter @esquisse/generator link-game",
+    "generate-night": "pnpm --filter @esquisse/generator generate-night",
     "remove-scene": "pnpm --filter @esquisse/generator remove-scene",
     "remove-game": "pnpm --filter @esquisse/generator remove-game",
     "show-scene": "pnpm --filter @esquisse/generator show-scene",

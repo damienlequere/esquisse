@@ -1,8 +1,11 @@
 // Written by packages/generator/src/generate-scene.ts: do not edit by hand.
 
 import testCarteSceneAubergeFond from "./test-carte/scenes/auberge/fond.webp";
+import testCarteSceneAubergeNuit from "./test-carte/scenes/auberge/nuit.webp";
 import testCarteSceneEtageFond from "./test-carte/scenes/etage/fond.webp";
+import testCarteSceneEtageNuit from "./test-carte/scenes/etage/nuit.webp";
 import testCarteSceneRueFond from "./test-carte/scenes/rue/fond.webp";
+import testCarteSceneRueNuit from "./test-carte/scenes/rue/nuit.webp";
 import tristramItemCouteau from "./tristram/items/couteau.webp";
 import tristramItemLanterne from "./tristram/items/lanterne.webp";
 import tristramItemPelle from "./tristram/items/pelle.webp";
@@ -17,14 +20,15 @@ import tristram2SceneCimetiereFond from "./tristram2/scenes/cimetiere/fond.webp"
 import tristram2ScenePlaceDuVillageFond from "./tristram2/scenes/place-du-village/fond.webp";
 import tristram2SceneRueFond from "./tristram2/scenes/rue/fond.webp";
 
-// The games' images, for both apps: each scene's background, its characters'
-// layers, and the images of its background's animations, by effect (see
-// effectFiles); and the items', by id. Each app's bundler makes each import
+// The games' images, for both apps: each scene's background, its night if it
+// has one, its characters' layers, and the images of its background's
+// animations, by effect (see effectFiles); and the items', by id. Each app's bundler makes each import
 // what it shows: Next a StaticImageData, Metro an ImageSourcePropType. Each
 // app gives that type as Image, and its own declaration of *.webp checks it
 // (next/image-types/global, apps/mobile/webp.d.ts).
 export type SceneImages<Image> = {
   background: Image;
+  night?: Image;
   characters: Record<string, Image>;
   effects: Record<string, Image[]>;
 };
@@ -38,16 +42,19 @@ export const gameImages = {
     scenes: {
       auberge: {
         background: testCarteSceneAubergeFond,
+        night: testCarteSceneAubergeNuit,
         characters: {},
         effects: {},
       },
       etage: {
         background: testCarteSceneEtageFond,
+        night: testCarteSceneEtageNuit,
         characters: {},
         effects: {},
       },
       rue: {
         background: testCarteSceneRueFond,
+        night: testCarteSceneRueNuit,
         characters: {},
         effects: {},
       },

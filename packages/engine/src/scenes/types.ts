@@ -86,6 +86,10 @@ export type Scene = {
   // false: the scene shows at once, without its opening (its title and its
   // intro on black), its intro going only to the logbook.
   opening?: boolean;
+  // Its night, painted from its background (nuit.webp, by pnpm
+  // generate-night): the light, and what Gemini was asked to change. The game
+  // goes from day to night, and back, when the player waits.
+  night?: { light: string; prompt: string };
 };
 
 // Written by the generator: the detected boxes of the objects, by id, and the
