@@ -24,6 +24,16 @@
     "format": "biome check --write .",
     "deploy:preview": "pnpm lint && pnpm typecheck && pnpm check-game && vercel deploy",
     "deploy:prod": "pnpm lint && pnpm typecheck && pnpm check-game && vercel deploy --prod",
+    "mobile:login": "pnpm --filter @esquisse/mobile eas:login",
+    "mobile:whoami": "pnpm --filter @esquisse/mobile eas:whoami",
+    "mobile:apk": "pnpm --filter @esquisse/mobile build:apk",
+    "mobile:ios": "pnpm --filter @esquisse/mobile build:ios",
+    "mobile:builds": "pnpm --filter @esquisse/mobile builds",
+    "mobile:update": "pnpm lint && pnpm typecheck && pnpm check-game && pnpm --filter @esquisse/mobile update:preview",
+    "mobile:updates": "pnpm --filter @esquisse/mobile updates",
+    "mobile:device": "pnpm --filter @esquisse/mobile device:add",
+    "mobile:doctor": "pnpm --filter @esquisse/mobile expo:doctor",
+    "eas": "pnpm --filter @esquisse/mobile eas",
     "loc": "node scripts/loc.mjs"
   },
   "devDependencies": {

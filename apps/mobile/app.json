@@ -3,6 +3,9 @@
     "name": "Esquisse",
     "slug": "esquisse",
     "version": "1.0.0",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -17,7 +20,8 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.damienlequere.esquisse"
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -25,6 +29,20 @@
       "output": "static"
     },
     "plugins": ["expo-router", "expo-status-bar"],
-    "scheme": "esquisse"
+    "scheme": "esquisse",
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "8b1cdd6b-d0f9-4974-aee5-92a98247e09b"
+      }
+    },
+    "owner": "damienlequere",
+    "updates": {
+      "url": "https://u.expo.dev/8b1cdd6b-d0f9-4974-aee5-92a98247e09b"
+    }
   }
 }

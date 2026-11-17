@@ -5,7 +5,7 @@ Clickable illustrated scenes: a web site and mobile apps (iOS, Android).
 ```
 apps/
   web/       Next.js 16 (App Router) + TypeScript + Tailwind CSS 4
-  mobile/    Expo SDK 57 (React Native 0.86) + Expo Router + NativeWind 4
+  mobile/    Expo SDK 58 (React Native 0.88) + Expo Router + NativeWind 4
 packages/
   engine/    Plain TypeScript shared by both apps: how a scene and a game are played (@esquisse/engine)
   generator/ Node scripts that write and paint the scenes, and check the games (@esquisse/generator)
@@ -27,7 +27,7 @@ Turborepo for tasks, Biome for lint and format.
 ```bash
 pnpm install
 vercel link   # see below
-eas init      # for builds on Expo's servers
+pnpm mobile:login  # an Expo account, for the builds and updates on Expo's servers (see Testing the mobile app)
 ```
 
 ## Commands
@@ -53,6 +53,22 @@ pnpm deploy:preview  # lint, typecheck, check the games, then deploy the web sit
 pnpm deploy:prod     # same, to production
 ```
 
+The mobile app's commands, on Expo's servers (EAS), from the root (see Testing
+the mobile app):
+
+```bash
+pnpm mobile:login    # logs in to your Expo account, once
+pnpm mobile:whoami   # the Expo account you are logged in to
+pnpm mobile:apk      # an Android preview build (.apk), to install on testers' phones
+pnpm mobile:ios      # an iOS preview build, for the registered devices
+pnpm mobile:device   # registers a tester's iPhone, for the iOS preview builds
+pnpm mobile:builds   # the last 5 builds, their status and their links
+pnpm mobile:update   # lint, typecheck, check the games, then send the app's JS and images to the preview builds
+pnpm mobile:updates  # the last 5 updates sent to the preview builds
+pnpm mobile:doctor   # checks the app's dependencies and config against its Expo SDK
+pnpm eas <command>   # any other EAS command, e.g. pnpm eas build:cancel
+```
+
 ## Deploying the web site (Vercel)
 
 Once, from the repository root: `vercel link`, to create or pick the Vercel
@@ -62,6 +78,41 @@ scripts then upload from the root. The region is set in `apps/web/vercel.json`
 (`fra1`, Paris).
 
 The scripts are not named `deploy`: `pnpm deploy` is a built-in pnpm command.
+
+## Testing the mobile app (EAS Update)
+
+Testers install a preview build once. Each `pnpm mobile:update` then sends them
+the new JS and images, without a new build: the app downloads the update when
+it starts and shows it the next time it is opened (close it and open it again).
+
+The project is on Expo as `@damienlequere/esquisse`; its ID and its updates' URL
+are in `apps/mobile/app.json` (`extra.eas.projectId`, `updates.url`). The build
+profiles are in `apps/mobile/eas.json`: `preview` (internal distribution, an
+`.apk` on Android, channel `preview`) and `production` (the stores, channel
+`production`).
+
+1. `pnpm mobile:login`, once, with your Expo account.
+2. `pnpm mobile:apk` builds the Android preview, in 10 to 20 minutes. The first
+   time, answer yes to generating a keystore: Expo keeps it. `pnpm mobile:builds`
+   gives the build's link: send it to the testers, who open it on their phone
+   and install the app (allowing their browser to install apps).
+3. After each change, `pnpm mobile:update` publishes it on the `preview`
+   channel, with the last commit's message; `pnpm mobile:updates` lists what
+   was sent.
+
+A new build is needed only when the native side changes: a library with native
+code, an SDK upgrade, the icon or `app.json`'s native settings. Raise `version`
+in `app.json` when you do: `runtimeVersion` follows it (`appVersion` policy), so
+older builds do not receive JS they cannot run.
+
+On iOS, a preview build needs an Apple Developer account. Each tester's iPhone
+is registered with `pnpm mobile:device` (they open the link it gives), then
+`pnpm mobile:ios` builds for the registered devices; or use TestFlight.
+
+The scripts are in `apps/mobile/package.json` (`pnpm build:apk`, `pnpm
+update:preview`… from `apps/mobile`), the root's `mobile:` scripts call them.
+None is named like a pnpm command: `pnpm login`, `pnpm whoami`, `pnpm doctor`
+and `pnpm update` are pnpm's own, and would run instead of the script.
 
 ## Capsules
 
@@ -544,6 +595,12 @@ and menus must open in `#device` (positioned), not on `body`.
   candidate.
 - In `apps/mobile`, add packages with `npx expo install <package>` to get
   SDK-compatible versions.
-- `apps/mobile` stays on the Expo SDK supported by Expo Go in the stores (57),
-  with its own React version (19.2.3; the web uses the catalog's). To upgrade,
-  once Expo Go supports it: `npx expo install expo@^58 && npx expo install --fix`.
+- `babel-preset-expo` and `@babel/plugin-transform-react-jsx` are
+  devDependencies of `apps/mobile`, though nothing imports them: Babel looks
+  for the presets of `babel.config.js`, and for the plugins they name
+  (NativeWind's names the JSX one), from `apps/mobile`, where pnpm only lets it
+  find the app's own dependencies. Without them, the Android build on Expo's
+  servers (Gradle's bundling step) fails with « Cannot find module … ».
+- `apps/mobile` is on Expo SDK 58, with its own React version (19.3.0; the web
+  uses the catalog's). `pnpm mobile:doctor` says which packages are behind the
+  SDK; `npx expo install --fix`, from `apps/mobile`, brings them up to it.
