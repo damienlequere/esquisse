@@ -38,7 +38,11 @@ export const Player = () => {
       if (data?.type === "esquisse:preview") setMessage(data);
     };
     window.addEventListener("message", onMessage);
-    window.parent.postMessage({ type: "esquisse:preview-ready" }, window.location.origin);
+    // The studio's page: the iframe's parent, or the window that opened this one.
+    (window.opener ?? window.parent).postMessage(
+      { type: "esquisse:preview-ready" },
+      window.location.origin,
+    );
     return () => window.removeEventListener("message", onMessage);
   }, []);
   if (message === undefined) return null;

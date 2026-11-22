@@ -83,9 +83,11 @@ saves a scene. Commit as usual once done (see Committing).
   each scene a card, dragged where you want it (the places stay in the browser,
   not in `game.json`), each exit on it led by its select to a scene or left
   closed, the links drawn between the cards; the game **checked** as
-  `pnpm check-game` checks it, on what is being edited; and the game **played**
-  beside it, in a phone's or a tablet's frame. Save writes `game.json`
-  (Ctrl+S).
+  `pnpm check-game` checks it, on what is being edited, in the panel on the
+  right, with what the game was generated from below (Prompts); and the game
+  **played** in its own window (▶ Play the game, or ▶ on a card for a scene
+  alone), the size of a phone, following the edits. Save writes `game.json`
+  (Ctrl+S); Remove game asks first.
 - **A scene** (`/games/<game>/scenes/<id>`): its image, with the safe zone and
   what a phone and a tablet crop; its objects' boxes (`objects.json`) drawn
   (O), moved, resized, nudged with the arrows; its characters placed by their
@@ -94,7 +96,8 @@ saves a scene. Commit as usual once done (see Committing).
   `characters.json`); and in fields, each object's label, actions (`exit`,
   `sets`, `requires`, `search`), what it holds from the game's items, each
   character's dialogue, and the scene's title, intro, opening and back button.
-  It is played beside it as it is edited, saved or not. Ctrl+Z undoes, Ctrl+S
+  It is played beside it as it is edited, saved or not, in a phone's or a
+  tablet's frame, or in its own window (⧉ Own window). Ctrl+Z undoes, Ctrl+S
   saves `scene.json`, `objects.json` and `characters.json`.
 - **The generator's commands**, run by the studio as in the terminal, with the
   same API keys (`packages/generator/.env.local`): a new game from a brief
@@ -109,8 +112,9 @@ The studio runs each command as a child process with `ESQUISSE_STUDIO=1`: its
 questions and its renders are then lines of JSON after `@studio `
 (`packages/generator/src/studio.ts`), answered on its stdin, instead of the
 terminal's prompts and the image viewer. The preview plays a scene with the web
-site's own components (`apps/web/components`), in an iframe of the studio
-(`app/(preview)`), to which the page sends the game as it is being edited.
+site's own components (`apps/web/components`), in an iframe of the studio or a
+window it opens (`app/(preview)`), to which the page sends the game as it is
+being edited; the window stays open from page to page.
 
 | File | Role |
 | --- | --- |

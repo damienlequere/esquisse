@@ -1,7 +1,7 @@
 "use client";
 
 // A game: its title and first scene, its map where its scenes are linked, the
-// check of what is being edited, and the game played beside it. Its scenes are
+// check of what is being edited, and the game played in its own window. Its scenes are
 // painted, linked and lit by night from here, by the generator's commands.
 
 import type { Game } from "@esquisse/engine";
@@ -12,7 +12,7 @@ import { send } from "../../lib/client/api.ts";
 import { useGame } from "../../lib/client/useGame.ts";
 import type { StudioGame } from "../../lib/types.ts";
 import { useJobs } from "../jobs/Jobs.tsx";
-import { draftGame, Preview } from "../Preview.tsx";
+import { draftGame, usePlayWindow } from "../Preview.tsx";
 import { Button, cx, Dialog, Field, Section, TextArea } from "../ui.tsx";
 import { CheckReport, useCheck } from "./CheckReport.tsx";
 import { GameMap } from "./GameMap.tsx";
@@ -28,7 +28,7 @@ export const GameWorkspace = ({ id }: { id: string }) => {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string>();
   const [playing, setPlaying] = useState<string>();
-  // The panel on the left, with what the game was generated from.
+  // In the panel on the right, below the check: what the game was generated from.
   const [prompts, setPrompts] = useState(true);
   const [dialog, setDialog] = useState<"scene" | "remove">();
   const jobs = useJobs();
@@ -48,6 +48,23 @@ export const GameWorkspace = ({ id }: { id: string }) => {
     () => (studio && draft ? draftGame(studio, { game: draft }) : undefined),
     [studio, draft],
   );
+  const playingScene = playing !== undefined ? studio?.scenes[playing] : undefined;
+  const startScene = draft !== undefined ? studio?.scenes[draft.start] : undefined;
+  const player = usePlayWindow({
+    studio,
+    game: preview,
+    scene: playing,
+    landscape: (playingScene ?? startScene)?.data.scene.imageRatio === "16:9",
+  });
+  // Its window closed, the scene played alone is forgotten.
+  useEffect(() => {
+    if (!player.playing) setPlaying(undefined);
+  }, [player.playing]);
+  // Plays one scene alone, or the game, in its window, opened from the click.
+  const play = (scene: string | undefined) => {
+    setPlaying(scene);
+    player.play();
+  };
 
   const save = async () => {
     if (draft === undefined) return;
@@ -99,8 +116,6 @@ export const GameWorkspace = ({ id }: { id: string }) => {
       brief: plan.brief,
     });
   };
-  const playingScene = playing !== undefined ? studio.scenes[playing] : undefined;
-  const landscape = (playingScene ?? studio.scenes[draft.start])?.data.scene.imageRatio === "16:9";
 
   return (
     <div className="flex h-dvh flex-col">
@@ -177,6 +192,15 @@ export const GameWorkspace = ({ id }: { id: string }) => {
         </Button>
         <span className="flex-1" />
         <Button
+          onClick={() =>
+            player.playing && playing === undefined ? player.restart() : play(undefined)
+          }
+          disabled={painted.length === 0}
+          title="Plays the game from its start in its own window, as it is edited"
+        >
+          {player.playing && playing === undefined ? "↺ Play again" : "▶ Play the game"}
+        </Button>
+        <Button
           variant="danger"
           onClick={() => setDialog("remove")}
           disabled={running !== undefined}
@@ -185,41 +209,23 @@ export const GameWorkspace = ({ id }: { id: string }) => {
         </Button>
       </div>
       <div className="flex min-h-0 flex-1">
-        {prompts && (
-          <aside className="w-[26rem] shrink-0 overflow-y-auto border-r border-zinc-800 px-4 py-3">
-            <GameGeneration game={studio.game} />
-          </aside>
-        )}
         <GameMap
           studio={studio}
           game={draft}
           onChange={setDraft}
-          onPlay={setPlaying}
+          onPlay={play}
           onPaint={paintPlanned}
           playing={playing}
         />
-        <aside className="flex w-[26rem] shrink-0 flex-col border-l border-zinc-800">
-          <Section
-            title={`Check${dirty ? " (unsaved)" : ""}`}
-            className="max-h-[40%] overflow-y-auto"
-          >
+        <aside className="w-[26rem] shrink-0 overflow-y-auto border-l border-zinc-800">
+          <Section title={`Check${dirty ? " (unsaved)" : ""}`}>
             <CheckReport report={report} />
           </Section>
-          <div className="flex items-center justify-between px-4 pt-2 text-xs text-zinc-500">
-            <span>{playing ? `Playing « ${playing} » alone` : "Playing the game"}</span>
-            {playing && (
-              <button
-                type="button"
-                className="hover:text-zinc-200"
-                onClick={() => setPlaying(undefined)}
-              >
-                Play the game
-              </button>
-            )}
-          </div>
-          <div className="min-h-0 flex-1">
-            <Preview studio={studio} game={preview} scene={playing} landscape={landscape} />
-          </div>
+          {prompts && (
+            <Section title="Prompts" className="border-b-0">
+              <GameGeneration game={studio.game} />
+            </Section>
+          )}
         </aside>
       </div>
       <Dialog open={dialog === "scene"} onClose={() => setDialog(undefined)} wide>
@@ -232,11 +238,16 @@ export const GameWorkspace = ({ id }: { id: string }) => {
         />
       </Dialog>
       <Dialog open={dialog === "remove"} onClose={() => setDialog(undefined)}>
-        <p className="text-sm">
-          Remove <b>{studio.game.title}</b> entirely: its game.json, its items, and its{" "}
-          {painted.length} scene(s) with their images and originals? Only git can bring it back.
+        <p className="text-sm font-medium text-zinc-100">Are you sure?</p>
+        <p className="mt-2 text-sm text-zinc-400">
+          <b className="text-zinc-200">{studio.game.title}</b> will be removed entirely: its
+          game.json, its items, and its {painted.length} scene(s) with their images and originals.
+          Only git can bring it back.
         </p>
-        <div className="mt-4 flex gap-2">
+        <div className="mt-4 flex justify-end gap-2">
+          <Button autoFocus onClick={() => setDialog(undefined)}>
+            Cancel
+          </Button>
           <Button
             variant="danger"
             onClick={async () => {
@@ -248,7 +259,7 @@ export const GameWorkspace = ({ id }: { id: string }) => {
               });
             }}
           >
-            Remove it
+            Yes, remove it
           </Button>
         </div>
       </Dialog>
