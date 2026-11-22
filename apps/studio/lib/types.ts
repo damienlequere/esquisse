@@ -93,4 +93,6 @@ export type JobRequest = {
   orientation?: string;
   brief?: string;
   model?: string;
+  // The images' direction (--art), when not the default one.
+  artDirection?: string;
 };

@@ -1,5 +1,6 @@
 "use client";
 
+import { ART_DIRECTIONS } from "@esquisse/generator/art";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { useJobs } from "../../components/jobs/Jobs.tsx";
@@ -8,6 +9,53 @@ import { api } from "../../lib/client/api.ts";
 import type { StudioSummary } from "../../lib/types.ts";
 
 const ID = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
+
+const DEFAULT_ART_ID = ART_DIRECTIONS[0].id;
+const CUSTOM = "custom";
+
+// The images' direction, sent as --art: a preset's id, or a text of the
+// author's own (see packages/generator/src/art.ts).
+const ArtField = ({ value, onChange }: { value: string; onChange(value: string): void }) => {
+  const preset = ART_DIRECTIONS.find((a) => a.id === value);
+  const [text, setText] = useState("");
+  return (
+    <Field
+      label="Art direction"
+      hint={
+        preset
+          ? preset.direction
+          : "In your own words: what the images are, their technique, what they never are."
+      }
+    >
+      {(fid) => (
+        <div className="flex flex-col gap-2">
+          <select
+            id={fid}
+            value={preset ? preset.id : CUSTOM}
+            onChange={(e) => onChange(e.target.value === CUSTOM ? text : e.target.value)}
+          >
+            {ART_DIRECTIONS.map((a) => (
+              <option key={a.id} value={a.id}>
+                {a.label}
+              </option>
+            ))}
+            <option value={CUSTOM}>Your own…</option>
+          </select>
+          {!preset && (
+            <TextArea
+              value={text}
+              onChange={(t) => {
+                setText(t);
+                onChange(t);
+              }}
+              rows={3}
+            />
+          )}
+        </div>
+      )}
+    </Field>
+  );
+};
 
 const MODELS = ["claude-opus-5-5", "claude-fable-5-2", "claude-sonnet-5-5", "claude-haiku-5-5"];
 
@@ -102,6 +150,7 @@ const NewGame = ({ taken, onStarted }: { taken: string[]; onStarted(): void }) =
   const [id, setId] = useState("");
   const [brief, setBrief] = useState("");
   const [model, setModel] = useState(MODELS[0] ?? "");
+  const [art, setArt] = useState<string>(DEFAULT_ART_ID);
   const [error, setError] = useState<string>();
   const invalid = !ID.test(id) ? "kebab-case: a-z, 0-9, dashes" : taken.includes(id) ? "taken" : "";
   return (
@@ -110,7 +159,7 @@ const NewGame = ({ taken, onStarted }: { taken: string[]; onStarted(): void }) =
       onSubmit={async (e) => {
         e.preventDefault();
         try {
-          await start({ command: "generate-game", game: id, brief, model });
+          await start({ command: "generate-game", game: id, brief, model, artDirection: art });
           onStarted();
         } catch (err) {
           setError((err as Error).message);
@@ -149,9 +198,14 @@ const NewGame = ({ taken, onStarted }: { taken: string[]; onStarted(): void }) =
       >
         {(fid) => <TextArea id={fid} value={brief} onChange={setBrief} rows={6} />}
       </Field>
+      <ArtField value={art} onChange={setArt} />
       {error && <p className="text-sm text-red-300">{error}</p>}
       <div>
-        <Button type="submit" variant="primary" disabled={invalid !== "" || brief.trim() === ""}>
+        <Button
+          type="submit"
+          variant="primary"
+          disabled={invalid !== "" || brief.trim() === "" || art.trim() === ""}
+        >
           Write the plan
         </Button>
       </div>
@@ -165,6 +219,7 @@ const NewSceneGame = ({ taken, onStarted }: { taken: string[]; onStarted(): void
   const [scene, setScene] = useState("");
   const [orientation, setOrientation] = useState("portrait");
   const [brief, setBrief] = useState("");
+  const [art, setArt] = useState<string>(DEFAULT_ART_ID);
   const [error, setError] = useState<string>();
   const invalid =
     !ID.test(id) || !ID.test(scene)
@@ -178,7 +233,14 @@ const NewSceneGame = ({ taken, onStarted }: { taken: string[]; onStarted(): void
       onSubmit={async (e) => {
         e.preventDefault();
         try {
-          await start({ command: "generate-scene", game: id, scene, orientation, brief });
+          await start({
+            command: "generate-scene",
+            game: id,
+            scene,
+            orientation,
+            brief,
+            artDirection: art,
+          });
           onStarted();
         } catch (err) {
           setError((err as Error).message);
@@ -209,9 +271,14 @@ const NewSceneGame = ({ taken, onStarted }: { taken: string[]; onStarted(): void
       <Field label="Brief">
         {(fid) => <TextArea id={fid} value={brief} onChange={setBrief} rows={5} />}
       </Field>
+      <ArtField value={art} onChange={setArt} />
       {error && <p className="text-sm text-red-300">{error}</p>}
       <div>
-        <Button type="submit" variant="primary" disabled={invalid !== "" || brief.trim() === ""}>
+        <Button
+          type="submit"
+          variant="primary"
+          disabled={invalid !== "" || brief.trim() === "" || art.trim() === ""}
+        >
           Paint it
         </Button>
       </div>

@@ -1,10 +1,15 @@
 // Paints a scene's background, with its author, in the terminal:
 //
-//   pnpm generate-scene <game> <id> portrait|landscape "brief"
+//   pnpm generate-scene <game> <id> portrait|landscape "brief" [--art <id>|"direction"]
 //
 // A scene belongs to a game (content/games/<game>): a new game is made with its
 // first scene, which it starts in; its game.json then says where the exits of
 // the scenes added to it lead (see pnpm check-game).
+//
+// --art is the images' direction, one of art.ts's by its id or a text of its
+// own, in place of the game's (its game.json's artDirection) or else the
+// default one (matte-painting); a new
+// game keeps it in its game.json, for the scenes added to it later.
 //
 // The orientation is the image's: portrait (9:16) or landscape (16:9), played
 // with the screen turned to match.
@@ -29,13 +34,18 @@
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { Game, Scene } from "@esquisse/engine";
+import { keptArt } from "./art.ts";
 import { apiKey } from "./env.ts";
+import { artOption } from "./options.ts";
 import { format, gameDir, ID, sceneDir } from "./registry.ts";
 import { json, paintScene, session } from "./session.ts";
 import { baseWriter, FORMATS, type Orientation } from "./write-scene.ts";
 
-const USAGE = 'Usage: pnpm generate-scene <game> <id> portrait|landscape "brief"';
-const [game, id, ...args] = process.argv.slice(2);
+const USAGE =
+  'Usage: pnpm generate-scene <game> <id> portrait|landscape "brief" [--art <id>|"direction"]';
+const argv = process.argv.slice(2);
+const artOverride = artOption(argv, USAGE);
+const [game, id, ...args] = argv;
 if (game === undefined || id === undefined) throw new Error(USAGE);
 // Both ids are folders, URLs and names in the registries' imports.
 for (const i of [game, id]) if (!ID.test(i)) throw new Error(`Invalid id: ${i} (kebab-case)`);
@@ -62,6 +72,7 @@ const read = <T>(path: string): T | undefined =>
   existsSync(path) ? (JSON.parse(readFileSync(path, "utf8")) as T) : undefined;
 const gameJson = read<Game>(GAME);
 const previous = read<Scene>(SCENE);
+const artDirection = artOverride ?? gameJson?.artDirection;
 
 // The game's style: one for all the scenes generate-game painted.
 const styles = new Set(
@@ -89,14 +100,24 @@ if (previous !== undefined) {
 // A new game starts in its first scene; its title is to be written by hand.
 if (!existsSync(GAME)) {
   mkdirSync(gameDir(game), { recursive: true });
-  writeFileSync(GAME, json({ title: game, start: id, links: {} }));
+  const newGame: Game = {
+    ...keptArt(artDirection),
+    title: game,
+    start: id,
+    links: {},
+  };
+  writeFileSync(GAME, json(newGame));
   format([GAME]);
   console.log(`New game "${game}", starting in "${id}": its title is in ${GAME}`);
 }
 
 if (context !== undefined) console.log(`Within the game "${game}": its brief and its style`);
 if (opening === false) console.log(`"${id}" has no opening`);
-const writer = baseWriter(anthropicKey, FORMAT, context);
+if (artDirection !== undefined)
+  console.log(
+    `Art direction${artOverride !== undefined ? "" : " of the game"}: ${artDirection.label ?? "the author's own"}`,
+  );
+const writer = baseWriter(anthropicKey, FORMAT, context, undefined, artDirection);
 const painted = await paintScene({
   session: author,
   geminiKey,

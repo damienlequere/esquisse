@@ -3,8 +3,9 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
-import type { Box, GeneratedScene, World } from "@esquisse/engine";
+import type { ArtDirection, Box, GeneratedScene, World } from "@esquisse/engine";
 import { z } from "zod";
+import { DEFAULT_ART } from "./art.ts";
 
 // The default; pnpm generate-game takes another with --model.
 export const TEXT_MODEL = "claude-opus-5-5";
@@ -62,27 +63,26 @@ const base = z.object({
 
 export type Base = z.infer<typeof base>;
 
-// The images' direction, the same for a scene and for a game (see write-game.ts).
-export const ART_DIRECTION = `## La direction artistique
+// What a style is about, and how it ends: the bans of any image, and the
+// direction's own.
+const styleRules = ({ technique, bans }: ArtDirection) => ({
+  about: `${technique}, rendu des matières, palette, lumière, atmosphère`,
+  limits: `Il finit toujours par les interdits : aucun texte, lettre, chiffre, signature ni logo ; ${bans} ; pas de cadre ni de bordure.`,
+});
 
-Les images sont du matte painting numérique de cinéma : des décors peints numériquement, réalistes et très détaillés, comme ceux d'un film, pas une illustration jeunesse ni une bande dessinée.
+// The part of a system prompt about the images, the same for a scene and for a
+// game (see write-game.ts).
+export const artPrompt = (art: ArtDirection) => ({
+  direction: `## La direction artistique\n\n${art.direction}`,
+  ...styleRules(art),
+});
 
-- Les proportions, l'anatomie et la perspective sont justes ; les visages sont naturels, sans traits exagérés ni expressions de dessin animé.
-- La lumière est crédible : des sources précises, des ombres qui en découlent, un clair-obscur qui sert l'atmosphère.
-- Les matières se voient : bois, métal, pierre, tissu, verre, avec leur usure, leur patine, leur poussière.
-- Le lieu est riche en détails secondaires qui racontent son histoire, sans prendre le pas sur les éléments cliquables.
-- Le ton est sérieux. Une scène comique ou légère le reste dans ses textes et ses dialogues ; ses images gardent cette direction.`;
-
-// How a style ends.
-export const STYLE_LIMITS =
-  "Il finit toujours par les interdits : aucun texte, lettre, chiffre, signature ni logo ; pas de style cartoon, bande dessinée, anime ni caricature, pas de contours encrés ni d'aplats ; pas de photographie ni de rendu 3D lisse ; pas de cadre ni de bordure.";
-
-const system = (format: Format) =>
+const system = (format: Format, { direction, about, limits }: ReturnType<typeof artPrompt>) =>
   `Tu crées des scènes cliquables pour Esquisse : une image peinte au format ${format.words}, où chaque objet du décor, cliquable, propose quelques actions qui affichent chacune un court texte, et où chaque personnage ouvre un dialogue. Les images sont générées par un modèle d'image à partir de tes descriptions, puis les objets sont repérés par un modèle de vision.
 
 Tu écris ici le fond de la scène, que son auteur valide ; les objets et les personnages y sont ajoutés ensuite, à part.
 
-${ART_DIRECTION}
+${direction}
 
 ## Le fond
 
@@ -90,7 +90,7 @@ ${ART_DIRECTION}
 
 - title : le titre de la scène, court.
 - intro : 1 à 2 phrases, à la deuxième personne (« tu »), au présent, qui posent le lieu et l'ambiance quand le joueur arrive.
-- style : un paragraphe de direction artistique commun à toutes les images de la scène (matte painting numérique, rendu des matières, palette, lumière, atmosphère), qui suit la direction artistique ci-dessus. ${STYLE_LIMITS}
+- style : un paragraphe de direction artistique commun à toutes les images de la scène (${about}), qui suit la direction artistique ci-dessus. ${limits}
 - light : la lumière de la scène en quelques mots (sources, couleur, direction), pour que les éléments ajoutés ensuite soient éclairés comme le décor.
 - background.prompt : le décor seul, vu de face à hauteur d'homme, vide de toute personne et de tout animal. Le sol occupe ${format.floor} et reste dégagé, pour recevoir ensuite des objets et des personnages. Il décrit le lieu en détail : ses matières, leur état, et les détails secondaires aux murs et au fond qui le font vivre. Les objets et les personnages que la demande cite n'y sont pas : ils seront ajoutés ensuite.
 
@@ -207,8 +207,9 @@ export const baseWriter = (
   format: Format,
   game?: GameContext,
   model = TEXT_MODEL,
+  art: ArtDirection = DEFAULT_ART,
 ) => {
-  const ask = conversation(base, apiKey, system(format), model);
+  const ask = conversation(base, apiKey, system(format, artPrompt(art)), model);
   // The game's style is kept as it is, whatever Claude sends back.
   const write = async (content: string) => {
     const output = await ask(content);

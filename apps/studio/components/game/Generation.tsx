@@ -86,7 +86,7 @@ export const PlannedScene = ({ plan, world }: { plan: GeneratedScene; world?: Wo
 
 export const GameGeneration = ({ game }: { game: Game }) => {
   const g = game.generation;
-  if (game.brief === undefined && g === undefined)
+  if (game.brief === undefined && game.artDirection === undefined && g === undefined)
     return (
       <p className="text-sm text-zinc-500">
         This game keeps no prompt: it was not made by Generate a game. Each scene keeps its own, on
@@ -105,6 +105,11 @@ export const GameGeneration = ({ game }: { game: Game }) => {
         )}
       </p>
       {game.brief && <Block label="The game's brief">{game.brief}</Block>}
+      {game.artDirection && (
+        <Block label={`Art direction: ${game.artDirection.label ?? "the author's own"}`}>
+          {game.artDirection.direction}
+        </Block>
+      )}
       <Changes changes={g?.changes} label="Changes asked to the plan" />
       {g?.world && (
         <>

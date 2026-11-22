@@ -11,6 +11,7 @@
   "dependencies": {
     "@esquisse/content": "workspace:*",
     "@esquisse/engine": "workspace:*",
+    "@esquisse/generator": "workspace:*",
     "@esquisse/web": "workspace:*",
     "next": "catalog:",
     "react": "catalog:",

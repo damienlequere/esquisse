@@ -1,9 +1,12 @@
 // Makes a new game with its author, in the terminal, from one brief:
 //
-//   pnpm generate-game <game> "brief" [--model <id>]
+//   pnpm generate-game <game> "brief" [--model <id>] [--art <id>|"direction"]
 //
 // --model is the Claude model that writes the plan and the scenes, claude-opus-5-5
-// by default; it is checked before anything is paid for.
+// by default; it is checked before anything is paid for. --art is the images'
+// direction, one of art.ts's by its id or a text of its own, in place of the
+// default one (matte-painting), kept in game.json's artDirection for the
+// scenes added later.
 //
 // Claude writes the game's plan from the brief, a map of the game: its title,
 // one style for all its images, the world its scenes are viewpoints of (its
@@ -28,21 +31,19 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { Game, Generation } from "@esquisse/engine";
+import { keptArt } from "./art.ts";
 import { apiKey } from "./env.ts";
+import { artOption, option } from "./options.ts";
 import { IMAGE_MODEL } from "./paint.ts";
 import { format, gameDir, ID } from "./registry.ts";
 import { json, paintScene, session } from "./session.ts";
 import { gameWriter, type Plan, planErrors } from "./write-game.ts";
 import { baseWriter, checkModel, FORMATS, TEXT_MODEL, zoneWords } from "./write-scene.ts";
 
-const USAGE = 'Usage: pnpm generate-game <game> "brief" [--model <id>]';
+const USAGE = 'Usage: pnpm generate-game <game> "brief" [--model <id>] [--art <id>|"direction"]';
 const argv = process.argv.slice(2);
-// --model <id>, anywhere.
-const flag = argv.indexOf("--model");
-const model = flag === -1 ? TEXT_MODEL : argv[flag + 1];
-if (model === undefined || model.startsWith("--"))
-  throw new Error(`--model needs an id.\n${USAGE}`);
-if (flag !== -1) argv.splice(flag, 2);
+const model = option(argv, "--model", USAGE) ?? TEXT_MODEL;
+const artDirection = artOption(argv, USAGE);
 const [game, brief, ...rest] = argv;
 if (game === undefined || brief === undefined) throw new Error(USAGE);
 if (!ID.test(game)) throw new Error(`Invalid id: ${game} (kebab-case)`);
@@ -84,7 +85,9 @@ const showPlan = (p: Plan) => {
 };
 
 // The plan, until the author validates it.
-const planner = gameWriter(anthropicKey, model);
+if (artDirection !== undefined)
+  console.log(`Art direction: ${artDirection.label ?? "the author's own (--art)"}`);
+const planner = gameWriter(anthropicKey, model, artDirection);
 const planChanges: string[] = [];
 let plan = await planner.write(brief);
 for (;;) {
@@ -125,7 +128,14 @@ const generation: Generation = {
   ),
 };
 const first = plan.scenes[0]?.id ?? "";
-const gameJson: Game = { brief, title: plan.title, start: first, links: {}, generation };
+const gameJson: Game = {
+  brief,
+  ...keptArt(artDirection),
+  title: plan.title,
+  start: first,
+  links: {},
+  generation,
+};
 const writeGame = () => {
   writeFileSync(GAME, json(gameJson));
   format([GAME]);
@@ -152,6 +162,7 @@ for (const [i, planned] of generation.scenes.entries()) {
     FORMAT,
     { brief, style: plan.style, world: plan.world, scene: planned, neighbors },
     model,
+    artDirection,
   );
   const painted = await paintScene({
     session: author,

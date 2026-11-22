@@ -3,9 +3,11 @@
 // scenes, each with its own brief for write-scene.ts, its landmarks and its
 // exits, a map of the game; then changed as the author asks.
 
+import type { ArtDirection } from "@esquisse/engine";
 import { z } from "zod";
+import { DEFAULT_ART } from "./art.ts";
 import { ID } from "./registry.ts";
-import { ART_DIRECTION, conversation, STYLE_LIMITS, TEXT_MODEL, zoneWords } from "./write-scene.ts";
+import { artPrompt, conversation, TEXT_MODEL, zoneWords } from "./write-scene.ts";
 
 const exit = z.object({
   id: z.string(),
@@ -44,16 +46,22 @@ export type Plan = z.infer<typeof plan>;
 export type PlanScene = Plan["scenes"][number];
 export type PlanExit = z.infer<typeof exit>;
 
-const system = `Tu prépares un jeu pour Esquisse : un jeu d'exploration à la première personne, en point and click, fait de scènes cliquables, chacune une image peinte au format portrait 9:16 ou paysage 16:9, où le joueur passe d'une scène à l'autre par leurs sorties. Chaque scène est écrite à part, à partir de ce que tu écris pour elle, puis peinte par un modèle d'image ; tu n'écris ici que le plan du jeu : son monde, et ses scènes comme autant de points de vue sur ce monde.
+const system = ({
+  direction,
+  about,
+  limits,
+}: ReturnType<
+  typeof artPrompt
+>) => `Tu prépares un jeu pour Esquisse : un jeu d'exploration à la première personne, en point and click, fait de scènes cliquables, chacune une image peinte au format portrait 9:16 ou paysage 16:9, où le joueur passe d'une scène à l'autre par leurs sorties. Chaque scène est écrite à part, à partir de ce que tu écris pour elle, puis peinte par un modèle d'image ; tu n'écris ici que le plan du jeu : son monde, et ses scènes comme autant de points de vue sur ce monde.
 
-${ART_DIRECTION}
+${direction}
 
 ## Le plan
 
 À partir de la demande de l'auteur, tu écris :
 
 - title : le titre du jeu, court.
-- style : un paragraphe de direction artistique commun à toutes les images du jeu (matte painting numérique, rendu des matières, palette, lumière, atmosphère), qui suit la direction artistique ci-dessus et ne dit rien qui ne vaille que pour une scène. ${STYLE_LIMITS}
+- style : un paragraphe de direction artistique commun à toutes les images du jeu (${about}), qui suit la direction artistique ci-dessus et ne dit rien qui ne vaille que pour une scène. ${limits}
 - world : le monde dont les scènes sont des points de vue.
   - setting : un paragraphe sur le lieu entier : l'époque, l'heure, le temps qu'il fait, d'où vient la lumière (le soleil couchant à l'ouest, la lune au-dessus de la colline), la disposition des lieux les uns par rapport aux autres, et les matières qu'ils partagent.
   - landmarks : les repères visibles de loin (une cathédrale, une tour, un arbre mort sur une crête), deux à quatre, chacun avec son id (minuscules, chiffres et tirets), sa description, toujours la même, et where, sa place dans le monde (« au nord, en haut de la colline »).
@@ -147,8 +155,8 @@ export const planErrors = ({ world, scenes }: Plan) => {
   return errors;
 };
 
-export const gameWriter = (apiKey: string, model = TEXT_MODEL) => {
-  const ask = conversation(plan, apiKey, system, model);
+export const gameWriter = (apiKey: string, model = TEXT_MODEL, art: ArtDirection = DEFAULT_ART) => {
+  const ask = conversation(plan, apiKey, system(artPrompt(art)), model);
   return {
     write: (brief: string) => ask(`Écris le plan du jeu : ${brief}`),
     revise: (change: string) => ask(`Modifie le plan ainsi : ${change}`),

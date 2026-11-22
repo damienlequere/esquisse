@@ -2,6 +2,9 @@
   "name": "@esquisse/generator",
   "private": true,
   "type": "module",
+  "exports": {
+    "./art": "./src/art.ts"
+  },
   "scripts": {
     "generate-game": "node --experimental-strip-types --disable-warning=ExperimentalWarning src/generate-game.ts",
     "generate-scene": "node --experimental-strip-types --disable-warning=ExperimentalWarning src/generate-scene.ts",

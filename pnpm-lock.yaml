@@ -311,6 +311,9 @@ importers:
       '@esquisse/engine':
         specifier: workspace:*
         version: link:../../packages/engine
+      '@esquisse/generator':
+        specifier: workspace:*
+        version: link:../../packages/generator
       '@esquisse/web':
         specifier: workspace:*
         version: link:../web

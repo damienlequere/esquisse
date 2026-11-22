@@ -42,8 +42,8 @@ pnpm dev:all         # all three, through Turborepo
 pnpm build           # production builds
 pnpm typecheck
 pnpm lint            # pnpm format to fix
-pnpm generate-game <game> "brief" [--model <id>]  # a new game, its plan then its scenes' backgrounds, kept in its game.json (see A new game)
-pnpm generate-scene <game> <id> portrait|landscape "brief"  # a new scene of a game, its background only (see Generating a scene)
+pnpm generate-game <game> "brief" [--model <id>] [--art <id>|"direction"]  # a new game, its plan then its scenes' backgrounds, kept in its game.json (see A new game)
+pnpm generate-scene <game> <id> portrait|landscape "brief" [--art <id>|"direction"]  # a new scene of a game, its background only (see Generating a scene)
 pnpm link-game <game>  # links a game made by pnpm generate-game, from its plan: its exits found in its scenes, its links (see Linking a game)
 pnpm generate-night <game> [<scene>…]  # each scene's night, painted from its background (see A game's night)
 pnpm remove-scene <game> <id> # removes a scene, its texts and its images
@@ -401,7 +401,7 @@ Committing).
 ### A new game
 
 ```bash
-pnpm generate-game <game> "<brief>" [--model <id>]
+pnpm generate-game <game> "<brief>" [--model <id>] [--art <id>|"<direction>"]
 ```
 
 The brief says what the whole game is about, and may fix its scenes: how many,
@@ -428,6 +428,26 @@ before anything is paid for (an unknown id lists those the API knows), and kept
 in `generation.textModel`. A refused request goes to another model by itself
 only on Fable 5.1, Opus 5.5, Opus 5 and Sonnet 5.5. `pnpm generate-scene`
 always writes with `claude-opus-5-5`.
+
+`--art` is the images' **art direction**, given to Claude for the plan and every
+scene: the id of one of the presets in `packages/generator/src/art.ts`, or a
+text of your own, in quotes. The game's style is written within it, and ends
+with the bans that hold for any image (no text, no frame) and the direction's
+own.
+
+| `--art` | The images |
+| --- | --- |
+| `matte-painting` (default) | Cinematic digital matte painting: realistic, detailed, credible light, a serious tone |
+| `huile` | Old-master oil painting: visible brushwork, glazes, deep chiaroscuro |
+| `aquarelle` | Watercolour and ink: transparent washes, paper grain, a fine ink line |
+| `gravure` | Etching: black or sepia hatching on cream paper, an old book's plates |
+| `ligne-claire` | Franco-Belgian *ligne claire* comics: even inked outlines, flat colours |
+| `animation` | Hand-painted animation backgrounds in gouache, no outlines |
+
+A direction other than the default is kept whole in `game.json`
+(`"artDirection"`, its id and label for a preset), and the scenes added to the
+game later are written within it. Adding a preset is adding an entry to
+`ART_DIRECTIONS`: the commands and the studio list it.
 
 Each scene is then made as `pnpm generate-scene` makes one, from its brief,
 written within the game, and saved once validated. Claude reads the game's
@@ -532,7 +552,7 @@ night again.
 ### A new scene
 
 ```bash
-pnpm generate-scene <game> <id> portrait|landscape "<brief>"
+pnpm generate-scene <game> <id> portrait|landscape "<brief>" [--art <id>|"<direction>"]
 ```
 
 - **`<game>`** is the game the scene belongs to, its folder in
@@ -547,6 +567,10 @@ pnpm generate-scene <game> <id> portrait|landscape "<brief>"
 - **`<brief>`**, in quotes, says what the scene is about: the place, the era,
   the tone, what you want to see. Claude follows what it pins and invents the
   rest.
+- **`--art`** is the images' art direction, a preset's id or a text of your
+  own in quotes (see A new game), in place of the game's (its `game.json`'s
+  `"artDirection"`) or else the default one, `matte-painting`.
+  A new game keeps it in its `game.json`, for the scenes added to it later.
 
 ```bash
 pnpm generate-scene bois foret portrait "l'orée d'une forêt au crépuscule, un bivouac abandonné"

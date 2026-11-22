@@ -9,6 +9,9 @@ export type Game = {
   // What the game was asked for, in its author's words: the text given to
   // generate its scenes, kept as it was.
   brief?: string;
+  // The images' direction its scenes are generated with (--art), when it is
+  // not the default one (see packages/generator/src/art.ts), kept as it was.
+  artDirection?: ArtDirection;
   title: string;
   // The scene it starts in.
   start: string;
@@ -17,6 +20,18 @@ export type Game = {
   // How the game was first generated, kept as it was, whatever its scenes
   // become: their scene.json is what changes after.
   generation?: Generation;
+};
+
+// What Claude is told of the images: what they are (direction), what a style
+// is about (technique), and what it bans besides the bans of any image. A
+// preset has its id and its label (see packages/generator/src/art.ts); a
+// direction of the author's own has neither.
+export type ArtDirection = {
+  id?: string;
+  label?: string;
+  direction: string;
+  technique: string;
+  bans: string;
 };
 
 // Written by pnpm generate-game (packages/generator/src/generate-game.ts), once.

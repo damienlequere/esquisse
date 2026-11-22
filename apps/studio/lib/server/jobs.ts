@@ -105,6 +105,8 @@ const MODEL = /^claude-[a-z0-9.-]+$/;
 const argsOf = (r: JobRequest): { args: string[]; scene?: string } => {
   const game = checkId(r.game);
   const brief = (r.brief ?? "").trim();
+  const art = (r.artDirection ?? "").trim();
+  const artArgs = art === "" ? [] : ["--art", art];
   const needBrief = () => {
     if (brief === "") throw new HttpError(400, "The brief is missing");
     return brief;
@@ -113,13 +115,15 @@ const argsOf = (r: JobRequest): { args: string[]; scene?: string } => {
     case "generate-game": {
       const model = r.model?.trim();
       if (model && !MODEL.test(model)) throw new HttpError(400, `Unknown model: ${model}`);
-      return { args: [game, needBrief(), ...(model ? ["--model", model] : [])] };
+      return {
+        args: [game, needBrief(), ...(model ? ["--model", model] : []), ...artArgs],
+      };
     }
     case "generate-scene": {
       const scene = checkId(r.scene ?? "");
       if (!ORIENTATIONS.has(r.orientation ?? ""))
         throw new HttpError(400, "The orientation is portrait or landscape");
-      return { args: [game, scene, r.orientation as string, needBrief()], scene };
+      return { args: [game, scene, r.orientation as string, needBrief(), ...artArgs], scene };
     }
     case "link-game":
       return { args: [game] };
