@@ -176,10 +176,14 @@ export const GameMap = ({
   );
 
   const width = Math.max(...ids.map((id) => at(id).x + CARD.width), 600) + 40;
-  const height = Math.max(...ids.map((id) => at(id).y + (heights[id] ?? 200)), 400) + 40;
+  const height = Math.max(...ids.map((id) => at(id).y + (heights[id] ?? 200)), 280) + 40;
 
   return (
-    <div className="relative min-h-0 flex-1 overflow-auto bg-[radial-gradient(circle,#27272a_1px,transparent_1px)] [background-size:20px_20px]">
+    // As tall as its cards, up to most of the screen; it scrolls past that.
+    <div
+      className="relative max-h-[70vh] overflow-auto rounded-lg border border-zinc-800 bg-[radial-gradient(circle,#27272a_1px,transparent_1px)] [background-size:20px_20px]"
+      style={{ height: height + 2 }}
+    >
       <div className="relative" style={{ width, height }}>
         <svg
           className="pointer-events-none absolute inset-0"

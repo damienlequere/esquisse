@@ -4,7 +4,7 @@ import { ART_DIRECTIONS } from "@esquisse/generator/art";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { useJobs } from "../../components/jobs/Jobs.tsx";
-import { Button, Dialog, Field, TextArea } from "../../components/ui.tsx";
+import { Button, cx, Dialog, Field, PAGE, TextArea } from "../../components/ui.tsx";
 import { api } from "../../lib/client/api.ts";
 import type { StudioSummary } from "../../lib/types.ts";
 
@@ -86,7 +86,7 @@ export default function Home() {
   }, [ids, onDone, reload]);
 
   return (
-    <main className="mx-auto max-w-5xl px-6 py-10">
+    <main className={cx(PAGE, "px-6 py-10")}>
       <header className="mb-8 flex items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-white">Esquisse Studio</h1>

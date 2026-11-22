@@ -7,13 +7,13 @@
 import type { Game } from "@esquisse/engine";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { send } from "../../lib/client/api.ts";
 import { useGame } from "../../lib/client/useGame.ts";
 import type { StudioGame } from "../../lib/types.ts";
 import { useJobs } from "../jobs/Jobs.tsx";
 import { draftGame, usePlayWindow } from "../Preview.tsx";
-import { Button, cx, Dialog, Field, Section, TextArea } from "../ui.tsx";
+import { Button, cx, Dialog, Field, PAGE, TextArea } from "../ui.tsx";
 import { CheckReport, useCheck } from "./CheckReport.tsx";
 import { GameMap } from "./GameMap.tsx";
 import { GameGeneration } from "./Generation.tsx";
@@ -28,7 +28,7 @@ export const GameWorkspace = ({ id }: { id: string }) => {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string>();
   const [playing, setPlaying] = useState<string>();
-  // In the panel on the right, below the check: what the game was generated from.
+  // Below the map: what the game was generated from.
   const [prompts, setPrompts] = useState(true);
   const [dialog, setDialog] = useState<"scene" | "remove">();
   const jobs = useJobs();
@@ -118,116 +118,121 @@ export const GameWorkspace = ({ id }: { id: string }) => {
   };
 
   return (
-    <div className="flex h-dvh flex-col">
-      <header className="flex items-center gap-3 border-b border-zinc-800 px-4 py-2">
-        <Link href="/" className="text-sm text-zinc-500 hover:text-zinc-200">
-          Studio
-        </Link>
-        <span className="text-zinc-700">/</span>
-        <input
-          value={draft.title}
-          onChange={(e) => setDraft({ ...draft, title: e.target.value })}
-          className="w-64 border-transparent bg-transparent text-base font-semibold hover:border-zinc-700"
-          aria-label="Title"
-        />
-        <span className="text-xs text-zinc-600">{id}</span>
-        <label className="ml-2 flex items-center gap-1.5 text-xs text-zinc-400">
-          Starts in
-          <select
-            value={draft.start}
-            onChange={(e) => setDraft({ ...draft, start: e.target.value })}
-          >
-            {!painted.includes(draft.start) && (
-              <option value={draft.start}>{draft.start} (missing)</option>
-            )}
-            {painted.map((s) => (
-              <option key={s}>{s}</option>
-            ))}
-          </select>
-        </label>
-        <span className="flex-1" />
-        {stale && (
-          <Button variant="ghost" onClick={reload} className="text-xs text-sky-300">
-            Changed on disk: reload, losing edits
-          </Button>
-        )}
-        {saveError && <span className="max-w-80 truncate text-xs text-red-300">{saveError}</span>}
-        <Button variant="ghost" disabled={!dirty} onClick={() => setDraft(JSON.parse(savedJson))}>
-          Revert
-        </Button>
-        <Button variant="primary" disabled={!dirty || saving} onClick={save}>
-          {saving ? "Saving…" : dirty ? "Save" : "Saved"}
-        </Button>
-      </header>
-      <div className="flex items-center gap-2 border-b border-zinc-800 px-4 py-1.5">
-        <Button
-          variant="ghost"
-          onClick={() => setPrompts(!prompts)}
-          className={cx("text-xs", prompts && "bg-zinc-800 text-zinc-100")}
-          title="What the game was generated from (game.json)"
-        >
-          Prompts
-        </Button>
-        <span className="h-4 w-px bg-zinc-800" />
-        <Button onClick={() => setDialog("scene")} disabled={running !== undefined}>
-          + New scene
-        </Button>
-        <Button
-          onClick={() => start({ command: "link-game", game: id })}
-          disabled={running !== undefined || !canLink || dirty}
-          title={
-            canLink
-              ? "Finds each planned exit in its scene, makes it an object, and writes the links"
-              : "Only a game made by Generate a game has a plan with exits"
-          }
-        >
-          Link exits from the plan
-        </Button>
-        <Button
-          onClick={() => start({ command: "generate-night", game: id })}
-          disabled={running !== undefined || painted.length === 0}
-          title="Paints the night of every scene without one"
-        >
-          Paint missing nights
-        </Button>
-        <span className="flex-1" />
-        <Button
-          onClick={() =>
-            player.playing && playing === undefined ? player.restart() : play(undefined)
-          }
-          disabled={painted.length === 0}
-          title="Plays the game from its start in its own window, as it is edited"
-        >
-          {player.playing && playing === undefined ? "↺ Play again" : "▶ Play the game"}
-        </Button>
-        <Button
-          variant="danger"
-          onClick={() => setDialog("remove")}
-          disabled={running !== undefined}
-        >
-          Remove game
-        </Button>
-      </div>
-      <div className="flex min-h-0 flex-1">
-        <GameMap
-          studio={studio}
-          game={draft}
-          onChange={setDraft}
-          onPlay={play}
-          onPaint={paintPlanned}
-          playing={playing}
-        />
-        <aside className="w-[26rem] shrink-0 overflow-y-auto border-l border-zinc-800">
-          <Section title={`Check${dirty ? " (unsaved)" : ""}`}>
-            <CheckReport report={report} />
-          </Section>
-          {prompts && (
-            <Section title="Prompts" className="border-b-0">
-              <GameGeneration game={studio.game} />
-            </Section>
+    <div className="min-h-dvh">
+      <div className="sticky top-0 z-10 border-b border-zinc-800 bg-zinc-950/95 backdrop-blur">
+        <header className={cx(PAGE, "flex items-center gap-3 px-6 py-2")}>
+          <Link href="/" className="text-sm text-zinc-500 hover:text-zinc-200">
+            Studio
+          </Link>
+          <span className="text-zinc-700">/</span>
+          <input
+            value={draft.title}
+            onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+            className="w-64 border-transparent bg-transparent text-base font-semibold hover:border-zinc-700"
+            aria-label="Title"
+          />
+          <span className="text-xs text-zinc-600">{id}</span>
+          <label className="ml-2 flex items-center gap-1.5 text-xs text-zinc-400">
+            Starts in
+            <select
+              value={draft.start}
+              onChange={(e) => setDraft({ ...draft, start: e.target.value })}
+            >
+              {!painted.includes(draft.start) && (
+                <option value={draft.start}>{draft.start} (missing)</option>
+              )}
+              {painted.map((s) => (
+                <option key={s}>{s}</option>
+              ))}
+            </select>
+          </label>
+          <span className="flex-1" />
+          {stale && (
+            <Button variant="ghost" onClick={reload} className="text-xs text-sky-300">
+              Changed on disk: reload, losing edits
+            </Button>
           )}
-        </aside>
+          {saveError && <span className="max-w-80 truncate text-xs text-red-300">{saveError}</span>}
+          <Button variant="ghost" disabled={!dirty} onClick={() => setDraft(JSON.parse(savedJson))}>
+            Revert
+          </Button>
+          <Button variant="primary" disabled={!dirty || saving} onClick={save}>
+            {saving ? "Saving…" : dirty ? "Save" : "Saved"}
+          </Button>
+        </header>
+        <div className={cx(PAGE, "flex items-center gap-2 px-6 pb-2")}>
+          <Button
+            variant="ghost"
+            onClick={() => setPrompts(!prompts)}
+            className={cx("text-xs", prompts && "bg-zinc-800 text-zinc-100")}
+            title="What the game was generated from (game.json)"
+          >
+            Prompts
+          </Button>
+          <span className="h-4 w-px bg-zinc-800" />
+          <Button onClick={() => setDialog("scene")} disabled={running !== undefined}>
+            + New scene
+          </Button>
+          <Button
+            onClick={() => start({ command: "link-game", game: id })}
+            disabled={running !== undefined || !canLink || dirty}
+            title={
+              canLink
+                ? "Finds each planned exit in its scene, makes it an object, and writes the links"
+                : "Only a game made by Generate a game has a plan with exits"
+            }
+          >
+            Link exits from the plan
+          </Button>
+          <Button
+            onClick={() => start({ command: "generate-night", game: id })}
+            disabled={running !== undefined || painted.length === 0}
+            title="Paints the night of every scene without one"
+          >
+            Paint missing nights
+          </Button>
+          <span className="flex-1" />
+          <Button
+            onClick={() =>
+              player.playing && playing === undefined ? player.restart() : play(undefined)
+            }
+            disabled={painted.length === 0}
+            title="Plays the game from its start in its own window, as it is edited"
+          >
+            {player.playing && playing === undefined ? "↺ Play again" : "▶ Play the game"}
+          </Button>
+          <Button
+            variant="danger"
+            onClick={() => setDialog("remove")}
+            disabled={running !== undefined}
+          >
+            Remove game
+          </Button>
+        </div>
       </div>
+      <main className={cx(PAGE, "flex flex-col gap-6 px-6 py-6")}>
+        <section className="flex flex-col gap-2">
+          <Heading>Check{dirty ? " (unsaved)" : ""}</Heading>
+          <CheckReport report={report} />
+        </section>
+        <section className="flex flex-col gap-2">
+          <Heading>Map</Heading>
+          <GameMap
+            studio={studio}
+            game={draft}
+            onChange={setDraft}
+            onPlay={play}
+            onPaint={paintPlanned}
+            playing={playing}
+          />
+        </section>
+        {prompts && (
+          <section className="flex flex-col gap-2">
+            <Heading>Prompts</Heading>
+            <GameGeneration game={studio.game} />
+          </section>
+        )}
+      </main>
       <Dialog open={dialog === "scene"} onClose={() => setDialog(undefined)} wide>
         <NewScene
           taken={painted}
@@ -266,6 +271,10 @@ export const GameWorkspace = ({ id }: { id: string }) => {
     </div>
   );
 };
+
+const Heading = ({ children }: { children: ReactNode }) => (
+  <h2 className="text-xs font-semibold tracking-wide text-zinc-500 uppercase">{children}</h2>
+);
 
 const NewScene = ({
   taken,

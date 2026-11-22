@@ -83,8 +83,9 @@ saves a scene. Commit as usual once done (see Committing).
   each scene a card, dragged where you want it (the places stay in the browser,
   not in `game.json`), each exit on it led by its select to a scene or left
   closed, the links drawn between the cards; the game **checked** as
-  `pnpm check-game` checks it, on what is being edited, in the panel on the
-  right, with what the game was generated from below (Prompts); and the game
+  `pnpm check-game` checks it, on what is being edited, above the map, and what
+  the game was generated from below it (Prompts: the game on the left, its
+  scenes' plans in cards beside it); and the game
   **played** in its own window (▶ Play the game, or ▶ on a card for a scene
   alone), the size of a phone, following the edits. Save writes `game.json`
   (Ctrl+S); Remove game asks first.

@@ -142,4 +142,7 @@ export const Section = ({
   </section>
 );
 
+// A studio page's width on a large screen: centered, as wide as is useful.
+export const PAGE = "mx-auto w-full max-w-[1600px]";
+
 export { cx };

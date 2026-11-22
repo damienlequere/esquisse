@@ -16,7 +16,7 @@ import { CheckReport, useCheck } from "../game/CheckReport.tsx";
 import { PlannedScene } from "../game/Generation.tsx";
 import { useJobs } from "../jobs/Jobs.tsx";
 import { draftGame, Preview } from "../Preview.tsx";
-import { Button, cx, Dialog, Field, Section, TextArea } from "../ui.tsx";
+import { Button, cx, Dialog, Field, PAGE, Section, TextArea } from "../ui.tsx";
 import { Canvas, type Guides, isExit, type Selection, type Tool } from "./Canvas.tsx";
 import { useHistory } from "./history.ts";
 import { CharacterForm, ObjectForm, SceneForm } from "./Inspector.tsx";
@@ -386,7 +386,7 @@ export const SceneEditor = ({ gameId, sceneId }: { gameId: string; sceneId: stri
   );
 
   return (
-    <div className="flex h-dvh flex-col">
+    <div className={cx(PAGE, "flex h-dvh flex-col border-x border-zinc-800")}>
       <header className="flex items-center gap-3 border-b border-zinc-800 px-4 py-2">
         <Link href="/" className="text-sm text-zinc-500 hover:text-zinc-200">
           Studio
