@@ -63,7 +63,7 @@ const MODELS = ["claude-opus-5-5", "claude-fable-5-2", "claude-sonnet-5-5", "cla
 export default function Home() {
   const [games, setGames] = useState<StudioSummary[]>();
   const [error, setError] = useState<string>();
-  const [creating, setCreating] = useState<"game" | "scene">();
+  const [creating, setCreating] = useState(false);
   const { onDone, jobs } = useJobs();
 
   const reload = useCallback(
@@ -94,12 +94,9 @@ export default function Home() {
             content/games, edited in place. Commit as usual when you are done.
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button onClick={() => setCreating("scene")}>New game from one scene</Button>
-          <Button variant="primary" onClick={() => setCreating("game")}>
-            Generate a game
-          </Button>
-        </div>
+        <Button variant="primary" onClick={() => setCreating(true)}>
+          Generate a game
+        </Button>
       </header>
       {error && <p className="text-sm text-red-300">{error}</p>}
       <ul className="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))] gap-4">
@@ -130,15 +127,9 @@ export default function Home() {
           </li>
         ))}
       </ul>
-      <Dialog open={creating !== undefined} onClose={() => setCreating(undefined)} wide>
-        {creating === "game" && (
-          <NewGame taken={games?.map((g) => g.id) ?? []} onStarted={() => setCreating(undefined)} />
-        )}
-        {creating === "scene" && (
-          <NewSceneGame
-            taken={games?.map((g) => g.id) ?? []}
-            onStarted={() => setCreating(undefined)}
-          />
+      <Dialog open={creating} onClose={() => setCreating(false)} wide>
+        {creating && (
+          <NewGame taken={games?.map((g) => g.id) ?? []} onStarted={() => setCreating(false)} />
         )}
       </Dialog>
     </main>
@@ -207,79 +198,6 @@ const NewGame = ({ taken, onStarted }: { taken: string[]; onStarted(): void }) =
           disabled={invalid !== "" || brief.trim() === "" || art.trim() === ""}
         >
           Write the plan
-        </Button>
-      </div>
-    </form>
-  );
-};
-
-const NewSceneGame = ({ taken, onStarted }: { taken: string[]; onStarted(): void }) => {
-  const { start } = useJobs();
-  const [id, setId] = useState("");
-  const [scene, setScene] = useState("");
-  const [orientation, setOrientation] = useState("portrait");
-  const [brief, setBrief] = useState("");
-  const [art, setArt] = useState<string>(DEFAULT_ART_ID);
-  const [error, setError] = useState<string>();
-  const invalid =
-    !ID.test(id) || !ID.test(scene)
-      ? "kebab-case: a-z, 0-9, dashes"
-      : taken.includes(id)
-        ? "taken"
-        : "";
-  return (
-    <form
-      className="flex flex-col gap-4"
-      onSubmit={async (e) => {
-        e.preventDefault();
-        try {
-          await start({
-            command: "generate-scene",
-            game: id,
-            scene,
-            orientation,
-            brief,
-            artDirection: art,
-          });
-          onStarted();
-        } catch (err) {
-          setError((err as Error).message);
-        }
-      }}
-    >
-      <p className="text-sm text-zinc-400">
-        A new game starting in its first scene, painted from its brief, as{" "}
-        <code>pnpm generate-scene</code> does. Add more scenes from the game&apos;s page.
-      </p>
-      <div className="grid grid-cols-3 gap-3">
-        <Field label="Game id">
-          {(fid) => <input id={fid} value={id} onChange={(e) => setId(e.target.value)} />}
-        </Field>
-        <Field label="First scene id">
-          {(fid) => <input id={fid} value={scene} onChange={(e) => setScene(e.target.value)} />}
-        </Field>
-        <Field label="Orientation">
-          {(fid) => (
-            <select id={fid} value={orientation} onChange={(e) => setOrientation(e.target.value)}>
-              <option value="portrait">portrait 9:16</option>
-              <option value="landscape">landscape 16:9</option>
-            </select>
-          )}
-        </Field>
-      </div>
-      {(id || scene) && invalid && <p className="text-xs text-zinc-500">{invalid}</p>}
-      <Field label="Brief">
-        {(fid) => <TextArea id={fid} value={brief} onChange={setBrief} rows={5} />}
-      </Field>
-      <ArtField value={art} onChange={setArt} />
-      {error && <p className="text-sm text-red-300">{error}</p>}
-      <div>
-        <Button
-          type="submit"
-          variant="primary"
-          disabled={invalid !== "" || brief.trim() === "" || art.trim() === ""}
-        >
-          Paint it
         </Button>
       </div>
     </form>

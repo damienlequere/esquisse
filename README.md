@@ -102,12 +102,12 @@ saves a scene. Commit as usual once done (see Committing).
   saves `scene.json`, `objects.json` and `characters.json`.
 - **The generator's commands**, run by the studio as in the terminal, with the
   same API keys (`packages/generator/.env.local`): a new game from a brief
-  (`generate-game`), a new game from one scene or a scene added to a game, or
-  painted again (`generate-scene`), the exits linked from the plan
-  (`link-game`), the nights (`generate-night`), a scene or a game removed. Each
-  one opens its console, on the right: what it prints, its renders, and its
-  questions as buttons (« valider », « repeindre »…) or a text field. The dock,
-  in the bottom right corner, lists those running; one at a time per game.
+  (`generate-game`), a scene added to a game or painted again
+  (`generate-scene`), the exits linked from the plan (`link-game`), the nights
+  (`generate-night`), a scene or a game removed. Each one opens its console, on
+  the right: what it prints, its renders, and its questions as buttons
+  (« valider », « repeindre »…) or a text field. The dock, in the bottom right
+  corner, lists those running; one at a time per game.
 
 The studio runs each command as a child process with `ESQUISSE_STUDIO=1`: its
 questions and its renders are then lines of JSON after `@studio `
