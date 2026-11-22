@@ -11,7 +11,8 @@
     "remove-game": "node --experimental-strip-types --disable-warning=ExperimentalWarning src/remove-game.ts",
     "show-scene": "node --experimental-strip-types --disable-warning=ExperimentalWarning src/show-scene.ts",
     "check-game": "node --experimental-strip-types --disable-warning=ExperimentalWarning src/check-game.ts",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "write-registries": "node --experimental-strip-types --disable-warning=ExperimentalWarning src/write-registries.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "catalog:",

@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+/* The studio: neutral greys, dark, dense; only what means something has a color
+   (an exit, a character, an error). */
+@theme {
+  --font-sans: ui-sans-serif, system-ui, sans-serif;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  @apply bg-zinc-950 text-zinc-200 antialiased;
+  color-scheme: dark;
+}
+
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--color-zinc-400);
+    outline-offset: 2px;
+  }
+
+  input,
+  textarea,
+  select {
+    @apply rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-sm text-zinc-100 placeholder:text-zinc-600;
+  }
+
+  input[type="checkbox"] {
+    @apply size-4 accent-zinc-300;
+  }
+
+  textarea {
+    @apply leading-snug;
+  }
+
+  input:focus,
+  textarea:focus,
+  select:focus {
+    @apply border-zinc-400 outline-none;
+  }
+
+  button:disabled {
+    @apply cursor-not-allowed opacity-40;
+  }
+}

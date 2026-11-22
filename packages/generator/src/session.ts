@@ -9,6 +9,7 @@ import { isLandscape } from "@esquisse/engine/layout";
 import sharp from "sharp";
 import { paintBackground, render, show } from "./paint.ts";
 import { format, sceneDir, writeRegistries } from "./registry.ts";
+import { inStudio, toStudio } from "./studio.ts";
 import type { baseWriter, Format } from "./write-scene.ts";
 
 export const json = (value: unknown) => `${JSON.stringify(value, null, 2)}\n`;
@@ -17,6 +18,19 @@ export const session = () => {
   const rl = createInterface({ input: process.stdin, output: process.stdout });
   // Without a listener, readline only pauses on Ctrl+C.
   rl.on("SIGINT", () => process.exit(130));
+  if (inStudio)
+    return {
+      choose: async (question: string, choices: Record<string, string>) => {
+        for (;;) {
+          const answer = (await rl.question(toStudio({ type: "choose", question, choices })))
+            .trim()
+            .toLowerCase();
+          if (Object.hasOwn(choices, answer)) return answer;
+        }
+      },
+      ask: (question: string) => rl.question(toStudio({ type: "ask", question })),
+      close: () => rl.close(),
+    };
   return {
     // Asks until the answer is one of the choices' keys.
     choose: async (question: string, choices: Record<string, string>) => {

@@ -1,0 +1,4 @@
+/* The preview plays a scene as the web site does: its own styles, and the
+   classes of its components. */
+@import "../../../../web/app/globals.css";
+@source "../../../../web/components";

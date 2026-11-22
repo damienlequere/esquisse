@@ -6,6 +6,7 @@ Clickable illustrated scenes: a web site and mobile apps (iOS, Android).
 apps/
   web/       Next.js 16 (App Router) + TypeScript + Tailwind CSS 4
   mobile/    Expo SDK 58 (React Native 0.88) + Expo Router + NativeWind 4
+  studio/    Next.js 16: the studio, to build games and scenes in the browser, on this machine (see The studio)
 packages/
   engine/    Plain TypeScript shared by both apps: how a scene and a game are played (@esquisse/engine)
   generator/ Node scripts that write and paint the scenes, and check the games (@esquisse/generator)
@@ -36,7 +37,8 @@ pnpm mobile:login  # an Expo account, for the builds and updates on Expo's serve
 pnpm install
 pnpm dev             # web site: http://localhost:3000 (a game: /game/tristram, a scene alone: /game/tristram/scene/auberge)
 pnpm dev:mobile      # Expo dev server: scan the QR code with Expo Go
-pnpm dev:all         # both, through Turborepo
+pnpm dev:studio      # the studio: http://localhost:3100 (see The studio)
+pnpm dev:all         # all three, through Turborepo
 pnpm build           # production builds
 pnpm typecheck
 pnpm lint            # pnpm format to fix
@@ -68,6 +70,56 @@ pnpm mobile:updates  # the last 5 updates sent to the preview builds
 pnpm mobile:doctor   # checks the app's dependencies and config against its Expo SDK
 pnpm eas <command>   # any other EAS command, e.g. pnpm eas build:cancel
 ```
+
+## The studio
+
+`pnpm dev:studio`, then http://localhost:3100: the games of `content/games`,
+built in the browser. It runs only on this machine and is never deployed: it
+reads and writes the same files as the generator, formatted by Biome, and writes
+the lists of both apps again (`content/games/index.ts`, `images.ts`) after it
+saves a scene. Commit as usual once done (see Committing).
+
+- **A game** (`/games/<game>`): its title and its first scene; its **map**,
+  each scene a card, dragged where you want it (the places stay in the browser,
+  not in `game.json`), each exit on it led by its select to a scene or left
+  closed, the links drawn between the cards; the game **checked** as
+  `pnpm check-game` checks it, on what is being edited; and the game **played**
+  beside it, in a phone's or a tablet's frame. Save writes `game.json`
+  (Ctrl+S).
+- **A scene** (`/games/<game>/scenes/<id>`): its image, with the safe zone and
+  what a phone and a tablet crop; its objects' boxes (`objects.json`) drawn
+  (O), moved, resized, nudged with the arrows; its characters placed by their
+  feet (C), their height dragged, their layer uploaded (a PNG with its
+  transparency: `<id>.webp`, its original in `sources/`, its proportions in
+  `characters.json`); and in fields, each object's label, actions (`exit`,
+  `sets`, `requires`, `search`), what it holds from the game's items, each
+  character's dialogue, and the scene's title, intro, opening and back button.
+  It is played beside it as it is edited, saved or not. Ctrl+Z undoes, Ctrl+S
+  saves `scene.json`, `objects.json` and `characters.json`.
+- **The generator's commands**, run by the studio as in the terminal, with the
+  same API keys (`packages/generator/.env.local`): a new game from a brief
+  (`generate-game`), a new game from one scene or a scene added to a game, or
+  painted again (`generate-scene`), the exits linked from the plan
+  (`link-game`), the nights (`generate-night`), a scene or a game removed. Each
+  one opens its console, on the right: what it prints, its renders, and its
+  questions as buttons (« valider », « repeindre »…) or a text field. The dock,
+  in the bottom right corner, lists those running; one at a time per game.
+
+The studio runs each command as a child process with `ESQUISSE_STUDIO=1`: its
+questions and its renders are then lines of JSON after `@studio `
+(`packages/generator/src/studio.ts`), answered on its stdin, instead of the
+terminal's prompts and the image viewer. The preview plays a scene with the web
+site's own components (`apps/web/components`), in an iframe of the studio
+(`app/(preview)`), to which the page sends the game as it is being edited.
+
+| File | Role |
+| --- | --- |
+| `apps/studio/lib/server/content.ts` | The games read from disk, and written: game.json, a scene's three files, a character's layer |
+| `apps/studio/lib/server/jobs.ts` | The generator's commands, run as child processes, their events streamed to the page |
+| `apps/studio/components/game/` | A game's page: its map, its check |
+| `apps/studio/components/scene/` | A scene's page: the image and what is placed on it, the fields, the history |
+| `apps/studio/components/Preview.tsx`, `app/(preview)/preview/Player.tsx` | The game played as it is being edited |
+| `packages/engine/src/games/check.ts` | The checks of a game (`checkGame`), shared by `pnpm check-game` and the studio |
 
 ## Deploying the web site (Vercel)
 

@@ -10,6 +10,7 @@ import type { Box, Scene, SceneData } from "@esquisse/engine";
 import { characterBox, isLandscape, sceneRatio } from "@esquisse/engine/layout";
 import sharp from "sharp";
 import { generateImage } from "./gemini.ts";
+import { inStudio, toStudio } from "./studio.ts";
 
 export const IMAGE_MODEL = "gemini-nano-banana-2.1";
 
@@ -90,6 +91,11 @@ let shown = 0;
 export const show = (id: string, jpg: Buffer) => {
   const file = join(tmpdir(), `esquisse-${id}-${++shown}.jpg`);
   writeFileSync(file, jpg);
+  // The studio shows it itself.
+  if (inStudio) {
+    process.stdout.write(toStudio({ type: "render", file }));
+    return;
+  }
   console.log(`  Render: ${file}`);
   try {
     const viewer = spawn(OPEN[process.platform] ?? "xdg-open", [file], {

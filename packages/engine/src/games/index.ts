@@ -1,6 +1,7 @@
 import type { SceneData } from "../scenes/types.ts";
 import type { GameData } from "./types.ts";
 
+export * from "./check.ts";
 export * from "./types.ts";
 
 // A scene of a game alone, as a game of its own, with the game's items: its

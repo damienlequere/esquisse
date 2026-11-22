@@ -303,6 +303,49 @@ importers:
         specifier: ~6.0.3
         version: 6.0.3
 
+  apps/studio:
+    dependencies:
+      '@esquisse/content':
+        specifier: workspace:*
+        version: link:../../content
+      '@esquisse/engine':
+        specifier: workspace:*
+        version: link:../../packages/engine
+      '@esquisse/web':
+        specifier: workspace:*
+        version: link:../web
+      next:
+        specifier: 'catalog:'
+        version: 16.4.6(@babel/core@7.29.7(supports-color@8.1.1))(@opentelemetry/api@1.9.1)(@types/node@24.19.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      react:
+        specifier: 'catalog:'
+        version: 19.3.0
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.3.0(react@19.3.0)
+      sharp:
+        specifier: 'catalog:'
+        version: 0.35.5(@types/node@24.19.1)
+    devDependencies:
+      '@tailwindcss/postcss':
+        specifier: 'catalog:'
+        version: 4.3.3
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.19.1
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: 'catalog:'
+        version: 19.3.0(@types/react@19.3.0)
+      tailwindcss:
+        specifier: 'catalog:'
+        version: 4.3.3
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
   apps/web:
     dependencies:
       '@esquisse/content':
