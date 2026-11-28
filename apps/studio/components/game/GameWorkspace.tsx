@@ -1,6 +1,6 @@
 "use client";
 
-// A game: its title and first scene, its map where its scenes are linked, the
+// A game: its title and first scene, its scenes as cards, where they are linked, the
 // check of what is being edited, and the game played in its own window. Its scenes are
 // painted, linked and lit by night from here, by the generator's commands.
 
@@ -15,9 +15,8 @@ import { useJobs } from "../jobs/Jobs.tsx";
 import { draftGame, usePlayWindow } from "../Preview.tsx";
 import { Button, cx, Dialog, Field, PAGE, TextArea } from "../ui.tsx";
 import { CheckReport, useCheck } from "./CheckReport.tsx";
-import { GameMap } from "./GameMap.tsx";
 import { GameGeneration } from "./Generation.tsx";
-import { SelectedScene } from "./SelectedScene.tsx";
+import { SceneCards } from "./SceneCards.tsx";
 
 const ID = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
 
@@ -29,7 +28,7 @@ export const GameWorkspace = ({ id }: { id: string }) => {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string>();
   const [playing, setPlaying] = useState<string>();
-  // The scene selected on the map, shown whole below it.
+  // The selected scene: its card grows, with a button to edit it.
   const [selected, setSelected] = useState<string>();
   const [dialog, setDialog] = useState<"scene" | "remove">();
   const jobs = useJobs();
@@ -209,8 +208,8 @@ export const GameWorkspace = ({ id }: { id: string }) => {
       <main className={cx(PAGE, "flex flex-col gap-6 px-6 py-6 lg:flex-row lg:items-start")}>
         <div className="flex min-w-0 flex-1 flex-col gap-6">
           <section className="flex flex-col gap-2">
-            <Heading>Map</Heading>
-            <GameMap
+            <Heading>Scenes</Heading>
+            <SceneCards
               studio={studio}
               game={draft}
               onChange={setDraft}
@@ -221,18 +220,6 @@ export const GameWorkspace = ({ id }: { id: string }) => {
               onSelect={setSelected}
             />
           </section>
-          {selected !== undefined && studio.scenes[selected] !== undefined && (
-            <section className="flex flex-col gap-2">
-              <Heading>Selected scene</Heading>
-              <SelectedScene
-                game={id}
-                scene={studio.scenes[selected]}
-                links={draft.links[selected] ?? {}}
-                plan={studio.game.generation?.scenes.find((s) => s.id === selected)}
-                world={studio.game.generation?.world}
-              />
-            </section>
-          )}
         </div>
         {/* On the right, kept in view below the bars: the check, then the game's prompts. */}
         <aside className="flex shrink-0 flex-col gap-6 lg:sticky lg:top-[6.75rem] lg:max-h-[calc(100dvh-8.25rem)] lg:w-[26rem] lg:overflow-y-auto lg:border-l lg:border-zinc-800 lg:pl-6">

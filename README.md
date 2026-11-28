@@ -79,13 +79,13 @@ reads and writes the same files as the generator, formatted by Biome, and writes
 the lists of both apps again (`content/games/index.ts`, `images.ts`) after it
 saves a scene. Commit as usual once done (see Committing).
 
-- **A game** (`/games/<game>`): its title and its first scene; its **map**,
-  each scene a card, dragged where you want it (the places stay in the browser,
-  not in `game.json`), each exit on it led by its select to a scene or left
-  closed, the links drawn between the cards; a scene **selected** by a click
-  on its card's picture (again, or Escape, lets it go), shown whole below the
-  map with its safe zone and its objects' boxes, the exits in green, and each
-  object's actions beside it, then its own prompts (its plan in `game.json`), folded until opened;
+- **A game** (`/games/<game>`): its title and its first scene; its **scenes**,
+  each a card in a grid, the start first, then in the order the links reach
+  them, then the plan's scenes not painted yet (Paint); each exit on a card led
+  by its select to a scene or left closed, the scenes leading to it written
+  below its title (from …); a scene **selected** by a click on its card's
+  picture (again, or Escape, lets it go), its card twice as wide, its image
+  whole, with Edit the scene below its exits;
   in a panel on the right, kept in view, the game **checked** as
   `pnpm check-game` checks it, on what is being edited, and below it what the
   game was generated from (Prompts: only the game's own, its brief, art
@@ -130,7 +130,7 @@ being edited; the window stays open from page to page.
 | --- | --- |
 | `apps/studio/lib/server/content.ts` | The games read from disk, and written: game.json, a scene's three files, a character's layer |
 | `apps/studio/lib/server/jobs.ts` | The generator's commands, run as child processes, their events streamed to the page |
-| `apps/studio/components/game/` | A game's page: its map, its check |
+| `apps/studio/components/game/` | A game's page: its scenes' cards, its check |
 | `apps/studio/components/scene/` | A scene's page: the image and what is placed on it, the fields, the history |
 | `apps/studio/components/Preview.tsx`, `app/(preview)/preview/Player.tsx` | The game played as it is being edited |
 | `packages/engine/src/games/check.ts` | The checks of a game (`checkGame`), shared by `pnpm check-game` and the studio |
