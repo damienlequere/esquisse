@@ -82,7 +82,10 @@ saves a scene. Commit as usual once done (see Committing).
 - **A game** (`/games/<game>`): its title and its first scene; its **map**,
   each scene a card, dragged where you want it (the places stay in the browser,
   not in `game.json`), each exit on it led by its select to a scene or left
-  closed, the links drawn between the cards; the game **checked** as
+  closed, the links drawn between the cards; a scene **selected** by a click
+  on its card's picture (again, or Escape, lets it go), shown whole below the
+  map with its safe zone and its objects' boxes, the exits in green, and each
+  object's actions beside it; the game **checked** as
   `pnpm check-game` checks it, on what is being edited, above the map, and what
   the game was generated from below it (Prompts: the game on the left, its
   scenes' plans in cards beside it); and the game

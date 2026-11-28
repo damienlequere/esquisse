@@ -17,6 +17,7 @@ import { Button, cx, Dialog, Field, PAGE, TextArea } from "../ui.tsx";
 import { CheckReport, useCheck } from "./CheckReport.tsx";
 import { GameMap } from "./GameMap.tsx";
 import { GameGeneration } from "./Generation.tsx";
+import { SelectedScene } from "./SelectedScene.tsx";
 
 const ID = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
 
@@ -28,6 +29,8 @@ export const GameWorkspace = ({ id }: { id: string }) => {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string>();
   const [playing, setPlaying] = useState<string>();
+  // The scene selected on the map, shown whole below it.
+  const [selected, setSelected] = useState<string>();
   // Below the map: what the game was generated from.
   const [prompts, setPrompts] = useState(true);
   const [dialog, setDialog] = useState<"scene" | "remove">();
@@ -81,6 +84,10 @@ export const GameWorkspace = ({ id }: { id: string }) => {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && selected !== undefined && dialog === undefined) {
+        setSelected(undefined);
+        return;
+      }
       if ((e.metaKey || e.ctrlKey) && e.key === "s") {
         e.preventDefault();
         if (dirty) save();
@@ -224,8 +231,20 @@ export const GameWorkspace = ({ id }: { id: string }) => {
             onPlay={play}
             onPaint={paintPlanned}
             playing={playing}
+            selected={selected}
+            onSelect={setSelected}
           />
         </section>
+        {selected !== undefined && studio.scenes[selected] !== undefined && (
+          <section className="flex flex-col gap-2">
+            <Heading>Selected scene</Heading>
+            <SelectedScene
+              game={id}
+              scene={studio.scenes[selected]}
+              links={draft.links[selected] ?? {}}
+            />
+          </section>
+        )}
         {prompts && (
           <section className="flex flex-col gap-2">
             <Heading>Prompts</Heading>

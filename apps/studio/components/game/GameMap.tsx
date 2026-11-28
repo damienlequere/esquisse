@@ -3,7 +3,7 @@
 // A game's map: each scene a card, at a place the author drags it to (kept in
 // the browser, not in game.json), its exits listed on it, each one led by its
 // select to a scene of the game or left closed; the links drawn between the
-// cards. The scenes of the plan not painted yet are cards of their own, to
+// cards. A click on a card's picture selects its scene (see SelectedScene). The scenes of the plan not painted yet are cards of their own, to
 // paint.
 
 import { type Game, sceneExits } from "@esquisse/engine";
@@ -82,6 +82,8 @@ export const GameMap = ({
   onPlay,
   onPaint,
   playing,
+  selected,
+  onSelect,
 }: {
   studio: StudioGame;
   game: Game;
@@ -91,6 +93,9 @@ export const GameMap = ({
   // Paints a planned scene.
   onPaint(scene: string): void;
   playing?: string;
+  // The scene shown below the map, selected by a click on its picture.
+  selected?: string;
+  onSelect(scene: string | undefined): void;
 }) => {
   const painted = Object.keys(studio.scenes);
   const planned = (studio.game.generation?.scenes ?? []).filter((s) => !painted.includes(s.id));
@@ -134,7 +139,7 @@ export const GameMap = ({
     drag.current = null;
     if (d?.moved && dragged[d.id]) {
       save({ ...Object.fromEntries(ids.map((id) => [id, position(id)])), ...dragged });
-    }
+    } else if (d && studio.scenes[d.id]) onSelect(selected === d.id ? undefined : d.id);
     setDragged({});
   };
   const at = (id: string) => dragged[id] ?? position(id);
@@ -226,7 +231,11 @@ export const GameMap = ({
               key={id}
               className={cx(
                 "absolute overflow-hidden rounded-lg border bg-zinc-900 shadow-lg",
-                playing === id ? "border-zinc-300" : "border-zinc-700",
+                selected === id
+                  ? "border-sky-400 ring-2 ring-sky-400/40"
+                  : playing === id
+                    ? "border-zinc-300"
+                    : "border-zinc-700",
               )}
               style={{ left: p.x, top: p.y, width: CARD.width }}
             >
@@ -234,6 +243,7 @@ export const GameMap = ({
                 onPointerDown={(e) => onPointerDown(id, e)}
                 onPointerMove={onPointerMove}
                 onPointerUp={onPointerUp}
+                title="Click to select it, drag to move it"
                 className="relative cursor-grab touch-none bg-zinc-800 active:cursor-grabbing"
                 style={{ height: CARD.thumb }}
               >
