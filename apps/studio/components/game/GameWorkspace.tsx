@@ -31,8 +31,6 @@ export const GameWorkspace = ({ id }: { id: string }) => {
   const [playing, setPlaying] = useState<string>();
   // The scene selected on the map, shown whole below it.
   const [selected, setSelected] = useState<string>();
-  // In the panel on the right, below the check: what the game was generated from.
-  const [prompts, setPrompts] = useState(true);
   const [dialog, setDialog] = useState<"scene" | "remove">();
   const jobs = useJobs();
   const running = jobs.running(id);
@@ -168,15 +166,6 @@ export const GameWorkspace = ({ id }: { id: string }) => {
           </Button>
         </header>
         <div className={cx(PAGE, "flex items-center gap-2 px-6 pb-2")}>
-          <Button
-            variant="ghost"
-            onClick={() => setPrompts(!prompts)}
-            className={cx("text-xs", prompts && "bg-zinc-800 text-zinc-100")}
-            title="What the game was generated from (game.json); a scene's own, once selected"
-          >
-            Prompts
-          </Button>
-          <span className="h-4 w-px bg-zinc-800" />
           <Button onClick={() => setDialog("scene")} disabled={running !== undefined}>
             + New scene
           </Button>
@@ -251,12 +240,10 @@ export const GameWorkspace = ({ id }: { id: string }) => {
             <Heading>Check{dirty ? " (unsaved)" : ""}</Heading>
             <CheckReport report={report} />
           </section>
-          {prompts && (
-            <section className="flex flex-col gap-2">
-              <Heading>Prompts</Heading>
-              <GameGeneration game={studio.game} />
-            </section>
-          )}
+          <section className="flex flex-col gap-2">
+            <Heading>Prompts</Heading>
+            <GameGeneration game={studio.game} />
+          </section>
         </aside>
       </main>
       <Dialog open={dialog === "scene"} onClose={() => setDialog(undefined)} wide>

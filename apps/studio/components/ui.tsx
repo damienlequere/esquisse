@@ -145,4 +145,22 @@ export const Section = ({
 // A studio page's width on a large screen: centered, as wide as is useful.
 export const PAGE = "mx-auto w-full max-w-[1600px]";
 
+// A section folded at first, opened by a click on its title.
+export const FoldedSection = ({
+  title,
+  children,
+  className,
+}: {
+  title: string;
+  children: ReactNode;
+  className?: string;
+}) => (
+  <details className={cx("border-b border-zinc-800 px-4 py-3", className)}>
+    <summary className="cursor-pointer text-xs font-semibold tracking-wide text-zinc-500 uppercase select-none hover:text-zinc-300">
+      {title}
+    </summary>
+    <div className="mt-2">{children}</div>
+  </details>
+);
+
 export { cx };

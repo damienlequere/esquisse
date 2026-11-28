@@ -17,7 +17,7 @@ import {
   sceneExits,
 } from "@esquisse/engine";
 import { type ReactNode, useEffect, useState } from "react";
-import { Button, cx, Field, Section, TextArea } from "../ui.tsx";
+import { Button, cx, Field, FoldedSection, Section, TextArea } from "../ui.tsx";
 import { polygonBox } from "./Canvas.tsx";
 
 const ID = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
@@ -847,7 +847,7 @@ export const SceneForm = ({ doc, onChange }: { doc: SceneData; onChange: Change 
           </p>
         </div>
       </Section>
-      <Section title="Generated from">
+      <FoldedSection title="Generated from">
         <div className="flex flex-col gap-3">
           <Field label="Brief" hint="What Repaint starts from">
             {(id) => (
@@ -888,7 +888,7 @@ export const SceneForm = ({ doc, onChange }: { doc: SceneData; onChange: Change 
             </Field>
           )}
         </div>
-      </Section>
+      </FoldedSection>
     </>
   );
 };

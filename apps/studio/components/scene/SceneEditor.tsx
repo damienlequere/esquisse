@@ -16,7 +16,7 @@ import { CheckReport, useCheck } from "../game/CheckReport.tsx";
 import { PlannedScene } from "../game/Generation.tsx";
 import { useJobs } from "../jobs/Jobs.tsx";
 import { draftGame, usePlayWindow } from "../Preview.tsx";
-import { Button, cx, Dialog, Field, PAGE, Section, TextArea } from "../ui.tsx";
+import { Button, cx, Dialog, Field, FoldedSection, PAGE, Section, TextArea } from "../ui.tsx";
 import { Canvas, type Guides, isExit, type Selection, type Tool, translateBox } from "./Canvas.tsx";
 import { useHistory } from "./history.ts";
 import { CharacterForm, ObjectForm, SceneForm } from "./Inspector.tsx";
@@ -549,12 +549,12 @@ export const SceneEditor = ({ gameId, sceneId }: { gameId: string; sceneId: stri
               <>
                 <SceneForm doc={doc} onChange={change} />
                 {plan && (
-                  <Section title="In the game's plan (game.json)">
+                  <FoldedSection title="In the game's plan (game.json)">
                     <p className="mb-3 text-xs text-zinc-500">
                       As Generate a game wrote it, once: read-only.
                     </p>
                     <PlannedScene plan={plan} world={studio.game.generation?.world} />
-                  </Section>
+                  </FoldedSection>
                 )}
               </>
             )}
