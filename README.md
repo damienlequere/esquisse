@@ -104,8 +104,9 @@ saves a scene. Commit as usual once done (see Committing).
   `characters.json`); and in fields, each object's label, actions (`exit`,
   `sets`, `requires`, `search`), what it holds from the game's items, each
   character's dialogue, and the scene's title, intro, opening and back button.
-  It is played beside it as it is edited, saved or not, in a phone's or a
-  tablet's frame, or in its own window (⧉ Own window). Ctrl+Z undoes, Ctrl+S
+  ▶ Play scene, before Remove, plays it alone in its own window, the size of
+  a phone, as it is edited, saved or not (↺ Play again once it plays). Remove
+  asks « Are you sure? », with Cancel and Yes, remove it. Ctrl+Z undoes, Ctrl+S
   saves `scene.json`, `objects.json` and `characters.json`.
 - **The generator's commands**, run by the studio as in the terminal, with the
   same API keys (`packages/generator/.env.local`): a new game from a brief
@@ -120,8 +121,8 @@ The studio runs each command as a child process with `ESQUISSE_STUDIO=1`: its
 questions and its renders are then lines of JSON after `@studio `
 (`packages/generator/src/studio.ts`), answered on its stdin, instead of the
 terminal's prompts and the image viewer. The preview plays a scene with the web
-site's own components (`apps/web/components`), in an iframe of the studio or a
-window it opens (`app/(preview)`), to which the page sends the game as it is
+site's own components (`apps/web/components`), in a window the studio opens
+(`app/(preview)`), to which the page sends the game as it is
 being edited; the window stays open from page to page.
 
 | File | Role |

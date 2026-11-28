@@ -1,21 +1,16 @@
 "use client";
 
-// The game as it is being edited, played in an iframe the size of a phone or a
-// tablet (app/(preview)/preview), scaled to fit its panel, or in a window of
-// its own (usePlayWindow). Each change is sent to it as it is made, saved or not.
+// The game as it is being edited, played in a window of its own the size of a
+// phone (usePlayWindow), on app/(preview)/preview. Each change is sent to it as
+// it is made, saved or not.
 
 import type { GameData } from "@esquisse/engine";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import type { PreviewMessage, StudioGame } from "../lib/types.ts";
-import { Button, cx } from "./ui.tsx";
 
-// Below the web site's device frame (see apps/web/app/globals.css): the scene
-// fills the iframe, as on a phone or a tablet.
-const DEVICES = {
-  phone: { portrait: [390, 845], landscape: [845, 390] },
-  tablet: { portrait: [558, 744], landscape: [744, 558] },
-} as const;
-type Device = keyof typeof DEVICES;
+// A phone's screen, below the web site's device frame (see
+// apps/web/app/globals.css): the scene fills the window, as on a phone.
+const PHONE = { portrait: [390, 845], landscape: [845, 390] } as const;
 
 // The window the game is played in, when not in a panel: one for the studio,
 // kept from page to page (the studio's pages change without reloading), until
@@ -111,7 +106,7 @@ export const usePlayWindow = (played: Played) => {
   }, [playing, setReady]);
   useSend(popupWindow, playing ? ready : 0, played, restart);
 
-  const [width, height] = DEVICES.phone[played.landscape ? "landscape" : "portrait"];
+  const [width, height] = PHONE[played.landscape ? "landscape" : "portrait"];
   useEffect(() => {
     if (playing && popup && !popup.closed) resize(popup, width, height);
   }, [playing, width, height]);
@@ -137,79 +132,4 @@ export const usePlayWindow = (played: Played) => {
       setPlaying(false);
     },
   };
-};
-
-// The game played in a panel, in a device's frame, or in its window.
-export const Preview = (played: Played) => {
-  const frame = useRef<HTMLIFrameElement>(null);
-  const box = useRef<HTMLDivElement>(null);
-  const frameWindow = useCallback(() => frame.current?.contentWindow, []);
-  const [ready] = useReady(frameWindow);
-  const own = usePlayWindow(played);
-  const [restart, setRestart] = useState(0);
-  const [device, setDevice] = useState<Device>("phone");
-  const [space, setSpace] = useState({ width: 300, height: 600 });
-  useSend(frameWindow, own.playing ? 0 : ready, played, restart);
-
-  useEffect(() => {
-    const el = box.current;
-    if (el === null) return;
-    const observer = new ResizeObserver(() =>
-      setSpace({ width: el.clientWidth, height: el.clientHeight }),
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
-  const [width, height] = DEVICES[device][played.landscape ? "landscape" : "portrait"];
-  const scale = Math.min(1, (space.width - 8) / width, (space.height - 8) / height);
-
-  return (
-    <div className="flex h-full min-h-0 flex-col">
-      <div className="flex items-center gap-1 border-b border-zinc-800 px-2 py-1.5">
-        {(Object.keys(DEVICES) as Device[]).map((d) => (
-          <button
-            key={d}
-            type="button"
-            onClick={() => setDevice(d)}
-            className={cx(
-              "rounded px-2 py-0.5 text-xs capitalize",
-              d === device ? "bg-zinc-700 text-white" : "text-zinc-400 hover:text-zinc-200",
-            )}
-          >
-            {d}
-          </button>
-        ))}
-        <span className="flex-1" />
-        <Button
-          variant="ghost"
-          className="text-xs"
-          onClick={() => (own.playing ? own.restart() : setRestart((n) => n + 1))}
-        >
-          ↺ Restart
-        </Button>
-        <Button variant="ghost" className="text-xs" onClick={own.playing ? own.stop : own.play}>
-          {own.playing ? "Bring it back" : "⧉ Own window"}
-        </Button>
-      </div>
-      <div
-        ref={box}
-        className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden"
-      >
-        {own.playing ? (
-          <p className="text-xs text-zinc-500">Played in its own window.</p>
-        ) : (
-          <div style={{ width: width * scale, height: height * scale }}>
-            <iframe
-              ref={frame}
-              src="/preview"
-              title="Preview"
-              style={{ width, height, transform: `scale(${scale})`, transformOrigin: "top left" }}
-              className="rounded-xl border border-zinc-700 bg-black"
-            />
-          </div>
-        )}
-      </div>
-    </div>
-  );
 };

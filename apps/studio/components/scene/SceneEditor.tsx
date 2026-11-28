@@ -15,7 +15,7 @@ import type { StudioGame } from "../../lib/types.ts";
 import { CheckReport, useCheck } from "../game/CheckReport.tsx";
 import { PlannedScene } from "../game/Generation.tsx";
 import { useJobs } from "../jobs/Jobs.tsx";
-import { draftGame, Preview } from "../Preview.tsx";
+import { draftGame, usePlayWindow } from "../Preview.tsx";
 import { Button, cx, Dialog, Field, PAGE, Section, TextArea } from "../ui.tsx";
 import { Canvas, type Guides, isExit, type Selection, type Tool, translateBox } from "./Canvas.tsx";
 import { useHistory } from "./history.ts";
@@ -69,7 +69,6 @@ export const SceneEditor = ({ gameId, sceneId }: { gameId: string; sceneId: stri
     night: false,
   });
   const [tab, setTab] = useState<"selection" | "scene" | "check">("scene");
-  const [showPreview, setShowPreview] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string>();
   const [dialog, setDialog] = useState<"repaint" | "remove">();
@@ -293,6 +292,13 @@ export const SceneEditor = ({ gameId, sceneId }: { gameId: string; sceneId: stri
         : undefined,
     [studio, sceneId, doc],
   );
+  // The scene played alone in its own window, as it is edited.
+  const player = usePlayWindow({
+    studio,
+    game: preview,
+    scene: sceneId,
+    landscape: doc.scene.imageRatio === "16:9",
+  });
 
   if (error) return <p className="p-6 text-sm text-red-300">{error}</p>;
   if (studio === undefined || preview === undefined)
@@ -454,15 +460,17 @@ export const SceneEditor = ({ gameId, sceneId }: { gameId: string; sceneId: stri
           {doc.scene.night ? "Repaint night" : "Paint night"}
         </Button>
         <Button
+          onClick={player.playing ? player.restart : player.play}
+          title="Plays the scene alone in its own window, as it is edited, saved or not"
+        >
+          {player.playing ? "↺ Play again" : "▶ Play scene"}
+        </Button>
+        <Button
           variant="danger"
           onClick={() => setDialog("remove")}
           disabled={running !== undefined}
         >
           Remove
-        </Button>
-        <span className="h-4 w-px bg-zinc-800" />
-        <Button variant="ghost" onClick={() => setShowPreview(!showPreview)} className="text-xs">
-          {showPreview ? "Hide preview" : "Show preview"}
         </Button>
       </div>
 
@@ -570,11 +578,6 @@ export const SceneEditor = ({ gameId, sceneId }: { gameId: string; sceneId: stri
             </div>
           )}
         </aside>
-        {showPreview && (
-          <aside className="w-[22rem] shrink-0 border-l border-zinc-800">
-            <Preview studio={studio} game={preview} scene={sceneId} landscape={landscape} />
-          </aside>
-        )}
       </div>
 
       <Dialog open={dialog === "repaint"} onClose={() => setDialog(undefined)} wide>
@@ -588,11 +591,15 @@ export const SceneEditor = ({ gameId, sceneId }: { gameId: string; sceneId: stri
         />
       </Dialog>
       <Dialog open={dialog === "remove"} onClose={() => setDialog(undefined)}>
-        <p className="text-sm">
-          Remove <b>{doc.scene.title || sceneId}</b>: its texts, its images and their originals?
-          Only git can bring it back.
+        <p className="text-sm font-medium text-zinc-100">Are you sure?</p>
+        <p className="mt-2 text-sm text-zinc-400">
+          <b className="text-zinc-200">{doc.scene.title || sceneId}</b> will be removed: its texts,
+          its images and their originals. Only git can bring it back.
         </p>
-        <div className="mt-4">
+        <div className="mt-4 flex justify-end gap-2">
+          <Button autoFocus onClick={() => setDialog(undefined)}>
+            Cancel
+          </Button>
           <Button
             variant="danger"
             onClick={async () => {
@@ -604,7 +611,7 @@ export const SceneEditor = ({ gameId, sceneId }: { gameId: string; sceneId: stri
               });
             }}
           >
-            Remove it
+            Yes, remove it
           </Button>
         </div>
       </Dialog>
