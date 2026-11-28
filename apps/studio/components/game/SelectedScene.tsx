@@ -5,11 +5,11 @@
 // green; beside it, each object's actions. Hovering one shows its box. It is
 // only seen here: the scene's page edits it.
 
-import { type Box, sceneRatio } from "@esquisse/engine";
+import { type Box, type ObjectBox, sceneRatio } from "@esquisse/engine";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import type { StudioScene } from "../../lib/types.ts";
-import { isExit } from "../scene/Canvas.tsx";
+import { isExit, svgPoints } from "../scene/Canvas.tsx";
 import { cx } from "../ui.tsx";
 
 const pct = (v: number) => `${v * 100}%`;
@@ -65,34 +65,55 @@ export const SelectedScene = ({
             safe zone
           </span>
         </div>
+        <svg
+          className="pointer-events-none absolute inset-0 z-10 size-full overflow-visible"
+          viewBox="0 0 1 1"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          {[
+            ...placed.filter((o) => o.id !== hovered),
+            ...placed.filter((o) => o.id === hovered),
+          ].map((object) => {
+            const box = objects[object.id] as ObjectBox;
+            const exit = isExit(object);
+            const on = hovered === object.id;
+            return (
+              <polygon
+                key={object.id}
+                points={svgPoints(box)}
+                vectorEffect="non-scaling-stroke"
+                strokeWidth={2}
+                strokeLinejoin="round"
+                onPointerEnter={() => setHovered(object.id)}
+                onPointerLeave={() => setHovered(undefined)}
+                className={cx(
+                  "pointer-events-auto",
+                  on
+                    ? "fill-sky-400/15 stroke-sky-400"
+                    : exit
+                      ? "fill-emerald-400/5 stroke-emerald-400/80"
+                      : "fill-white/5 stroke-white/80",
+                )}
+              />
+            );
+          })}
+        </svg>
         {placed.map((object) => {
           const box = objects[object.id] as Box;
           const exit = isExit(object);
           const on = hovered === object.id;
           return (
-            <div
+            <span
               key={object.id}
-              onPointerEnter={() => setHovered(object.id)}
-              onPointerLeave={() => setHovered(undefined)}
               className={cx(
-                "absolute border-2",
-                on
-                  ? "z-20 border-sky-400 bg-sky-400/15"
-                  : exit
-                    ? "z-10 border-emerald-400/80 bg-emerald-400/5"
-                    : "z-10 border-white/80 bg-white/5",
+                "pointer-events-none absolute -translate-y-full rounded-sm px-1 text-[11px] leading-4 font-semibold whitespace-nowrap text-black",
+                on ? "z-30 bg-sky-400" : exit ? "z-20 bg-emerald-400" : "z-20 bg-white/90",
               )}
-              style={place(box)}
+              style={{ left: pct(box.x0), top: `calc(${pct(box.y0)} - 2px)` }}
             >
-              <span
-                className={cx(
-                  "pointer-events-none absolute -top-5 left-[-2px] rounded-sm px-1 text-[11px] leading-4 font-semibold whitespace-nowrap text-black",
-                  on ? "bg-sky-400" : exit ? "bg-emerald-400" : "bg-white/90",
-                )}
-              >
-                {object.id}
-              </span>
-            </div>
+              {object.id}
+            </span>
           );
         })}
       </div>

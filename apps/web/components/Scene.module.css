@@ -117,6 +117,25 @@
   transition: backdrop-filter 200ms;
 }
 
+/* An object cut to its polygon: the button itself takes no click, its .cut,
+   clipped to the polygon, does, and its overexposure is clipped the same. The
+   button is not clipped: its overexposure would then have nothing under it to
+   brighten (a clip-path makes a backdrop root). */
+.hotspot[data-cut] {
+  pointer-events: none;
+}
+
+.hotspot[data-cut]::before {
+  clip-path: var(--cut);
+}
+
+.cut {
+  position: absolute;
+  inset: 0;
+  clip-path: var(--cut);
+  pointer-events: auto;
+}
+
 .hotspot:focus-visible {
   outline: none;
 }

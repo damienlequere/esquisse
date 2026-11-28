@@ -13,6 +13,7 @@ import {
   INVENTORY_COLUMNS,
   INVENTORY_SLOTS,
   type Items,
+  inObjectBox,
   isNight,
   itemName,
   NIGHT_FADE,
@@ -265,9 +266,15 @@ export const Scene = ({
                   key={object.id}
                   accessibilityRole="button"
                   accessibilityLabel={object.label}
-                  onPress={(event) =>
-                    setMenu({ object, x: event.nativeEvent.pageX, y: event.nativeEvent.pageY })
-                  }
+                  onPress={(event) => {
+                    // Cut to its polygon, if it has one: a press outside it does nothing.
+                    const { locationX, locationY, pageX, pageY } = event.nativeEvent;
+                    const at = {
+                      x: locationX / ((box.x1 - box.x0) * image.width),
+                      y: locationY / ((box.y1 - box.y0) * image.height),
+                    };
+                    if (inObjectBox(box, at)) setMenu({ object, x: pageX, y: pageY });
+                  }}
                   style={place(box)}
                 >
                   {({ pressed }) => (

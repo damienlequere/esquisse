@@ -17,7 +17,7 @@ import { PlannedScene } from "../game/Generation.tsx";
 import { useJobs } from "../jobs/Jobs.tsx";
 import { draftGame, Preview } from "../Preview.tsx";
 import { Button, cx, Dialog, Field, PAGE, Section, TextArea } from "../ui.tsx";
-import { Canvas, type Guides, isExit, type Selection, type Tool } from "./Canvas.tsx";
+import { Canvas, type Guides, isExit, type Selection, type Tool, translateBox } from "./Canvas.tsx";
 import { useHistory } from "./history.ts";
 import { CharacterForm, ObjectForm, SceneForm } from "./Inspector.tsx";
 
@@ -168,12 +168,7 @@ export const SceneEditor = ({ gameId, sceneId }: { gameId: string; sceneId: stri
     const box = doc.objects[target.id];
     if (object === undefined) return;
     const id = freeId(object.id, objectIds);
-    const moved = box && {
-      x0: box.x0 + 0.02,
-      y0: box.y0 + 0.02,
-      x1: Math.min(1, box.x1 + 0.02),
-      y1: Math.min(1, box.y1 + 0.02),
-    };
+    const moved = box && translateBox(box, 0.02, 0.02);
     change({
       ...doc,
       scene: { ...doc.scene, objects: [...doc.scene.objects, { ...structuredClone(object), id }] },
@@ -186,20 +181,8 @@ export const SceneEditor = ({ gameId, sceneId }: { gameId: string; sceneId: stri
     if (selection?.kind === "object") {
       const b = doc.objects[selection.id];
       if (b === undefined) return;
-      const r = (v: number) => Math.round(v * 1000) / 1000;
       change(
-        {
-          ...doc,
-          objects: {
-            ...doc.objects,
-            [selection.id]: {
-              x0: r(b.x0 + dx),
-              y0: r(b.y0 + dy),
-              x1: r(b.x1 + dx),
-              y1: r(b.y1 + dy),
-            },
-          },
-        },
+        { ...doc, objects: { ...doc.objects, [selection.id]: translateBox(b, dx, dy) } },
         `nudge:${selection.id}`,
       );
     } else if (selection?.kind === "character") {

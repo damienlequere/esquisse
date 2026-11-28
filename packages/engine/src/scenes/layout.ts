@@ -1,4 +1,4 @@
-import type { Box, Character, Scene, SceneData, SceneObject } from "./types.ts";
+import type { Box, Character, ObjectBox, Point, Scene, SceneData, SceneObject } from "./types.ts";
 
 // Where each element of a scene goes, in fractions of the image: computed once
 // for both apps, which only draw the boxes.
@@ -8,7 +8,7 @@ export type SceneLayout = {
   ratio: number;
   // The screen is turned to match: a landscape scene is played sideways.
   landscape: boolean;
-  objects: { object: SceneObject; box: Box }[];
+  objects: { object: SceneObject; box: ObjectBox }[];
   characters: { character: Character; box: Box }[];
 };
 
@@ -63,3 +63,51 @@ export const placeStyle = (box: Box) => ({
   width: pct(box.x1 - box.x0),
   height: pct(box.y1 - box.y0),
 });
+
+// The polygon of an object's box: its points, or the box's four corners.
+export const boxPoints = (box: ObjectBox): Point[] =>
+  box.points && box.points.length >= 3
+    ? box.points
+    : [
+        { x: box.x0, y: box.y0 },
+        { x: box.x1, y: box.y0 },
+        { x: box.x1, y: box.y1 },
+        { x: box.x0, y: box.y1 },
+      ];
+
+// The smallest box around some points.
+export const pointsBounds = (points: Point[]): Box => ({
+  x0: Math.min(...points.map((p) => p.x)),
+  y0: Math.min(...points.map((p) => p.y)),
+  x1: Math.max(...points.map((p) => p.x)),
+  y1: Math.max(...points.map((p) => p.y)),
+});
+
+// The point, in fractions of the box (0 to 1 from its top left corner), is in
+// its polygon: always, without points.
+export const inObjectBox = (box: ObjectBox, at: Point) => {
+  if (!box.points || box.points.length < 3) return true;
+  const w = box.x1 - box.x0 || 1;
+  const h = box.y1 - box.y0 || 1;
+  const x = box.x0 + at.x * w;
+  const y = box.y0 + at.y * h;
+  const pts = box.points;
+  let inside = false;
+  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+    const a = pts[i] as Point;
+    const b = pts[j] as Point;
+    if (a.y > y !== b.y > y && x < ((b.x - a.x) * (y - a.y)) / (b.y - a.y) + a.x) inside = !inside;
+  }
+  return inside;
+};
+
+// Its polygon as a CSS clip-path, in % of its box, or nothing without points:
+// on the web, a click outside it goes through, to what is under it.
+export const clipPathStyle = (box: ObjectBox) => {
+  if (!box.points || box.points.length < 3) return undefined;
+  const w = box.x1 - box.x0 || 1;
+  const h = box.y1 - box.y0 || 1;
+  const at = (p: Point) =>
+    `${Math.round(((p.x - box.x0) / w) * 10000) / 100}% ${Math.round(((p.y - box.y0) / h) * 10000) / 100}%`;
+  return `polygon(${box.points.map(at).join(", ")})`;
+};

@@ -3,12 +3,18 @@
 // A scene's image, with what is placed on it: the objects' boxes (objects.json,
 // what the player clicks), the characters by their feet, the safe zone, and
 // what a phone and a tablet crop. Boxes are drawn, moved and resized here, in
-// fractions of the image, as the apps place them.
+// fractions of the image, as the apps place them. An object's box can be made a
+// polygon (see ObjectBox): its corners are then dragged one by one, the handle
+// in the middle of an edge adds one, a double click on one removes it.
 
 import {
   type Box,
+  boxPoints,
   type Character,
   characterBox,
+  type ObjectBox,
+  type Point,
+  pointsBounds,
   type SceneData,
   sceneRatio,
 } from "@esquisse/engine";
@@ -29,6 +35,35 @@ const normalize = (b: Box): Box => ({
   x1: round(clamp(Math.max(b.x0, b.x1))),
   y1: round(clamp(Math.max(b.y0, b.y1))),
 });
+
+// A polygon, its points rounded, its box around them.
+export const polygonBox = (points: Point[]): ObjectBox => {
+  const rounded = points.map((p) => ({ x: round(clamp(p.x)), y: round(clamp(p.y)) }));
+  return { ...pointsBounds(rounded), points: rounded };
+};
+
+// The box moved, its polygon with it, kept inside the image.
+export const translateBox = (b: ObjectBox, dx: number, dy: number): ObjectBox => {
+  const x = clamp(dx, -b.x0, 1 - b.x1);
+  const y = clamp(dy, -b.y0, 1 - b.y1);
+  const moved = {
+    x0: round(b.x0 + x),
+    y0: round(b.y0 + y),
+    x1: round(b.x1 + x),
+    y1: round(b.y1 + y),
+  };
+  return b.points
+    ? { ...moved, points: b.points.map((p) => ({ x: round(p.x + x), y: round(p.y + y) })) }
+    : moved;
+};
+
+// Its polygon's points, for an SVG in fractions of the image.
+export const svgPoints = (b: ObjectBox) =>
+  boxPoints(b)
+    .map((p) => `${p.x},${p.y}`)
+    .join(" ");
+
+const DOUBLE_CLICK = 350;
 
 const pct = (v: number) => `${v * 100}%`;
 const place = (b: Box) => ({
@@ -71,7 +106,14 @@ const resize = (b: Box, handle: Handle, dx: number, dy: number): Box => ({
 });
 
 type Drag =
-  | { type: "move-object"; id: string; start: Box; from: { x: number; y: number } }
+  | { type: "move-object"; id: string; start: ObjectBox; from: { x: number; y: number } }
+  | {
+      type: "vertex";
+      id: string;
+      index: number;
+      start: ObjectBox;
+      from: { x: number; y: number };
+    }
   | {
       type: "resize-object";
       id: string;
@@ -122,6 +164,8 @@ export const Canvas = ({
   const [drag, setDrag] = useState<Drag>();
   const [drawn, setDrawn] = useState<Box>();
   const gesture = useRef(0);
+  // The last corner pressed, and when: pressed again soon, it is removed.
+  const lastVertex = useRef<{ id: string; index: number; time: number }>(undefined);
 
   // The image as large as its space allows, in its proportions.
   useEffect(() => {
@@ -160,18 +204,17 @@ export const Canvas = ({
     const dy = p.y - drag.from.y;
     const key = `gesture-${gesture.current}`;
     switch (drag.type) {
-      case "move-object": {
-        const w = drag.start.x1 - drag.start.x0;
-        const h = drag.start.y1 - drag.start.y0;
-        const x0 = clamp(drag.start.x0 + dx, 0, 1 - w);
-        const y0 = clamp(drag.start.y0 + dy, 0, 1 - h);
+      case "move-object":
         onChange(
-          {
-            ...doc,
-            objects: { ...objects, [drag.id]: normalize({ x0, y0, x1: x0 + w, y1: y0 + h }) },
-          },
+          { ...doc, objects: { ...objects, [drag.id]: translateBox(drag.start, dx, dy) } },
           key,
         );
+        break;
+      case "vertex": {
+        const points = boxPoints(drag.start).map((q, i) =>
+          i === drag.index ? { x: q.x + dx, y: q.y + dy } : q,
+        );
+        onChange({ ...doc, objects: { ...objects, [drag.id]: polygonBox(points) } }, key);
         break;
       }
       case "resize-object":
@@ -261,6 +304,13 @@ export const Canvas = ({
   const background = guides.night && images.night ? images.night : images.background;
   const selectedObject =
     selection?.kind === "object" ? scene.objects.find((o) => o.id === selection.id) : undefined;
+  const selectedBox = selectedObject && objects[selectedObject.id];
+  const placed = scene.objects.filter((o) => objects[o.id] !== undefined);
+  // The selected one drawn last, over the others.
+  const ordered = [
+    ...placed.filter((o) => o !== selectedObject),
+    ...placed.filter((o) => o === selectedObject),
+  ];
 
   return (
     <div
@@ -313,59 +363,156 @@ export const Canvas = ({
           />
         )}
 
-        {scene.objects.map((object) => {
-          const box = objects[object.id];
-          if (box === undefined) return null;
+        {/* The objects' polygons (a box is one with four corners), the
+            selected one on top. */}
+        <svg
+          className="pointer-events-none absolute inset-0 z-10 size-full overflow-visible"
+          viewBox="0 0 1 1"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          {ordered.map((object) => {
+            const box = objects[object.id] as ObjectBox;
+            const on = selected("object", object.id);
+            const exit = isExit(object);
+            return (
+              <polygon
+                key={object.id}
+                points={svgPoints(box)}
+                vectorEffect="non-scaling-stroke"
+                strokeWidth={2}
+                strokeLinejoin="round"
+                onPointerDown={(e) => {
+                  onSelect({ kind: "object", id: object.id });
+                  if (tool === "select" || on)
+                    begin(e, { type: "move-object", id: object.id, start: box, from: at(e) });
+                  else e.stopPropagation();
+                }}
+                className={cx(
+                  "pointer-events-auto",
+                  on
+                    ? "fill-sky-400/10 stroke-sky-400"
+                    : exit
+                      ? "fill-emerald-400/5 stroke-emerald-400/80 hover:fill-emerald-400/15"
+                      : "fill-white/5 stroke-white/80 hover:fill-white/15",
+                  tool === "select" ? "cursor-move" : "",
+                )}
+              />
+            );
+          })}
+        </svg>
+
+        {placed.map((object) => {
+          const box = objects[object.id] as ObjectBox;
           const on = selected("object", object.id);
           const exit = isExit(object);
           return (
-            <div
+            <span
               key={object.id}
-              onPointerDown={(e) => {
-                onSelect({ kind: "object", id: object.id });
-                if (tool === "select" || on)
-                  begin(e, { type: "move-object", id: object.id, start: box, from: at(e) });
-                else e.stopPropagation();
-              }}
               className={cx(
-                "absolute border-2",
-                on
-                  ? "z-20 border-sky-400 bg-sky-400/10"
-                  : exit
-                    ? "z-10 border-emerald-400/80 bg-emerald-400/5 hover:bg-emerald-400/15"
-                    : "z-10 border-white/80 bg-white/5 hover:bg-white/15",
-                tool === "select" ? "cursor-move" : "",
+                "pointer-events-none absolute -translate-y-full rounded-sm px-1 text-[11px] leading-4 font-semibold whitespace-nowrap text-black",
+                on ? "z-30 bg-sky-400" : "z-20",
+                !on && (exit ? "bg-emerald-400" : "bg-white/90"),
               )}
-              style={place(box)}
+              style={{ left: pct(box.x0), top: `calc(${pct(box.y0)} - 2px)` }}
             >
-              <span
-                className={cx(
-                  "pointer-events-none absolute -top-5 left-[-2px] rounded-sm px-1 text-[11px] leading-4 font-semibold whitespace-nowrap text-black",
-                  on ? "bg-sky-400" : exit ? "bg-emerald-400" : "bg-white/90",
-                )}
-              >
-                {object.id}
-              </span>
-              {on &&
-                HANDLES.map((h) => (
-                  <span
-                    key={h}
-                    onPointerDown={(e) =>
-                      begin(e, {
-                        type: "resize-object",
-                        id: object.id,
-                        handle: h,
-                        start: box,
-                        from: at(e),
-                      })
-                    }
-                    className="absolute size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-sm border border-sky-900 bg-sky-300"
-                    style={handlePlace[h]}
-                  />
-                ))}
-            </div>
+              {object.id}
+            </span>
           );
         })}
+
+        {/* The selected object's handles: the box's sides and corners, or its
+            polygon's corners and, in the middle of each edge, one to add. */}
+        {selectedBox !== undefined &&
+          selection !== undefined &&
+          (selectedBox.points === undefined ? (
+            <div className="pointer-events-none absolute z-30" style={place(selectedBox)}>
+              {HANDLES.map((h) => (
+                <span
+                  key={h}
+                  onPointerDown={(e) =>
+                    begin(e, {
+                      type: "resize-object",
+                      id: selection.id,
+                      handle: h,
+                      start: selectedBox,
+                      from: at(e),
+                    })
+                  }
+                  className="pointer-events-auto absolute size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-sm border border-sky-900 bg-sky-300"
+                  style={handlePlace[h]}
+                />
+              ))}
+            </div>
+          ) : (
+            (() => {
+              const points = boxPoints(selectedBox);
+              const id = selection.id;
+              return (
+                <>
+                  {points.map((p, i) => {
+                    const q = points[(i + 1) % points.length] as Point;
+                    return (
+                      <span
+                        key={`mid-${i}`}
+                        title="Drag to add a corner"
+                        onPointerDown={(e) => {
+                          if (e.button !== 0) return;
+                          const next = [
+                            ...points.slice(0, i + 1),
+                            { x: (p.x + q.x) / 2, y: (p.y + q.y) / 2 },
+                            ...points.slice(i + 1),
+                          ];
+                          const box = polygonBox(next);
+                          begin(e, { type: "vertex", id, index: i + 1, start: box, from: at(e) });
+                          onChange(
+                            { ...doc, objects: { ...objects, [id]: box } },
+                            `gesture-${gesture.current}`,
+                          );
+                        }}
+                        className="absolute z-30 size-2 -translate-x-1/2 -translate-y-1/2 cursor-copy rounded-full border border-sky-300 bg-sky-950/80"
+                        style={{ left: pct((p.x + q.x) / 2), top: pct((p.y + q.y) / 2) }}
+                      />
+                    );
+                  })}
+                  {points.map((p, i) => (
+                    <span
+                      key={`corner-${i}`}
+                      title={points.length > 3 ? "Double click to remove" : undefined}
+                      onPointerDown={(e) => {
+                        const now = Date.now();
+                        const last = lastVertex.current;
+                        lastVertex.current = { id, index: i, time: now };
+                        if (
+                          last?.id === id &&
+                          last.index === i &&
+                          now - last.time < DOUBLE_CLICK &&
+                          points.length > 3
+                        ) {
+                          e.stopPropagation();
+                          lastVertex.current = undefined;
+                          onChange(
+                            {
+                              ...doc,
+                              objects: {
+                                ...objects,
+                                [id]: polygonBox(points.filter((_, j) => j !== i)),
+                              },
+                            },
+                            `remove-${now}`,
+                          );
+                          return;
+                        }
+                        begin(e, { type: "vertex", id, index: i, start: selectedBox, from: at(e) });
+                      }}
+                      className="absolute z-30 size-2.5 -translate-x-1/2 -translate-y-1/2 cursor-move rounded-sm border border-sky-900 bg-sky-300"
+                      style={{ left: pct(p.x), top: pct(p.y) }}
+                    />
+                  ))}
+                </>
+              );
+            })()
+          ))}
 
         {scene.characters.map((character) => {
           const box = characterBox(character, aspects[character.id] ?? DEFAULT_ASPECT, ratio);

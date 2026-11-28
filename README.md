@@ -94,7 +94,11 @@ saves a scene. Commit as usual once done (see Committing).
   (Ctrl+S); Remove game asks first.
 - **A scene** (`/games/<game>/scenes/<id>`): its image, with the safe zone and
   what a phone and a tablet crop; its objects' boxes (`objects.json`) drawn
-  (O), moved, resized, nudged with the arrows; its characters placed by their
+  (O), moved, resized, nudged with the arrows, or made polygons (Shape, in its
+  fields: their corners dragged one by one, the dot in the middle of an edge
+  adds one, a double click on a corner removes it), for oblique edges to follow
+  the image: `points` beside the box, which the apps cut the object to (a click
+  outside goes through); its characters placed by their
   feet (C), their height dragged, their layer uploaded (a PNG with its
   transparency: `<id>.webp`, its original in `sources/`, its proportions in
   `characters.json`); and in fields, each object's label, actions (`exit`,

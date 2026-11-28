@@ -5,16 +5,20 @@
 // scene itself (its texts, its back button, what it was generated from).
 
 import {
+  type Box,
+  boxPoints,
   type Character,
   CONTAINER_SLOTS,
   type Items,
   type ObjectAction,
+  type ObjectBox,
   type SceneData,
   type SceneObject,
   sceneExits,
 } from "@esquisse/engine";
 import { type ReactNode, useEffect, useState } from "react";
-import { Button, Field, Section, TextArea } from "../ui.tsx";
+import { Button, cx, Field, Section, TextArea } from "../ui.tsx";
+import { polygonBox } from "./Canvas.tsx";
 
 const ID = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
 
@@ -97,6 +101,19 @@ const NumberField = ({
 const omit = <T extends object, K extends keyof T>(value: T, key: K): Omit<T, K> => {
   const { [key]: _, ...rest } = value;
   return rest;
+};
+
+// A box given new sides: its polygon, if it has one, stretched to them.
+const reframe = (box: ObjectBox, sides: Box): ObjectBox => {
+  if (!box.points) return sides;
+  const w = box.x1 - box.x0 || 1;
+  const h = box.y1 - box.y0 || 1;
+  return polygonBox(
+    box.points.map((p) => ({
+      x: sides.x0 + ((p.x - box.x0) / w) * (sides.x1 - sides.x0),
+      y: sides.y0 + ((p.y - box.y0) / h) * (sides.y1 - sides.y0),
+    })),
+  );
 };
 
 // ── An object ─────────────────────────────────────────────────────────────────
@@ -189,6 +206,53 @@ export const ObjectForm = ({
                   onChange={(text) => update({ ...object, text }, "text")}
                   rows={3}
                 />
+              )}
+            </Field>
+          )}
+          {box !== undefined && (
+            <Field
+              label="Shape"
+              hint={
+                box.points
+                  ? "Drag its corners; the dot in the middle of an edge adds one, a double click on a corner removes it"
+                  : "A polygon follows the image with oblique edges"
+              }
+            >
+              {() => (
+                <div className="flex gap-1">
+                  {(["box", "polygon"] as const).map((shape) => {
+                    const on = (shape === "polygon") === (box.points !== undefined);
+                    return (
+                      <button
+                        key={shape}
+                        type="button"
+                        onClick={() => {
+                          if (on) return;
+                          const { points: _, ...bounds } = box;
+                          onChange(
+                            {
+                              ...doc,
+                              objects: {
+                                ...objects,
+                                [object.id]:
+                                  shape === "polygon" ? polygonBox(boxPoints(box)) : bounds,
+                              },
+                            },
+                            key("shape"),
+                          );
+                        }}
+                        className={cx(
+                          "rounded border px-2 py-1 text-xs capitalize",
+                          on
+                            ? "border-sky-500 bg-sky-500/15 text-sky-200"
+                            : "border-zinc-700 text-zinc-300 hover:bg-zinc-800",
+                        )}
+                      >
+                        {shape}
+                      </button>
+                    );
+                  })}
+                </div>
               )}
             </Field>
           )}
@@ -412,7 +476,10 @@ export const ObjectForm = ({
                 value={box[k]}
                 onChange={(v) =>
                   onChange(
-                    { ...doc, objects: { ...objects, [object.id]: { ...box, [k]: v } } },
+                    {
+                      ...doc,
+                      objects: { ...objects, [object.id]: reframe(box, { ...box, [k]: v }) },
+                    },
                     key(`box:${k}`),
                   )
                 }
@@ -428,7 +495,12 @@ export const ObjectForm = ({
             <button
               type="button"
               className="underline hover:text-zinc-200"
-              onClick={() => update({ ...object, zone: box }, "zone")}
+              onClick={() =>
+                update(
+                  { ...object, zone: { x0: box.x0, y0: box.y0, x1: box.x1, y1: box.y1 } },
+                  "zone",
+                )
+              }
             >
               Set the zone to the box
             </button>

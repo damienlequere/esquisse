@@ -92,9 +92,17 @@ export type Scene = {
   night?: { light: string; prompt: string };
 };
 
+export type Point = { x: number; y: number };
+
+// Where an object is clicked: its box, and, drawn by hand in the studio, the
+// polygon it is cut to (points, at least 3, in fractions of the image, the box
+// being the smallest one around them), for oblique edges to follow the image.
+// Without points, it is the whole box.
+export type ObjectBox = Box & { points?: Point[] };
+
 // Written by the generator: the detected boxes of the objects, by id, and the
 // width / height ratio of each character's layer.
-export type ObjectBoxes = Record<string, Box>;
+export type ObjectBoxes = Record<string, ObjectBox>;
 export type CharacterAspects = Record<string, number>;
 
 // A scene and what the generator found in its images (see

@@ -6,6 +6,7 @@ import {
   type Character,
   CONTAINER_COLUMNS,
   CONTAINER_SLOTS,
+  clipPathStyle,
   ENTER_ARROW,
   type GameAction,
   type GameState,
@@ -227,9 +228,19 @@ export const Scene = ({
                   aria-haspopup="menu"
                   aria-expanded={menu?.object === object}
                   data-open={menu?.object === object || undefined}
-                  style={placeStyle(box)}
+                  // Cut to its polygon, if it has one (see .cut): a click
+                  // outside it goes through, to what is under it.
+                  data-cut={box.points ? true : undefined}
+                  style={
+                    {
+                      ...placeStyle(box),
+                      "--cut": clipPathStyle(box),
+                    } as CSSProperties
+                  }
                   onClick={(event) => openMenu(object, event)}
-                />
+                >
+                  {box.points && <span className={styles.cut} />}
+                </button>
               ),
           )}
 
