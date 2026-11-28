@@ -85,10 +85,11 @@ saves a scene. Commit as usual once done (see Committing).
   closed, the links drawn between the cards; a scene **selected** by a click
   on its card's picture (again, or Escape, lets it go), shown whole below the
   map with its safe zone and its objects' boxes, the exits in green, and each
-  object's actions beside it; the game **checked** as
-  `pnpm check-game` checks it, on what is being edited, above the map, and what
-  the game was generated from below it (Prompts: the game on the left, its
-  scenes' plans in cards beside it); and the game
+  object's actions beside it, then its own prompts (its plan in `game.json`), folded until opened;
+  in a panel on the right, kept in view, the game **checked** as
+  `pnpm check-game` checks it, on what is being edited, and below it what the
+  game was generated from (Prompts: only the game's own, its brief, art
+  direction, world and landmarks); and the game
   **played** in its own window (▶ Play the game, or ▶ on a card for a scene
   alone), the size of a phone, following the edits. Save writes `game.json`
   (Ctrl+S); Remove game asks first.

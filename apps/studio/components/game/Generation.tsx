@@ -4,6 +4,8 @@
 // and, in "generation", how pnpm generate-game made it (the models, the changes
 // asked to the plan, the world, and each scene's plan, then what was painted).
 // Shown as it was written, once: the scenes' scene.json is what changes after.
+// The game's page shows the game's own (GameGeneration); each scene's plan
+// (PlannedScene) is shown with the scene selected, and on the scene's page.
 
 import type { Game, GeneratedScene, World } from "@esquisse/engine";
 import type { ReactNode } from "react";
@@ -93,59 +95,41 @@ export const GameGeneration = ({ game }: { game: Game }) => {
         its page.
       </p>
     );
-  const scenes = g?.scenes ?? [];
-  // The game on the left, its scenes' plans beside it, in cards.
+  // Only the game's own: each scene's plan is shown with it, once selected.
   return (
-    <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
-      <div className="flex flex-col gap-4">
-        <p className="text-xs text-zinc-500">
-          As game.json keeps it, written once{g ? ` by ${g.command} on ${g.date}` : ""}: read-only.
-          {g && (
-            <>
-              <br />
-              Text: {g.textModel} · Images: {g.imageModel}
-            </>
-          )}
-        </p>
-        {game.brief && <Block label="The game's brief">{game.brief}</Block>}
-        {game.artDirection && (
-          <Block label={`Art direction: ${game.artDirection.label ?? "the author's own"}`}>
-            {game.artDirection.direction}
-          </Block>
-        )}
-        <Changes changes={g?.changes} label="Changes asked to the plan" />
-        {g?.world && (
+    <div className="flex flex-col gap-4">
+      <p className="text-xs text-zinc-500">
+        As game.json keeps it, written once{g ? ` by ${g.command} on ${g.date}` : ""}: read-only.
+        {g && (
           <>
-            <Block label="World">{g.world.setting}</Block>
-            {g.world.landmarks.length > 0 && (
-              <Block label="Landmarks">
-                <ul className="flex flex-col gap-1.5">
-                  {g.world.landmarks.map((l) => (
-                    <li key={l.id}>
-                      <span className="text-zinc-100">{l.id}</span> — {l.description}{" "}
-                      <span className="text-zinc-500">({l.where})</span>
-                    </li>
-                  ))}
-                </ul>
-              </Block>
-            )}
+            <br />
+            Text: {g.textModel} · Images: {g.imageModel}
           </>
         )}
-      </div>
-      {scenes.length > 0 && (
-        <div className="grid items-start gap-3 xl:grid-cols-2">
-          {scenes.map((plan, i) => (
-            <details key={plan.id} className="rounded-lg border border-zinc-800 bg-zinc-900/60">
-              <summary className="cursor-pointer px-3 py-2 text-sm text-zinc-200">
-                {i + 1}. {plan.title ?? plan.id}{" "}
-                <span className="text-xs text-zinc-500">{plan.id}</span>
-              </summary>
-              <div className="border-t border-zinc-800 px-3 py-3">
-                <PlannedScene plan={plan} world={g?.world} />
-              </div>
-            </details>
-          ))}
-        </div>
+      </p>
+      {game.brief && <Block label="The game's brief">{game.brief}</Block>}
+      {game.artDirection && (
+        <Block label={`Art direction: ${game.artDirection.label ?? "the author's own"}`}>
+          {game.artDirection.direction}
+        </Block>
+      )}
+      <Changes changes={g?.changes} label="Changes asked to the plan" />
+      {g?.world && (
+        <>
+          <Block label="World">{g.world.setting}</Block>
+          {g.world.landmarks.length > 0 && (
+            <Block label="Landmarks">
+              <ul className="flex flex-col gap-1.5">
+                {g.world.landmarks.map((l) => (
+                  <li key={l.id}>
+                    <span className="text-zinc-100">{l.id}</span> — {l.description}{" "}
+                    <span className="text-zinc-500">({l.where})</span>
+                  </li>
+                ))}
+              </ul>
+            </Block>
+          )}
+        </>
       )}
     </div>
   );

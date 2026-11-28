@@ -31,7 +31,7 @@ export const GameWorkspace = ({ id }: { id: string }) => {
   const [playing, setPlaying] = useState<string>();
   // The scene selected on the map, shown whole below it.
   const [selected, setSelected] = useState<string>();
-  // Below the map: what the game was generated from.
+  // In the panel on the right, below the check: what the game was generated from.
   const [prompts, setPrompts] = useState(true);
   const [dialog, setDialog] = useState<"scene" | "remove">();
   const jobs = useJobs();
@@ -172,7 +172,7 @@ export const GameWorkspace = ({ id }: { id: string }) => {
             variant="ghost"
             onClick={() => setPrompts(!prompts)}
             className={cx("text-xs", prompts && "bg-zinc-800 text-zinc-100")}
-            title="What the game was generated from (game.json)"
+            title="What the game was generated from (game.json); a scene's own, once selected"
           >
             Prompts
           </Button>
@@ -217,40 +217,47 @@ export const GameWorkspace = ({ id }: { id: string }) => {
           </Button>
         </div>
       </div>
-      <main className={cx(PAGE, "flex flex-col gap-6 px-6 py-6")}>
-        <section className="flex flex-col gap-2">
-          <Heading>Check{dirty ? " (unsaved)" : ""}</Heading>
-          <CheckReport report={report} />
-        </section>
-        <section className="flex flex-col gap-2">
-          <Heading>Map</Heading>
-          <GameMap
-            studio={studio}
-            game={draft}
-            onChange={setDraft}
-            onPlay={play}
-            onPaint={paintPlanned}
-            playing={playing}
-            selected={selected}
-            onSelect={setSelected}
-          />
-        </section>
-        {selected !== undefined && studio.scenes[selected] !== undefined && (
+      <main className={cx(PAGE, "flex flex-col gap-6 px-6 py-6 lg:flex-row lg:items-start")}>
+        <div className="flex min-w-0 flex-1 flex-col gap-6">
           <section className="flex flex-col gap-2">
-            <Heading>Selected scene</Heading>
-            <SelectedScene
-              game={id}
-              scene={studio.scenes[selected]}
-              links={draft.links[selected] ?? {}}
+            <Heading>Map</Heading>
+            <GameMap
+              studio={studio}
+              game={draft}
+              onChange={setDraft}
+              onPlay={play}
+              onPaint={paintPlanned}
+              playing={playing}
+              selected={selected}
+              onSelect={setSelected}
             />
           </section>
-        )}
-        {prompts && (
+          {selected !== undefined && studio.scenes[selected] !== undefined && (
+            <section className="flex flex-col gap-2">
+              <Heading>Selected scene</Heading>
+              <SelectedScene
+                game={id}
+                scene={studio.scenes[selected]}
+                links={draft.links[selected] ?? {}}
+                plan={studio.game.generation?.scenes.find((s) => s.id === selected)}
+                world={studio.game.generation?.world}
+              />
+            </section>
+          )}
+        </div>
+        {/* On the right, kept in view below the bars: the check, then the game's prompts. */}
+        <aside className="flex shrink-0 flex-col gap-6 lg:sticky lg:top-[6.75rem] lg:max-h-[calc(100dvh-8.25rem)] lg:w-[26rem] lg:overflow-y-auto lg:border-l lg:border-zinc-800 lg:pl-6">
           <section className="flex flex-col gap-2">
-            <Heading>Prompts</Heading>
-            <GameGeneration game={studio.game} />
+            <Heading>Check{dirty ? " (unsaved)" : ""}</Heading>
+            <CheckReport report={report} />
           </section>
-        )}
+          {prompts && (
+            <section className="flex flex-col gap-2">
+              <Heading>Prompts</Heading>
+              <GameGeneration game={studio.game} />
+            </section>
+          )}
+        </aside>
       </main>
       <Dialog open={dialog === "scene"} onClose={() => setDialog(undefined)} wide>
         <NewScene

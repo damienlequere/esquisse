@@ -2,15 +2,24 @@
 
 // The scene selected on a game's map: its whole image, with its safe zone and
 // the objects the player can act on (their boxes, objects.json), the exits in
-// green; beside it, each object's actions. Hovering one shows its box. It is
-// only seen here: the scene's page edits it.
+// green; beside it, each object's actions, then what it was generated from (its
+// plan in game.json, when it has one). Hovering an object shows its box. It is
+// only seen here: the scene's page edits it. The list goes beside the image
+// when it has room, below it otherwise (a landscape scene).
 
-import { type Box, type ObjectBox, sceneRatio } from "@esquisse/engine";
+import {
+  type Box,
+  type GeneratedScene,
+  type ObjectBox,
+  sceneRatio,
+  type World,
+} from "@esquisse/engine";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import type { StudioScene } from "../../lib/types.ts";
 import { isExit, svgPoints } from "../scene/Canvas.tsx";
 import { cx } from "../ui.tsx";
+import { PlannedScene } from "./Generation.tsx";
 
 const pct = (v: number) => `${v * 100}%`;
 const place = (b: Box) => ({
@@ -24,9 +33,14 @@ export const SelectedScene = ({
   game,
   scene: studioScene,
   links,
+  plan,
+  world,
 }: {
   game: string;
   scene: StudioScene;
+  // Its plan in game.json, and the world it stands in, when Generate a game made it.
+  plan?: GeneratedScene;
+  world?: World;
   // Where its exits lead, as the game is being edited.
   links: Record<string, string>;
 }) => {
@@ -41,7 +55,7 @@ export const SelectedScene = ({
   const unplaced = scene.objects.filter((o) => objects[o.id] === undefined);
 
   return (
-    <div ref={section} className="flex scroll-mt-28 flex-col gap-4 lg:flex-row lg:items-start">
+    <div ref={section} className="flex scroll-mt-28 flex-wrap items-start gap-4">
       <div className="relative inline-block max-w-full shrink-0 self-start overflow-visible">
         {studioScene.images.background ? (
           <img
@@ -118,7 +132,7 @@ export const SelectedScene = ({
         })}
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col gap-3">
+      <div className="flex min-w-80 flex-1 basis-80 flex-col gap-3">
         <div className="flex items-baseline gap-3">
           <h3 className="min-w-0 flex-1 truncate text-base font-semibold text-zinc-100">
             {scene.title}
@@ -187,6 +201,24 @@ export const SelectedScene = ({
             );
           })}
         </ul>
+        {plan ? (
+          // Folded at first: opened to read what the scene was generated from.
+          <details
+            key={studioScene.id}
+            className="rounded-md border border-zinc-800 bg-zinc-900/60"
+          >
+            <summary className="cursor-pointer px-3 py-2 text-xs font-semibold tracking-wide text-zinc-500 uppercase select-none hover:text-zinc-300">
+              Prompts
+            </summary>
+            <div className="border-t border-zinc-800 px-3 py-3">
+              <PlannedScene plan={plan} world={world} />
+            </div>
+          </details>
+        ) : (
+          <p className="text-sm text-zinc-500">
+            Not in the game's plan: its prompts are on its page.
+          </p>
+        )}
       </div>
     </div>
   );
